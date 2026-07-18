@@ -12,6 +12,10 @@ next-env.d.ts
 .env.*
 !.env.example
 
+# Local dev server control (./build.sh / ./stop.sh)
+.landing.pid
+.landing.log
+
 # Logs / OS / IDE
 *.log
 .DS_Store
