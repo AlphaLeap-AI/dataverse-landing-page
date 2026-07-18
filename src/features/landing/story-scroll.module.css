@@ -1,0 +1,484 @@
+/* ── The chaos → order scroll story ──────────────────────────── */
+
+.story {
+  position: relative;
+  /* 760vh of narrative + 100vh reserved as an end-of-story pause (see useStoryEngine) */
+  height: 860vh;
+}
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--parchment, #f4f7fb);
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── floating cards ── */
+.cardLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.cardWrap {
+  position: absolute;
+  will-change: transform;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e6ebf2;
+  border-radius: 14px;
+  box-shadow: rgba(12, 26, 43, 0.07) 0 14px 34px -14px;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  cursor: default;
+}
+.cardChip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+}
+.cardPanel {
+  width: 220px;
+  padding: 16px 18px;
+  border-radius: 16px;
+}
+/* Depth is conveyed by scale + stacking, not blur — kept crisp so the
+   background reads as a dense wall of real screenshots, not distant noise. */
+.depth-far {
+  opacity: 0.9;
+  transform: scale(0.86);
+}
+.depth-mid {
+  opacity: 0.96;
+  transform: scale(0.94);
+}
+.depth-near {
+  box-shadow: rgba(12, 26, 43, 0.08) 0 10px 28px -12px;
+  pointer-events: auto;
+}
+.cardHoverable:hover {
+  transform: translateY(-5px) rotate(var(--hoverRotate, 1deg));
+  box-shadow: rgba(29, 109, 255, 0.22) 0 16px 36px -10px;
+  border-color: #b7cdf3;
+}
+
+.chipFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chipIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.chipLabel {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 13px;
+  color: #475569;
+  white-space: nowrap;
+}
+.chipDb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px;
+}
+.chipDot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chipDbLabel {
+  font-size: 16.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+}
+.panelLabel {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: #73849a;
+  white-space: nowrap;
+}
+.panelHeaderIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panelLabelInline {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.3;
+}
+.barRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+}
+.bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+}
+.dotGrid {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+.dotCell {
+  height: 8px;
+  border-radius: 2px;
+  background: #eef3f9;
+}
+.dotCell[data-filled="true"] {
+  background: #c9d8ef;
+}
+.donutRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+.donut {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.donutStub {
+  flex: 1;
+  height: 6px;
+  border-radius: 2px;
+  background: #eef3f9;
+}
+.metricInline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 7px;
+}
+.metricInlineLabel {
+  font-size: 13px;
+  color: #73849a;
+}
+.metricInlineValue {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 23px;
+  color: #0c1a2b;
+}
+.metricStackedLabel {
+  font-size: 13px;
+  color: #73849a;
+  margin-top: 10px;
+}
+.metricStackedValue {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 27px;
+  color: #0c1a2b;
+}
+.regionLabels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: #73849a;
+  margin-top: 5px;
+}
+
+/* ── statement overlays (crossfade driven by scroll progress) ── */
+.stmt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  /* 5vh — kept in sync with STMT_BOTTOM_GAP_VH in use-story-engine.ts, which
+     measures this block's real height off of this gap to keep the canvas
+     formation above it from ever overlapping the text. */
+  padding: 0 32px 5vh;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+/* Hero (S0) statement: centered vertically instead of anchored to the bottom.
+   Uses an explicit modifier class rather than :first-child — canvas/card-layer
+   siblings precede it in the DOM, so :first-child never matched. */
+.stmtHero {
+  justify-content: center;
+  padding: 0 32px;
+}
+.stmtInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 48px;
+  background: radial-gradient(ellipse at center, rgba(244, 247, 251, 0.94) 35%, rgba(244, 247, 251, 0) 75%);
+}
+.stmtHero .stmtInner {
+  padding: 56px 84px;
+  background: radial-gradient(ellipse at center, rgba(244, 247, 251, 0.98) 58%, rgba(244, 247, 251, 0) 86%);
+}
+.stmtEyebrow {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--acc, #1d6dff);
+}
+.stmtHero .stmtEyebrow {
+  color: #73849a;
+}
+.stmtH1 {
+  font-family: var(--serif, Georgia, serif);
+  font-weight: 500;
+  font-size: clamp(52px, 8vw, 112px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: min(92vw, 24ch);
+}
+
+/* "chaos" rendered as scattered, jittering letters — disordered data made
+   visible. Each glyph gets its own rotation/offset (via nth-child) and a small
+   continuous drift; the base transform lives in the keyframes so the scatter
+   still shows when the animation is reduced/disabled. */
+.chaosWord {
+  display: inline-flex;
+  align-items: baseline;
+  font-style: italic;
+}
+.chaosLetter {
+  display: inline-block;
+  transform: rotate(var(--r, 0deg)) translateY(var(--y, 0));
+  animation: chaosDrift 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -0.55s);
+  will-change: transform;
+}
+.chaosLetter:nth-child(1) {
+  --r: -9deg;
+  --y: -0.05em;
+  --i: 0;
+  color: var(--acc, #1d6dff);
+}
+.chaosLetter:nth-child(2) {
+  --r: 7deg;
+  --y: 0.1em;
+  --i: 1;
+  color: #8aa0bb;
+}
+.chaosLetter:nth-child(3) {
+  --r: -5deg;
+  --y: -0.11em;
+  --i: 2;
+  color: #73849a;
+}
+.chaosLetter:nth-child(4) {
+  --r: 11deg;
+  --y: 0.06em;
+  --i: 3;
+  color: var(--acc, #1d6dff);
+  opacity: 0.85;
+}
+.chaosLetter:nth-child(5) {
+  --r: -7deg;
+  --y: -0.04em;
+  --i: 4;
+  color: #8aa0bb;
+}
+.chaosDot {
+  color: var(--acc, #1d6dff);
+}
+@keyframes chaosDrift {
+  0%,
+  100% {
+    transform: rotate(var(--r, 0deg)) translateY(var(--y, 0));
+  }
+  50% {
+    transform: rotate(calc(var(--r, 0deg) * 0.35)) translateY(calc(var(--y, 0) + 0.07em));
+  }
+}
+
+/* Value-prop tagline promoted to a glass pill so it reads as the promise,
+   not a caption under the headline. */
+.stmtLede {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--serif, Georgia, serif);
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(18px, 2vw, 24px);
+  letter-spacing: -0.01em;
+  color: var(--dark, #0c1a2b);
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border-warm, #d6dfea);
+  box-shadow: rgba(29, 109, 255, 0.12) 0 14px 34px -14px;
+}
+.stmtLedeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--acc, #1d6dff);
+  box-shadow: 0 0 0 4px rgba(29, 109, 255, 0.14);
+  flex-shrink: 0;
+}
+.stmtLedeStrong {
+  color: var(--acc, #1d6dff);
+  font-weight: 600;
+}
+.stmtH2 {
+  font-family: var(--serif, Georgia, serif);
+  font-weight: 500;
+  font-size: clamp(36px, 4.6vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+.stmtSub {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 13px;
+  color: #73849a;
+}
+/* The shared "margin: 0" reset in landing.module.css (`.root h1,h2,h3,h4` /
+   `.root p`) targets bare element selectors combined with a class, giving it
+   higher specificity than a single class like `.stmtH1` alone — so margins
+   set directly on these classes were silently overridden. Qualifying with the
+   `.stmtInner` parent class raises specificity enough to win reliably. */
+.stmtInner .stmtH1 {
+  margin: 40px 0 0;
+}
+.stmtInner .stmtLede {
+  margin: 40px 0 0;
+}
+.stmtInner .stmtH2 {
+  margin: 32px 0 0;
+}
+.stmtInner .stmtSub {
+  margin: 44px 0 0;
+}
+.stmtSub mark,
+.stmtSub .highlight {
+  color: var(--acc, #1d6dff);
+}
+
+.askBubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d6dfea;
+  box-shadow: rgba(12, 26, 43, 0.07) 0 14px 40px -12px;
+  margin: 32px 0 0;
+}
+.askBubbleLabel {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #73849a;
+}
+.askBubbleTyped {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 18px;
+  min-height: 1.5em;
+}
+.askBubbleCaret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  vertical-align: -3px;
+  background: var(--acc, #1d6dff);
+  animation: storyBlink 1s steps(2) infinite;
+}
+.bigNum {
+  font-family: var(--serif, Georgia, serif);
+  font-size: clamp(40px, 5vw, 64px);
+  color: var(--acc, #1d6dff);
+  line-height: 1;
+  margin: 20px 0 0;
+}
+
+.cue {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  opacity: 1;
+}
+.cueLabel {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #73849a;
+}
+.cueLine {
+  width: 1px;
+  height: 34px;
+  background: #73849a;
+  animation: storyCue 1.8s ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes storyBlink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes storyCue {
+  0% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  70% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cueLine {
+    animation: none;
+  }
+  .askBubbleCaret {
+    animation: none;
+  }
+  .chaosLetter {
+    animation: none;
+  }
+}

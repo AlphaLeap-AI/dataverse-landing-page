@@ -1,0 +1,207 @@
+.section {
+  padding: 120px 32px 90px;
+}
+.head {
+  max-width: 1200px;
+  margin: 0 auto 52px;
+  text-align: center;
+}
+.head h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(32px, 4.2vw, 50px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--ivory);
+  border: 1px solid var(--border-cream);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: all 0.25s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: rgba(12, 26, 43, 0.08) 0 18px 44px -14px;
+  border-color: var(--border-warm);
+}
+.span3 {
+  grid-column: span 3;
+}
+.span2 {
+  grid-column: span 2;
+  padding: 26px;
+  gap: 18px;
+}
+@media (max-width: 860px) {
+  .span3,
+  .span2 {
+    grid-column: span 1;
+  }
+}
+.card h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.span3 h3 {
+  font-size: 24px;
+}
+.span2 h3 {
+  font-size: 19px;
+}
+.card p {
+  font-size: 14.5px;
+  color: var(--olive);
+  margin: 8px 0 0;
+}
+.span2 p {
+  font-size: 13.5px;
+  margin: 6px 0 0;
+}
+
+.dark {
+  background: var(--dark);
+  color: var(--ivory);
+  border-color: var(--border-dark);
+  position: relative;
+  overflow: hidden;
+}
+.dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 85% 0%, rgba(29, 109, 255, 0.18), transparent 55%);
+  pointer-events: none;
+}
+.dark:hover {
+  box-shadow: rgba(12, 26, 43, 0.25) 0 18px 44px -14px;
+  border-color: var(--border-dark);
+}
+.dark p {
+  color: var(--warm-silver);
+}
+.darkRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+.darkIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px dashed var(--accent-soft);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: var(--accent-soft);
+  flex-shrink: 0;
+}
+.darkTag {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warm-silver);
+  letter-spacing: 0.08em;
+}
+.darkBody {
+  position: relative;
+}
+
+.dbDots {
+  display: flex;
+  gap: 6px;
+}
+.dbDots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.pillRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pillLine {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--border-warm), var(--accent));
+}
+.pill {
+  padding: 8px 16px;
+  border-radius: 999px 999px 999px 4px;
+  background: var(--dark);
+  color: var(--ivory);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.mockGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.mockBlock {
+  height: 34px;
+  border-radius: 8px;
+  background: var(--parchment);
+  border: 1px solid var(--border-cream);
+}
+.mockBlockActive {
+  background: rgba(29, 109, 255, 0.1);
+  border-color: rgba(29, 109, 255, 0.3);
+}
+.mockBlockWide {
+  grid-column: span 2;
+  height: 26px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--parchment);
+  color: var(--olive);
+}
+.tagAccent {
+  background: rgba(29, 109, 255, 0.08);
+  color: var(--accent);
+}
+
+.quote {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--charcoal);
+}
+.quote mark {
+  background: rgba(29, 109, 255, 0.14);
+  border-bottom: 2px solid var(--accent);
+  padding: 0 3px;
+  border-radius: 3px;
+  color: var(--dark);
+}
