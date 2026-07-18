@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 
-import { CtaSection } from "@/features/landing/cta-section";
-import { FeaturesGrid } from "@/features/landing/features-grid";
+import { DemoCta } from "@/features/landing/demo-cta";
+import { Footer } from "@/features/landing/footer";
+import { GalaxyStory } from "@/features/landing/galaxy-story";
 import styles from "@/features/landing/landing.module.css";
-import { LiveDemo } from "@/features/landing/live-demo";
 import { NavBar } from "@/features/landing/nav-bar";
-import { StoryScroll } from "@/features/landing/story-scroll";
+import { PlatformSection } from "@/features/landing/platform-section";
+import { ProofSection } from "@/features/landing/proof-section";
 import { getMetadataBase, getSiteUrl, siteName } from "@/lib/site";
 
 const sourceSerif = Source_Serif_4({
@@ -118,10 +119,13 @@ export default function Home() {
       <NavBar />
 
       <main>
-        <StoryScroll />
-        <FeaturesGrid />
-        <LiveDemo />
-        <CtaSection />
+        <GalaxyStory />
+        <div className={styles.postStory}>
+          <PlatformSection />
+          <ProofSection />
+          <DemoCta />
+          <Footer />
+        </div>
       </main>
     </div>
   );

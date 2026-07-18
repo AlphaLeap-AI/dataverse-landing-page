@@ -1,79 +1,70 @@
-# Dataverse Landing Page
+# Dataverse
 
-Public marketing site for [Dataverse](https://github.com/AlphaLeap-AI) — an enterprise data agent for grounded, SQL-backed answers.
+### Your senior data team, in one agent.
 
-This repository is **marketing-only**. It does not include the product application (sign-in, dashboard, chat, or API clients).
+Your data lives across warehouses, lakes, and legacy systems. Questions bounce between tickets, analysts, and dashboards that never quite agree. **Dataverse** is the enterprise data agent that plugs into those sources, grounds every answer in approved schema context, and returns **SQL-backed results your team can inspect, trust, and reuse.**
 
-## Quick start
+> Ask in plain language. Get an answer with the query behind it — not a black box.
 
-```bash
-./build.sh    # install deps if needed, start on http://localhost:3000
-./stop.sh     # stop cleanly
-```
+---
 
-Optional: copy env first, or let `./build.sh` create `.env.local` from `.env.example`:
+## Why Dataverse
 
-```bash
-cp .env.example .env.local
-# set NEXT_PUBLIC_SITE_URL and NEXT_PUBLIC_DEMO_EMAIL
-```
+| Today | With Dataverse |
+| --- | --- |
+| Wait days for a ticketed SQL pull | Ask once; get a grounded answer in seconds |
+| Metrics defined differently by team | Glossary, skills, and rules encode how *you* count |
+| Opaque AI outputs | Full SQL, traces, and approved schema context |
+| Data leaving your perimeter | Runs in your network — VPC, air-gapped, your own LLM |
 
-Override port with `PORT=3001 ./build.sh` (use the same `PORT` with `./stop.sh`).
+---
 
-## Environment variables
+## What it does
 
-| Variable | Purpose |
-|----------|---------|
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO (`robots.txt`, sitemap, Open Graph) |
-| `NEXT_PUBLIC_DEMO_EMAIL` | Inbox used by the demo request form (`mailto:`) |
+### Chat with every database
+One conversation across Postgres, Snowflake, MySQL, SQL Server, BigQuery, Databricks, DuckDB, SQLite, and more — live sources, not stale exports.
 
-No API keys or backend credentials are required or accepted.
+### Grounded, inspectable answers
+Questions are resolved against reviewed metadata and relationships. Generated SQL is visible, deterministic where it should be, and tied to approved definitions.
 
-## Scripts
+### Skills, rules & company language
+Encode fiscal calendars, NRR logic, and business rules. Your glossary means one thing everywhere — so “active customer” never means three different things.
 
-- `./build.sh` — start the marketing site (background; writes `.landing.pid` / `.landing.log`)
-- `./stop.sh` — stop the process started by `./build.sh`
-- `npm run dev` — development server (foreground)
-- `npm run build` — production build (static export → `out/`)
-- `npm start` — not used for static export; serve `out/` with any static host
+### Dashboards on the fly
+Pin any answer to a live tile. Numbers refresh on schedule so the team watches what matters, without rebuilding reports by hand.
 
-## Deploy to GitHub Pages
+### Fully private, on-prem ready
+Your data never needs to leave your network. Deploy in your VPC, air-gapped environments, or with your own models — full control for security and compliance teams.
 
-This site is configured for **static export** and deploys via GitHub Actions.
+---
 
-**Live URL (project Pages):**  
-https://alphaleap-ai.github.io/dataverse-landing-page/
+## How it works
 
-### One-time repo setup
+1. **Connect** the systems your team already relies on — warehouses first, not generic chat.
+2. **Review & approve** schema context: descriptions, relationships, and values before any answer runs.
+3. **Ask** in natural language — English and dozens of other languages.
+4. **Inspect** the SQL, results, and charts; promote what matters into reusable dashboard views.
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment → Source**, choose **GitHub Actions**.
-3. (Optional) **Settings → Secrets and variables → Actions → Variables**  
-   add `NEXT_PUBLIC_DEMO_EMAIL` with your demo inbox address.
+---
 
-### How it works
+## Built for enterprise data teams
 
-- Push to `master` (or run the workflow manually under **Actions**).
-- Workflow sets `GITHUB_PAGES=true` so Next builds with `basePath` `/dataverse-landing-page`.
-- Artifact is the static `out/` folder; GitHub Pages serves it.
+- **Schema-aware retrieval** — answers rooted in what you’ve approved, not guesswork  
+- **Enterprise text-to-SQL** — production-minded queries your engineers can audit  
+- **Metadata review workflow** — governance is the path, not an afterthought  
+- **Reusable views** — turn a good answer into a living dashboard tile  
 
-### Local static build (same as CI)
+---
 
-```bash
-GITHUB_PAGES=true \
-  NEXT_PUBLIC_SITE_URL=https://alphaleap-ai.github.io/dataverse-landing-page \
-  NEXT_PUBLIC_DEMO_EMAIL=sales@example.com \
-  npm run build
+## See it for yourself
 
-npx serve out
-```
+Thirty minutes. An engineer in the room. Your governance questions welcome.
 
-### Custom domain later
+**[Book a demo →](https://alphaleap-ai.github.io/dataverse-landing-page/#demo)** · **[Explore the platform →](https://alphaleap-ai.github.io/dataverse-landing-page/)**
 
-1. Set the domain under **Settings → Pages**.
-2. Build **without** `GITHUB_PAGES=true` (root paths, no repo basePath).
-3. Point `NEXT_PUBLIC_SITE_URL` at the custom domain.
+---
 
-## License
-
-Apache License 2.0 — see [LICENSE](./LICENSE).
+<p align="center">
+  <strong>Dataverse</strong> · Chaos becomes an answer.<br />
+  <sub>Your data never leaves your network.</sub>
+</p>

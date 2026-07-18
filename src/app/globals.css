@@ -10,6 +10,22 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
+  /* Match the landing canvas so any residual gutter never flashes white. */
+  background: #060a14;
+  /* Prevent a horizontal scrollbar / white right strip when decorative
+     elements (blooms, fixed canvas) briefly exceed the layout width. */
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {

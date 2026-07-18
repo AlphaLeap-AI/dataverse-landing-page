@@ -5,22 +5,17 @@ import { useEffect, useRef } from "react";
 
 import styles from "./landing.module.css";
 
-/** Fixed nav with a scroll-progress bar and a shadow that appears once the page scrolls. */
+/** Fixed glass nav with a scroll-progress bar. */
 export function NavBar() {
-  const navRef = useRef<HTMLElement | null>(null);
   const progressRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let ticking = false;
     const update = () => {
       ticking = false;
-      const y = window.scrollY;
       const docH = document.documentElement.scrollHeight - window.innerHeight;
       if (progressRef.current) {
-        progressRef.current.style.width = `${docH > 0 ? (y / docH) * 100 : 0}%`;
-      }
-      if (navRef.current) {
-        navRef.current.style.boxShadow = y > 10 ? "rgba(12,26,43,.06) 0 8px 24px -8px" : "none";
+        progressRef.current.style.width = `${docH > 0 ? (window.scrollY / docH) * 100 : 0}%`;
       }
     };
     const onScroll = () => {
@@ -35,18 +30,20 @@ export function NavBar() {
   }, []);
 
   return (
-    <header ref={navRef} className={styles.navFixed}>
+    <header className={styles.navFixed}>
       <div ref={progressRef} className={styles.navProgress} />
       <div className={styles.navInner}>
-        <Link className={styles.brand} href="/">
+        <Link className={styles.brand} href="#top">
           <span className={styles.brandMark}>D</span>
           <span className={styles.brandWordmark}>Dataverse</span>
         </Link>
-        <div className={styles.navCta}>
-          <Link className={`${styles.btn} ${styles.btnPrimary}`} href="#demo">
-            Book demo
+        <nav className={styles.navLinks}>
+          <Link href="#platform">Platform</Link>
+          <Link href="#proof">Why it works</Link>
+          <Link href="#demo" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm}`}>
+            Book a demo
           </Link>
-        </div>
+        </nav>
       </div>
     </header>
   );

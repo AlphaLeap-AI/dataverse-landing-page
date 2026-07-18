@@ -1,0 +1,25 @@
+.root {
+  position: fixed;
+  inset: 0;
+  /* 100% not 100vw — avoid scrollbar gutter overflow on mobile. */
+  width: 100%;
+  height: 100%;
+  /* Behind the story formation canvas (.canvas is also z-index 0; later DOM
+     sibling paints on top). Ambient only — keep it from overpowering morphs.
+     --starfield-post-opacity is written by useGalaxy after 06 · Private. */
+  z-index: 0;
+  pointer-events: none;
+  opacity: calc(0.55 * var(--starfield-post-opacity, 1));
+  transition: opacity 0.15s linear;
+}
+
+.glow,
+.fallback {
+  position: absolute;
+  inset: 0;
+}
+
+.canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

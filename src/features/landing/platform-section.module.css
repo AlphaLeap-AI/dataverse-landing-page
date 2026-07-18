@@ -1,0 +1,73 @@
+.grid {
+  display: grid;
+  /* min(250px, 100%) avoids forcing a wider-than-viewport track on narrow phones. */
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 18px;
+  margin-top: 56px;
+}
+.card {
+  /* Near-opaque so body copy stays sharp over the starfield. */
+  background: rgba(9, 14, 28, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color 0.2s;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.card:hover {
+  border-color: var(--border-strong);
+}
+.cardTag {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent-soft);
+}
+.cardTag.mint {
+  color: var(--green-soft);
+}
+.cardTag.muted {
+  color: var(--ink-mute);
+}
+.cardTag .dim {
+  color: var(--ink-faint);
+}
+.dots {
+  display: flex;
+  gap: 6px;
+}
+.dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.card h3 {
+  font-size: 21px;
+}
+.card p {
+  font-size: 14.5px;
+  color: var(--ink-mute);
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    margin-top: 32px;
+    gap: 12px;
+  }
+  .card {
+    padding: 20px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+  .card h3 {
+    font-size: 19px;
+  }
+  .card p {
+    font-size: 14px;
+  }
+}

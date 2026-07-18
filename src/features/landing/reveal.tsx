@@ -7,10 +7,12 @@ import styles from "./landing.module.css";
 interface RevealProps {
   children: ReactNode;
   className?: string;
+  /** Stagger index — delays the transition by index * 90ms, matching grids of reveal cards. */
+  index?: number;
 }
 
 /** Fades + slides children into view the first time they cross the viewport. */
-export function Reveal({ children, className }: RevealProps) {
+export function Reveal({ children, className, index = 0 }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -25,7 +27,7 @@ export function Reveal({ children, className }: RevealProps) {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.12 }
+      { threshold: 0.15 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -35,5 +37,9 @@ export function Reveal({ children, className }: RevealProps) {
     .filter(Boolean)
     .join(" ");
 
-  return <div ref={ref} className={classes}>{children}</div>;
+  return (
+    <div ref={ref} className={classes} style={{ transitionDelay: `${index * 90}ms` }}>
+      {children}
+    </div>
+  );
 }
