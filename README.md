@@ -34,8 +34,45 @@ No API keys or backend credentials are required or accepted.
 - `./build.sh` — start the marketing site (background; writes `.landing.pid` / `.landing.log`)
 - `./stop.sh` — stop the process started by `./build.sh`
 - `npm run dev` — development server (foreground)
-- `npm run build` — production build
-- `npm start` — serve production build
+- `npm run build` — production build (static export → `out/`)
+- `npm start` — not used for static export; serve `out/` with any static host
+
+## Deploy to GitHub Pages
+
+This site is configured for **static export** and deploys via GitHub Actions.
+
+**Live URL (project Pages):**  
+https://alphaleap-ai.github.io/dataverse-landing-page/
+
+### One-time repo setup
+
+1. Open **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **GitHub Actions**.
+3. (Optional) **Settings → Secrets and variables → Actions → Variables**  
+   add `NEXT_PUBLIC_DEMO_EMAIL` with your demo inbox address.
+
+### How it works
+
+- Push to `master` (or run the workflow manually under **Actions**).
+- Workflow sets `GITHUB_PAGES=true` so Next builds with `basePath` `/dataverse-landing-page`.
+- Artifact is the static `out/` folder; GitHub Pages serves it.
+
+### Local static build (same as CI)
+
+```bash
+GITHUB_PAGES=true \
+  NEXT_PUBLIC_SITE_URL=https://alphaleap-ai.github.io/dataverse-landing-page \
+  NEXT_PUBLIC_DEMO_EMAIL=sales@example.com \
+  npm run build
+
+npx serve out
+```
+
+### Custom domain later
+
+1. Set the domain under **Settings → Pages**.
+2. Build **without** `GITHUB_PAGES=true` (root paths, no repo basePath).
+3. Point `NEXT_PUBLIC_SITE_URL` at the custom domain.
 
 ## License
 
