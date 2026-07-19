@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, FileCode, Hourglass, Layers, Network, Zap } from "lucide-react";
-import { Fragment, type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import { AskBar } from "./ask-bar";
 import { DataUniverse, type MorphMapperRef, type MorphProgressRef } from "./data-universe";
@@ -47,7 +47,19 @@ const PROOF_CHIPS = [
   { Icon: Zap, label: "Answers in ~3 seconds" },
 ];
 
-const CHAOS_HEADLINE = ["Getting", "answers", "shouldn't", "be", "this", "hard."];
+// Chaos + closing copy fade in line by line (each entry = one display line).
+// `em` renders with the gradient accent treatment.
+const CHAOS_HEADLINE_LINES: { pre?: string; em?: string }[] = [
+  { pre: "Getting answers" },
+  { pre: "shouldn't be" },
+  { pre: "this ", em: "hard." },
+];
+
+const CHAOS_CLOSE_LINES: { pre?: string; em?: string }[] = [
+  { pre: "Meanwhile," },
+  { pre: "your data" },
+  { em: "already knows." },
+];
 
 const CHAOS_PAINS = [
   {
@@ -118,18 +130,24 @@ export function GalaxyStory() {
   const sqlCardRef = useRef<HTMLDivElement>(null);
   const beatRefs = useRef<Partial<Record<BeatKey, HTMLDivElement | null>>>({});
   const chaosGhostRef = useRef<HTMLDivElement>(null);
-  const chaosWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const chaosLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const chaosCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const chaosCloseRef = useRef<HTMLParagraphElement>(null);
+  const chaosCloseLineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const learnTrackRef = useRef<HTMLDivElement>(null);
   const universeProgressRef = useRef(0) as MorphProgressRef;
   const universeMapperRef = useRef(mapPageScrollToMorph) as MorphMapperRef;
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Phones only run the story canvas — a second ambient WebGL context is a
+  // big part of why mobile scrolling stuttered.
+  const [showAmbient, setShowAmbient] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => setReducedMotion(mq.matches);
     sync();
     mq.addEventListener("change", sync);
+    setShowAmbient(window.innerWidth > 720);
     return () => mq.removeEventListener("change", sync);
   }, []);
 
@@ -158,9 +176,11 @@ export function GalaxyStory() {
       bigNumRef,
       sqlCardRef,
       chaosGhostRef,
-      chaosWordRefs,
+      chaosLineRefs,
       chaosCardRefs,
       chaosCloseRef,
+      chaosCloseLineRefs,
+      learnTrackRef,
     },
     { density: "high", calm: reducedMotion }
   );
@@ -171,12 +191,15 @@ export function GalaxyStory() {
 
   return (
     <>
-      {/* Ambient redesign universe — sits behind the story formation canvas */}
-      <DataUniverse
-        progress={universeProgressRef}
-        mapper={universeMapperRef}
-        reducedMotion={reducedMotion}
-      />
+      {/* Ambient redesign universe — desktop only; phones keep a single
+          WebGL context so the story scroll stays smooth. */}
+      {showAmbient ? (
+        <DataUniverse
+          progress={universeProgressRef}
+          mapper={universeMapperRef}
+          reducedMotion={reducedMotion}
+        />
+      ) : null}
       {/* Original beat-driven particle morph canvas (useGalaxy) */}
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
 
@@ -252,18 +275,17 @@ export function GalaxyStory() {
                   control of the same element. */}
               <div className={styles.chaosLayer}>
                 <h2 className={styles.chaosHeadline}>
-                  {CHAOS_HEADLINE.map((word, i) => (
-                    <Fragment key={word}>
-                      <span
-                        ref={(el) => {
-                          chaosWordRefs.current[i] = el;
-                        }}
-                        className={styles.chaosWord}
-                      >
-                        {word}
-                      </span>
-                      {i < CHAOS_HEADLINE.length - 1 ? " " : ""}
-                    </Fragment>
+                  {CHAOS_HEADLINE_LINES.map((line, i) => (
+                    <span
+                      key={line.pre ?? line.em}
+                      ref={(el) => {
+                        chaosLineRefs.current[i] = el;
+                      }}
+                      className={styles.chaosLine}
+                    >
+                      {line.pre}
+                      {line.em ? <em>{line.em}</em> : null}
+                    </span>
                   ))}
                 </h2>
               </div>
@@ -289,7 +311,18 @@ export function GalaxyStory() {
 
               <div className={styles.chaosLayer}>
                 <p ref={chaosCloseRef} className={styles.chaosClose}>
-                  Meanwhile, your data <em>already knows.</em>
+                  {CHAOS_CLOSE_LINES.map((line, i) => (
+                    <span
+                      key={line.pre ?? line.em}
+                      ref={(el) => {
+                        chaosCloseLineRefs.current[i] = el;
+                      }}
+                      className={styles.chaosLine}
+                    >
+                      {line.pre}
+                      {line.em ? <em>{line.em}</em> : null}
+                    </span>
+                  ))}
                 </p>
               </div>
             </div>
@@ -298,7 +331,9 @@ export function GalaxyStory() {
           <div ref={setBeatRef("connect")} className={styles.beat}>
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>01 · Connect</span>
-              <h2 className={styles.beatH2}>First, it plugs into everything you own.</h2>
+              <h2 className={styles.beatH2}>
+                First, it plugs into <em>everything</em> you own.
+              </h2>
               <div className={styles.chipRow}>
                 {CONNECT_DBS.map((db) => (
                   <span key={db.name} className={styles.dbChip}>
@@ -315,11 +350,11 @@ export function GalaxyStory() {
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>02 · Understand</span>
               <h2 className={styles.beatH2}>
-                It reads your entire database.
+                It reads your <em>entire database</em>.
                 <br />
                 <span className={styles.beatH2Em}>And writes the documentation nobody ever did.</span>
               </h2>
-              <div className={styles.learnGrid}>
+              <div ref={learnTrackRef} className={styles.learnGrid}>
                 <div className={styles.tableCard}>
                   <div className={styles.tableCardHead}>
                     <span className={styles.tableCardHeadLeft}>
@@ -347,32 +382,30 @@ export function GalaxyStory() {
                     <span className={styles.colDesc}>&quot;contract expiry — renewal due&quot;</span>
                   </div>
                 </div>
-                <div className={styles.learnSide}>
-                  <div className={styles.joinsCard}>
-                    <div className={styles.joinsCardHead}>Joins it discovered</div>
-                    <div className={styles.joinsList}>
-                      <span>
-                        subscriptions <b>⟷</b> customers <i>on customer_id</i>
-                      </span>
-                      <span>
-                        orders <b>⟷</b> customers <i>on customer_id</i>
-                      </span>
-                      <span>
-                        tickets <b>⟷</b> accounts <i>inferred — no FK</i>
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.statsCard}>
-                    <span className={styles.statCell}>
-                      <b>47</b>tables
+                <div className={styles.joinsCard}>
+                  <div className={styles.joinsCardHead}>Joins it discovered</div>
+                  <div className={styles.joinsList}>
+                    <span>
+                      subscriptions <b>⟷</b> customers <i>on customer_id</i>
                     </span>
-                    <span className={styles.statCell}>
-                      <b>612</b>columns
+                    <span>
+                      orders <b>⟷</b> customers <i>on customer_id</i>
                     </span>
-                    <span className={styles.statCell}>
-                      <b className={styles.green}>0</b>human inputs
+                    <span>
+                      tickets <b>⟷</b> accounts <i>inferred — no FK</i>
                     </span>
                   </div>
+                </div>
+                <div className={styles.statsCard}>
+                  <span className={styles.statCell}>
+                    <b>47</b>tables
+                  </span>
+                  <span className={styles.statCell}>
+                    <b>612</b>columns
+                  </span>
+                  <span className={styles.statCell}>
+                    <b className={styles.green}>0</b>human inputs
+                  </span>
                 </div>
               </div>
               <p className={styles.beatFoot}>
@@ -385,7 +418,9 @@ export function GalaxyStory() {
           <div ref={setBeatRef("skills")} className={styles.beat}>
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>03 · Teach</span>
-              <h2 className={styles.beatH2}>Teach it how your business counts.</h2>
+              <h2 className={styles.beatH2}>
+                Teach it how <em>your business</em> counts.
+              </h2>
               <div className={styles.chipRow}>
                 <span className={`${styles.tagChip} ${styles.tagGold}`}>rule · fiscal year starts Feb</span>
                 <span className={styles.tagChip}>skill · NRR, our way</span>
@@ -406,7 +441,7 @@ export function GalaxyStory() {
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>04 · Ask</span>
               <h2 className={styles.beatH2}>
-                Then, you just ask.
+                Then, you just <em>ask</em>.
                 <br />
                 <span className={styles.beatH2Em}>In any language you think in.</span>
               </h2>
@@ -437,7 +472,7 @@ export function GalaxyStory() {
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>05 · Answer</span>
               <h2 className={styles.beatH2}>
-                One question in. A full analysis back.
+                One question in. A <em>full analysis</em> back.
                 <br />
                 <span className={styles.beatH2Em}>It answers, then digs for the why — and what to do about it.</span>
               </h2>
@@ -537,9 +572,12 @@ export function GalaxyStory() {
           <div ref={setBeatRef("private")} className={styles.beat}>
             <div className={styles.beatInner}>
               <span className={styles.beatEyebrow}>06 · Private</span>
-              <h2 className={styles.beatH2}>And it all stays inside your walls.</h2>
-              <p className={`${styles.beatFoot} ${styles.mono}`}>
-                VPC · on-prem · role-based access · <span className={styles.blue}>zero rows leave</span>
+              <h2 className={styles.beatH2}>
+                And it all stays inside <em>your walls</em>.
+              </h2>
+              <p className={styles.beatFoot}>
+                Deploy inside your VPC or on-prem. Role-based access.{" "}
+                <span className={styles.blue}>Zero data leaves your infrastructure.</span>
               </p>
             </div>
           </div>
