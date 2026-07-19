@@ -47,30 +47,42 @@ const TYPED_SEGMENTS: [number, number][] = [
 
 // ── "chaos" beat internal choreography ──────────────────────────────────
 // Three overlapping phases share the beat's outer window: the headline
-// dissolves in word-by-word, then the pain-point cards rise in (staggered),
-// then the closing line turns the story toward the answer.
+// dissolves in line-by-line, then the pain-point cards rise in (staggered),
+// then the closing lines turn the story toward the answer.
 //
 // Headline starts near p=0 so "Getting answers shouldn't be this hard."
 // appears right as the hero scrolls away (no long empty pin).
 const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.09025, 0.016];
-const CHAOS_HEADLINE_STAGGER = 8 / 2216; // ~8vh per word
+const CHAOS_HEADLINE_STAGGER = 0.013; // per display line
 const CHAOS_CARD_WINDOWS: [number, number, number][] = [
   [0.08348, 0.15569, 0.02031],
   [0.09251, 0.15569, 0.02031],
   [0.10154, 0.15569, 0.02031],
 ];
-// Closing line: slightly longer dwell than the original blink, still fully
+// Closing lines: slightly longer dwell than the original blink, still fully
 // inside the chaos outer window so Connect timing is unchanged.
 // [start, end, fade] — full opacity ≈ end−start−2·fade.
-const CHAOS_CLOSE_WIN: [number, number, number] = [0.142, 0.1865, 0.014];
+const CHAOS_CLOSE_WIN: [number, number, number] = [0.139, 0.1875, 0.012];
+const CHAOS_CLOSE_STAGGER = 0.007; // per display line
 const CHAOS_GHOST_WIN: [number, number] = [0, 0.18773];
+
+// ── mobile horizontal card tracks (02 · Understand, 05 · Answer) ────────
+// On phones the dense card grids ride a horizontal track driven by vertical
+// page scroll: while p crosses these windows the track translates left, so
+// the reader never lifts a thumb sideways — scrolling down walks the cards,
+// then continues into the next chapter. Windows sit inside each beat's
+// fully-visible plateau (learn 0.330–0.452, answer 0.724–0.862).
+const LEARN_TRACK_WIN: [number, number] = [0.372, 0.415];
+const ANSWER_TRACK_WIN: [number, number] = [0.765, 0.825];
 
 // The generic beat loop below fades each beat container in/out with a fixed
 // 0.045 margin, which is fine for beats with one static content block. The
 // "chaos" beat is much wider (three internal phases share it), so its outer
 // container needs a much tighter margin — otherwise the outer fade-out would
 // start clipping the closing line before it ever reaches full opacity.
-const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012 };
+// learn/answer get tighter margins too: their horizontal card tracks need a
+// long fully-visible plateau so the last card parks before fade-out begins.
+const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012, learn: 0.03, answer: 0.03 };
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 const fadeWin = (p: number, a: number, b: number, f = 0.045): number => {
@@ -106,9 +118,11 @@ interface GalaxyRefs {
   bigNumRef: RefObject<HTMLSpanElement | null>;
   sqlCardRef: RefObject<HTMLDivElement | null>;
   chaosGhostRef: RefObject<HTMLDivElement | null>;
-  chaosWordRefs: RefObject<(HTMLSpanElement | null)[]>;
+  chaosLineRefs: RefObject<(HTMLSpanElement | null)[]>;
   chaosCardRefs: RefObject<(HTMLDivElement | null)[]>;
   chaosCloseRef: RefObject<HTMLParagraphElement | null>;
+  chaosCloseLineRefs: RefObject<(HTMLSpanElement | null)[]>;
+  learnTrackRef: RefObject<HTMLDivElement | null>;
 }
 
 interface GalaxyOptions {
@@ -132,10 +146,12 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     const densities = { low: 2600, medium: 5200, high: 8500 };
     let N = densities[options.density];
     const isMobileLayout = window.innerWidth <= 720;
-    if (window.innerWidth < 700) N = Math.min(N, 3200);
+    // Phones: fewer, larger particles + capped DPR — the formation stays a
+    // bold illustration while each frame costs far less.
+    if (isMobileLayout) N = Math.min(N, 2600);
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileLayout ? 1.5 : 2));
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
     // Camera distance is aspect-dependent (see resize) — the 55° FOV is
@@ -146,6 +162,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // Widest recognizable formation half-extent (lattice ±15 + jitter).
     const FIT_HALF_WIDTH = 16.5;
     let camZ = BASE_CAM_Z;
+    let portraitView = false;
     camera.position.z = camZ;
 
     const formations: FormationSet = buildFormations(N);
@@ -177,14 +194,30 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // for whatever width is still missing so every formation (clusters,
       // lattice, chart, shell) stays inside the visible frustum.
       camZ = aspect < 1 ? Math.min(46, BASE_CAM_Z / Math.max(0.62, aspect)) : BASE_CAM_Z;
-      const halfWidth = Math.tan((camera.fov * Math.PI) / 360) * (camZ - 3.5) * aspect;
-      const fit = Math.min(1, halfWidth / FIT_HALF_WIDTH);
+      const halfHeight = Math.tan((camera.fov * Math.PI) / 360) * (camZ - 3.5);
+      const halfWidth = halfHeight * aspect;
+      // Portrait: let the formation overflow the frame a little (÷0.8) and
+      // lift it toward the top of the screen — beat copy is bottom-anchored
+      // on phones, so the formation becomes the chapter's illustration
+      // instead of a faint texture behind centered text.
+      const portrait = aspect < 1;
+      portraitView = portrait;
+      const fit = Math.min(1, halfWidth / (portrait ? FIT_HALF_WIDTH * 0.8 : FIT_HALF_WIDTH));
       group.scale.setScalar(fit);
-      // sizeAttenuation shrinks points as the camera retreats — compensate.
-      mat.size = BASE_POINT_SIZE * (camZ / BASE_CAM_Z);
+      group.position.y = portrait ? halfHeight * 0.3 : 0;
+      // sizeAttenuation shrinks points as the camera retreats — compensate,
+      // plus a boost on portrait so sparse mobile fields still read bold.
+      mat.size = BASE_POINT_SIZE * (camZ / BASE_CAM_Z) * (portrait ? 1.3 : 1);
     };
     resize();
-    window.addEventListener("resize", resize);
+    // Debounced: mobile URL-bar show/hide fires resize mid-scroll, and an
+    // immediate renderer.setSize each time causes a visible hitch.
+    let resizeTimer = 0;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 150);
+    };
+    window.addEventListener("resize", onResize);
 
     let mx = 0;
     let my = 0;
@@ -199,6 +232,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     let time = 0;
     let alive = true;
     let rafId = 0;
+    // Frame-loop caches: skip redundant style writes / buffer uploads.
+    let lastStarOpacity = -1;
+    let colorSettledFor = -1;
 
     const frame = () => {
       if (!alive) return;
@@ -219,34 +255,52 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // legible while particles remain faintly visible. private beat ≈ 0.878–1.0.
       const postDim = clamp01((rawP - 0.92) / 0.5); // 0 at late private → 1 into post-story
       const starOpacity = 1 - postDim * 0.68; // floor ~0.32
-      mat.opacity = 0.95 * starOpacity;
-      canvas.style.opacity = starOpacity.toFixed(3);
-      document.documentElement.style.setProperty("--starfield-post-opacity", starOpacity.toFixed(3));
+      // Only touch styles when the value actually moved — writing an opacity
+      // with a CSS transition attached every frame restarts the transition
+      // and forces extra style work.
+      if (Math.abs(starOpacity - lastStarOpacity) > 0.003) {
+        lastStarOpacity = starOpacity;
+        mat.opacity = 0.95 * starOpacity;
+        canvas.style.opacity = starOpacity.toFixed(3);
+        document.documentElement.style.setProperty("--starfield-post-opacity", starOpacity.toFixed(3));
+      }
 
       const [a, b, t] = formationState(p);
       const A = formations[a];
       const B = formations[b];
       const jAmp = (JITTER[a] + (JITTER[b] - JITTER[a]) * t) * (options.calm ? 0.25 : 1);
       const parr = geo.attributes.position.array as Float32Array;
-      const carr = geo.attributes.color.array as Float32Array;
       for (let i = 0; i < N; i++) {
         const i3 = i * 3;
         const ph = i * 0.37;
         parr[i3] = A.pos[i3] + (B.pos[i3] - A.pos[i3]) * t + Math.sin(time * 0.9 + ph) * jAmp * 0.5;
         parr[i3 + 1] = A.pos[i3 + 1] + (B.pos[i3 + 1] - A.pos[i3 + 1]) * t + Math.sin(time * 1.15 + ph * 1.7) * jAmp * 0.4;
         parr[i3 + 2] = A.pos[i3 + 2] + (B.pos[i3 + 2] - A.pos[i3 + 2]) * t + Math.cos(time * 0.8 + ph * 2.3) * jAmp * 0.4;
-        carr[i3] = A.col[i3] + (B.col[i3] - A.col[i3]) * t;
-        carr[i3 + 1] = A.col[i3 + 1] + (B.col[i3 + 1] - A.col[i3 + 1]) * t;
-        carr[i3 + 2] = A.col[i3 + 2] + (B.col[i3 + 2] - A.col[i3 + 2]) * t;
       }
       geo.attributes.position.needsUpdate = true;
-      geo.attributes.color.needsUpdate = true;
+      // Colors only change while morphing between two formations — outside a
+      // morph window they're static, so skip the lerp + GPU upload entirely
+      // (roughly halves per-frame buffer traffic during the long holds).
+      if (a !== b || colorSettledFor !== a) {
+        const carr = geo.attributes.color.array as Float32Array;
+        for (let i = 0; i < N; i++) {
+          const i3 = i * 3;
+          carr[i3] = A.col[i3] + (B.col[i3] - A.col[i3]) * t;
+          carr[i3 + 1] = A.col[i3 + 1] + (B.col[i3 + 1] - A.col[i3 + 1]) * t;
+          carr[i3 + 2] = A.col[i3 + 2] + (B.col[i3 + 2] - A.col[i3 + 2]) * t;
+        }
+        geo.attributes.color.needsUpdate = true;
+        colorSettledFor = a === b ? a : -1;
+      }
 
       mx += (tmx - mx) * 0.04;
       my += (tmy - my) * 0.04;
       const spin = options.calm ? 0.008 : 0.03;
       const extraSpin = a === 4 || b === 4 ? fadeWin(p, MORPH_WINDOWS[3][0], MORPH_WINDOWS[4][1], 0.1) * 0.25 : 0;
-      group.rotation.y = time * (spin + extraSpin) + p * 1.2;
+      // Portrait keeps formations near face-on: the scroll-driven yaw that
+      // reads as parallax on wide screens turns the chart/lattice into an
+      // unreadable edge-on blob at phone aspect ratios.
+      group.rotation.y = time * (spin + extraSpin) + p * (portraitView ? 0.4 : 1.2);
       group.rotation.x = 0.12 + my * 0.06;
       camera.position.x = mx * 1.8;
       camera.position.y = -my * 1.2;
@@ -265,22 +319,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         el.style.opacity = String(op);
         const inner = el.firstElementChild as HTMLElement | null;
         if (inner) inner.style.transform = `translateY(${(1 - op) * 26}px)`;
-        const visible = op > 0.001;
-        el.style.visibility = visible ? "visible" : "hidden";
-        if (isMobileLayout) {
-          // Dense beats (learn/answer) can scroll internally on short phones.
-          // Chaos must stay overflow:hidden — its giant watermark would
-          // otherwise create nested H+V scrollbars.
-          if (key === "chaos") {
-            el.style.overflow = "hidden";
-          } else {
-            // Keep overflow hidden until a beat is fully faded in, otherwise
-            // wheel/touch ticks get eaten by nested scroll during fade-in.
-            el.style.overflowY = op > 0.97 ? "auto" : "hidden";
-            el.style.overflowX = "hidden";
-          }
-          if (!visible) el.scrollTop = 0;
-        }
+        el.style.visibility = op > 0.001 ? "visible" : "hidden";
       });
       if (refs.dimRef.current) refs.dimRef.current.style.opacity = (maxOp * 0.8).toFixed(3);
 
@@ -308,19 +347,35 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         bigEl.textContent = v.toFixed(2);
       }
 
+      // Mobile: vertical scroll walks the 02/05 card decks sideways. The
+      // shift is how far the track's content overflows the viewport, so the
+      // last card always parks fully in frame before the beat fades out.
+      const trackShift = (el: HTMLElement, wa: number, wb: number): number => {
+        const tt = clamp01((p - wa) / (wb - wa));
+        const eased = tt * tt * (3 - 2 * tt);
+        return -eased * Math.max(0, el.scrollWidth - el.clientWidth);
+      };
+
       const sqlEl = refs.sqlCardRef.current;
       if (sqlEl) {
         // Reveal the analysis cards shortly after the answer headline, and
         // keep them up through the full answer window.
         const op = fadeWin(p, 0.75225, 0.8619, 0.0325);
         sqlEl.style.opacity = String(op);
-        sqlEl.style.transform = `translateY(${(1 - op) * 30}px)`;
+        const tx = isMobileLayout ? trackShift(sqlEl, ANSWER_TRACK_WIN[0], ANSWER_TRACK_WIN[1]) : 0;
+        sqlEl.style.transform = `translate3d(${tx.toFixed(1)}px, ${((1 - op) * 30).toFixed(1)}px, 0)`;
       }
 
-      // ── chaos beat: ghost word drift, word-by-word headline, staggered
-      // pain cards, closing line — all layered inside the shared "chaos"
-      // beat container above, whose own fade/visibility already came from
-      // the generic beat loop.
+      const learnEl = refs.learnTrackRef.current;
+      if (learnEl && isMobileLayout) {
+        const tx = trackShift(learnEl, LEARN_TRACK_WIN[0], LEARN_TRACK_WIN[1]);
+        learnEl.style.transform = `translate3d(${tx.toFixed(1)}px, 0, 0)`;
+      }
+
+      // ── chaos beat: ghost word drift, line-by-line headline, staggered
+      // pain cards, line-by-line closing — all layered inside the shared
+      // "chaos" beat container above, whose own fade/visibility already came
+      // from the generic beat loop.
       const ghostEl = refs.chaosGhostRef.current;
       if (ghostEl) {
         const [ga, gb] = CHAOS_GHOST_WIN;
@@ -331,9 +386,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         ghostEl.style.opacity = op.toFixed(3);
       }
 
-      const words = refs.chaosWordRefs.current || [];
-      for (let i = 0; i < words.length; i++) {
-        const el = words[i];
+      const lines = refs.chaosLineRefs.current || [];
+      for (let i = 0; i < lines.length; i++) {
+        const el = lines[i];
         if (!el) continue;
         const a = CHAOS_HEADLINE_WIN[0] + i * CHAOS_HEADLINE_STAGGER;
         const b = CHAOS_HEADLINE_WIN[1];
@@ -355,6 +410,8 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         el.style.transform = `translateY(${(1 - op) * 60}px) rotate(${rotate}deg)`;
       }
 
+      // The closing container fades as one unit (its scrim), while each line
+      // inside staggers in — the same treatment as the opening headline.
       const closeEl = refs.chaosCloseRef.current;
       if (closeEl) {
         const [xa, xb, xf] = CHAOS_CLOSE_WIN;
@@ -362,12 +419,23 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         closeEl.style.opacity = String(op);
         closeEl.style.transform = `translateY(${(1 - op) * 30}px)`;
       }
+      const closeLines = refs.chaosCloseLineRefs.current || [];
+      for (let i = 0; i < closeLines.length; i++) {
+        const el = closeLines[i];
+        if (!el) continue;
+        const a = CHAOS_CLOSE_WIN[0] + i * CHAOS_CLOSE_STAGGER;
+        const op = fadeWin(p, a, CHAOS_CLOSE_WIN[1], CHAOS_CLOSE_WIN[2]);
+        el.style.opacity = String(op);
+        el.style.filter = `blur(${(1 - op) * 8}px)`;
+        el.style.transform = `translateY(${(1 - op) * 20}px)`;
+      }
     };
     frame();
 
     return () => {
       alive = false;
-      window.removeEventListener("resize", resize);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onMove);
       cancelAnimationFrame(rafId);
       canvas.style.opacity = "";
