@@ -208,7 +208,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       portraitView = portrait;
       const fit = Math.min(1, halfWidth / (portrait ? FIT_HALF_WIDTH * 0.8 : FIT_HALF_WIDTH));
       group.scale.setScalar(fit);
-      group.position.y = portrait ? halfHeight * 0.3 : 0;
+      group.position.y = portrait ? halfHeight * 0.5 : 0;
       // sizeAttenuation shrinks points as the camera retreats — compensate,
       // plus a boost on portrait so sparse mobile fields still read bold.
       mat.size = BASE_POINT_SIZE * (camZ / BASE_CAM_Z) * (portrait ? 1.3 : 1);
