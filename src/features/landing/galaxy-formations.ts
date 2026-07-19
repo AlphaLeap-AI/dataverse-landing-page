@@ -133,9 +133,12 @@ export function buildFormations(N: number): FormationSet {
     return [hw * Math.sign(co) * Math.pow(Math.abs(co), n), hh * Math.sign(si) * Math.pow(Math.abs(si), n)];
   };
 
-  // ── 05 Answer: bar chart spec (EMEA / NA / APAC / LATAM) ────────────
+  // ── 05 Answer: combo chart (bars + trend line + magnifier) ──────────
+  // Compact width so portrait phones keep the full chart on-screen; tall
+  // bars fill the free band above the chapter copy. Magnifier sits on the
+  // first bar without hanging past the left edge.
   const barVals = [2.41, 1.82, 1.03, 0.41];
-  const barX = [-9.6, -3.2, 3.2, 9.6];
+  const barX = [-5.8, -1.9, 1.9, 5.8];
   const total = barVals.reduce((a, b) => a + b, 0);
   const barCum: number[] = [];
   let acc = 0;
@@ -144,11 +147,22 @@ export function buildFormations(N: number): FormationSet {
     barCum.push(acc);
   }
   const barCols = [cAccent, new THREE.Color("#5f9bff"), new THREE.Color("#8db8ff"), new THREE.Color("#b9d2f5")];
-  const BAR_BASE = -7;
-  const barH = (b: number) => (barVals[b] / barVals[0]) * 11.5;
-  const MAG_CX = -9.4; // magnifier ring over the tallest bar
-  const MAG_CY = 5.4;
-  const MAG_R = 3.1;
+  const BAR_BASE = -8.2;
+  const barH = (b: number) => (barVals[b] / barVals[0]) * 15.2;
+  // Trend-line y at each bar (slightly above the caps so the series reads).
+  const lineY = (b: number) => BAR_BASE + barH(b) + 1.15;
+  const sampleTrend = (): [number, number] => {
+    const seg = Math.random() * (barX.length - 1);
+    const s = Math.min(barX.length - 2, Math.floor(seg));
+    const t = seg - s;
+    const sm = t * t * (3 - 2 * t);
+    const x = barX[s] + (barX[s + 1] - barX[s]) * sm;
+    const y = lineY(s) + (lineY(s + 1) - lineY(s)) * sm + Math.sin(t * Math.PI) * 0.55;
+    return [x, y];
+  };
+  const MAG_CX = -5.6; // magnifier ring over the tallest bar
+  const MAG_CY = 5.6;
+  const MAG_R = 2.55;
 
   for (let i = 0; i < N; i++) {
     const i3 = i * 3;
@@ -254,40 +268,75 @@ export function buildFormations(N: number): FormationSet {
     }
 
     // ── 03 Teach: lightbulb, filament burning ──
+    // Scaled to match other chapter icons (book/chart/connect span ~±10–12).
+    // The unscaled bulb sat at ~±7 and read as a small floating ornament —
+    // especially on phones, where it left a large empty band around it.
+    const BULB = 1.62;
     if (u < 0.3) {
       // glass envelope
       const th = Math.random() * Math.PI * 2;
       const ph = Math.acos(2 * Math.random() - 1);
+      const gr = 4.4 * BULB;
       tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.28 + Math.random() * 0.2);
-      put(skills, i3, Math.sin(ph) * Math.cos(th) * 4.4, 2.4 + Math.cos(ph) * 4.4, Math.sin(ph) * Math.sin(th) * 4.4);
+      put(
+        skills,
+        i3,
+        Math.sin(ph) * Math.cos(th) * gr,
+        2.4 * BULB + Math.cos(ph) * gr,
+        Math.sin(ph) * Math.sin(th) * gr
+      );
     } else if (u < 0.6) {
       // filament coil + leads
       if (i % 5 === 0) {
         const side = i % 10 === 0 ? -1 : 1;
         const t = Math.random();
         tmp.copy(cGold).multiplyScalar(0.65 + Math.random() * 0.35);
-        put(skills, i3, side * (1.5 - t * 0.6) + jit(0.08), 0.9 - t * 3.4 + jit(0.08), jit(0.1));
+        put(
+          skills,
+          i3,
+          side * (1.5 - t * 0.6) * BULB + jit(0.08),
+          (0.9 - t * 3.4) * BULB + jit(0.08),
+          jit(0.1)
+        );
       } else {
         const t = Math.random();
         const coil = t * Math.PI * 6;
         tmp.copy(cGold).lerp(cWhite, Math.random() * 0.35).multiplyScalar(0.95 + Math.random() * 0.45);
-        put(skills, i3, (t - 0.5) * 3.0 + jit(0.07), 1.15 + Math.sin(coil) * 0.75 + jit(0.07), Math.cos(coil) * 0.35);
+        put(
+          skills,
+          i3,
+          ((t - 0.5) * 3.0) * BULB + jit(0.07),
+          (1.15 + Math.sin(coil) * 0.75) * BULB + jit(0.07),
+          Math.cos(coil) * 0.35 * BULB
+        );
       }
     } else if (u < 0.82) {
       // screw base: three stacked rings
       const band = i % 3;
-      const r = 1.75 - band * 0.14;
+      const r = (1.75 - band * 0.14) * BULB;
       const ang = Math.random() * Math.PI * 2;
       tmp.copy(cSlate).multiplyScalar(0.4 + Math.random() * 0.3);
-      put(skills, i3, Math.cos(ang) * r + jit(0.1), -2.85 - band * 0.72 + jit(0.2), Math.sin(ang) * r * 0.6);
+      put(
+        skills,
+        i3,
+        Math.cos(ang) * r + jit(0.1),
+        (-2.85 - band * 0.72) * BULB + jit(0.2),
+        Math.sin(ang) * r * 0.6
+      );
     } else {
       // light rays
       const k = i % 12;
       const ang = (k / 12) * Math.PI * 2 + 0.26;
       const t = Math.random();
-      const r = 5.2 + t * 1.7;
+      const r = (5.2 + t * 1.7) * BULB;
       tmp.copy(cGold).multiplyScalar((1 - t) * 0.6 + 0.1);
-      put(skills, i3, Math.cos(ang) * r + jit(0.1), 2.4 + Math.sin(ang) * r + jit(0.1), jit(0.4));
+      put(
+        skills,
+        i3,
+        Math.cos(ang) * r + jit(0.1),
+        2.4 * BULB + Math.sin(ang) * r + jit(0.1),
+        jit(0.4)
+      );
     }
 
     // ── 04 Ask: speech bubble + question mark ──
@@ -326,40 +375,60 @@ export function buildFormations(N: number): FormationSet {
       put(ask, i3, cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, jit(0.3));
     }
 
-    // ── 05 Answer: bar chart under a magnifying glass ──
-    if (u < 0.64) {
-      // crisp bars
+    // ── 05 Answer: tall bars + trend line under a magnifying glass ──
+    if (u < 0.5) {
+      // crisp histogram bars (narrower half-width so they stay on-screen)
       let b = 0;
-      const uu = u / 0.64;
+      const uu = u / 0.5;
       while (b < 3 && uu > barCum[b]) b++;
       const h = barH(b);
       const py = BAR_BASE + Math.random() * h;
-      const cap = py > BAR_BASE + h - 0.7;
+      const cap = py > BAR_BASE + h - 0.85;
       tmp.copy(barCols[b]).multiplyScalar((cap ? 1.15 : 0.5) + Math.random() * 0.55);
-      put(answer, i3, barX[b] + jit(2.9), py, jit(1.6));
+      put(answer, i3, barX[b] + jit(1.65), py, jit(1.15));
+    } else if (u < 0.64) {
+      // trend line over the bars — shows multi-series / line+bar combos
+      if (Math.random() < 0.22) {
+        // bright vertices at each bar top
+        const b = i % barX.length;
+        const ang = Math.random() * Math.PI * 2;
+        const r = 0.38 * Math.sqrt(Math.random());
+        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.4).multiplyScalar(1.05 + Math.random() * 0.35);
+        put(answer, i3, barX[b] + Math.cos(ang) * r, lineY(b) + Math.sin(ang) * r * 0.7, 0.5 + jit(0.25));
+      } else {
+        const [lx, ly] = sampleTrend();
+        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.45).multiplyScalar(0.75 + Math.random() * 0.45);
+        put(answer, i3, lx + jit(0.18), ly + jit(0.16), 0.45 + jit(0.3));
+      }
     } else if (u < 0.72) {
-      // axis lines
+      // axis lines — span only the chart width so phones don't clip
       if (Math.random() < 0.72) {
         tmp.copy(cWhite).multiplyScalar(0.3 + Math.random() * 0.15);
-        put(answer, i3, -12 + Math.random() * 24, BAR_BASE - 0.35 + jit(0.12), jit(0.3));
+        put(answer, i3, -8.2 + Math.random() * 16.4, BAR_BASE - 0.35 + jit(0.12), jit(0.3));
       } else {
         tmp.copy(cWhite).multiplyScalar(0.25 + Math.random() * 0.15);
-        put(answer, i3, -12 + jit(0.12), BAR_BASE - 0.35 + Math.random() * 12.5, jit(0.3));
+        put(answer, i3, -8.2 + jit(0.12), BAR_BASE - 0.35 + Math.random() * 15.5, jit(0.3));
       }
     } else if (u < 0.9) {
       // magnifying glass ring over the tallest bar — "digs for the why"
       const ang = Math.random() * Math.PI * 2;
       tmp.copy(cGold).multiplyScalar(0.8 + Math.random() * 0.5);
-      put(answer, i3, MAG_CX + Math.cos(ang) * MAG_R + jit(0.22), MAG_CY + Math.sin(ang) * MAG_R + jit(0.22), 0.8 + jit(0.3));
+      put(
+        answer,
+        i3,
+        MAG_CX + Math.cos(ang) * MAG_R + jit(0.18),
+        MAG_CY + Math.sin(ang) * MAG_R + jit(0.18),
+        0.8 + jit(0.3)
+      );
     } else {
-      // magnifier handle
+      // magnifier handle (angles down-right — stays inside the frame)
       const t = Math.random();
       tmp.copy(cGold).multiplyScalar(0.7 + Math.random() * 0.4);
       put(
         answer,
         i3,
-        MAG_CX + Math.cos(-0.62) * (MAG_R + t * 3.6) + jit(0.2),
-        MAG_CY + Math.sin(-0.62) * (MAG_R + t * 3.6) + jit(0.2),
+        MAG_CX + Math.cos(-0.55) * (MAG_R + t * 3.0) + jit(0.18),
+        MAG_CY + Math.sin(-0.55) * (MAG_R + t * 3.0) + jit(0.18),
         0.8 + jit(0.3)
       );
     }

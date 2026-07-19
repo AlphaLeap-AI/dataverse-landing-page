@@ -733,6 +733,16 @@
     transform: translateY(-14px);
   }
 }
+/* Tighter bob on phones — wide travel made neighboring questions collide. */
+@keyframes dvFloatMobile {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
 .askBubble {
   display: inline-flex;
   align-items: center;
@@ -1346,10 +1356,24 @@
     overflow: hidden;
   }
 
-  /* Keep the multilingual atmosphere on phones: scale every question down
-     proportionally and drop only the blurred depth-layer items. */
+  /* Multilingual atmosphere on phones: each question gets an explicit
+     non-overlapping slot via --m-* vars (free band above the copy).
+     Smaller float travel so neighboring lines never collide. */
   .floatSpan {
-    font-size: calc(var(--fs, 16px) * 0.62);
+    top: var(--m-top) !important;
+    left: var(--m-left, auto) !important;
+    right: var(--m-right, auto) !important;
+    color: var(--m-color, #5d6f96);
+    font-size: var(--m-fs, 12px);
+    /* Cap width so long CJK/RTL lines stay on their side of the bubble. */
+    max-width: min(48vw, 11.5rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    filter: none;
+    opacity: 0.88;
+    animation-duration: var(--m-dur, 9s);
+    animation-delay: var(--m-delay, 0s);
+    animation-name: dvFloatMobile;
   }
 
   .floatDesktopOnly {

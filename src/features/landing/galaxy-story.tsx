@@ -94,30 +94,147 @@ const CHAOS_PAINS = [
 // Decorative multilingual questions drifting behind the "Ask" beat's typed
 // bubble — aria-hidden, purely atmospheric (the same set of world-language
 // example questions from the design, regardless of the visitor's locale).
+//
+// Desktop keeps a dense field + blurred depth layer. Mobile uses a separate
+// non-overlapping grid in the free band above the bottom-anchored copy
+// (roughly top 4%–50%) so the phone view feels full without collisions.
+interface FloatLayout {
+  top: string;
+  left?: string;
+  right?: string;
+  fs: string;
+  color: string;
+  duration: string;
+  delay: string;
+  blur?: boolean;
+}
+
 interface FloatQuestion {
   text: string;
   dir?: "rtl";
-  /** Blurred depth-layer items: desktop-only — too much clutter at phone width. */
-  desktopOnly?: boolean;
-  style: CSSProperties & { "--fs": string };
+  desktop: FloatLayout;
+  /** When set, shown on phones at this position. Omitted = desktop-only. */
+  mobile?: FloatLayout;
 }
-// Font size rides the --fs custom property (not inline font-size) so the
-// mobile media query can scale every question down proportionally.
+
+function floatStyle(desktop: FloatLayout, mobile?: FloatLayout): CSSProperties {
+  const style: CSSProperties & Record<string, string | undefined> = {
+    top: desktop.top,
+    left: desktop.left,
+    right: desktop.right,
+    color: desktop.color,
+    filter: desktop.blur ? "blur(1px)" : undefined,
+    animationDuration: desktop.duration,
+    animationDelay: desktop.delay,
+    "--fs": desktop.fs,
+  };
+  if (mobile) {
+    // CSS vars consumed by the mobile media query — let each language sit
+    // on its own phone-safe slot without fighting desktop placement.
+    style["--m-top"] = mobile.top;
+    style["--m-left"] = mobile.left ?? "auto";
+    style["--m-right"] = mobile.right ?? "auto";
+    style["--m-fs"] = mobile.fs;
+    style["--m-color"] = mobile.color;
+    style["--m-dur"] = mobile.duration;
+    style["--m-delay"] = mobile.delay;
+  }
+  return style;
+}
+
 const ASK_FLOAT_QUESTIONS: FloatQuestion[] = [
-  { text: "¿Qué clientes tienen mayor riesgo?", style: { left: "6%", top: "9%", "--fs": "22px", color: "#5d6f96", animationDuration: "7s", animationDelay: "0s" } },
-  { text: "解約リスクが最も高い顧客は？", style: { right: "8%", top: "7%", "--fs": "26px", color: "#6d82b0", animationDuration: "9s", animationDelay: "-3s" } },
-  { text: "Quel est notre chiffre d'affaires ce trimestre ?", desktopOnly: true, style: { left: "14%", top: "22%", "--fs": "15px", color: "#4a5878", filter: "blur(1px)", animationDuration: "11s", animationDelay: "-5s" } },
-  { text: "본 분기 매출 상위 고객은?", style: { right: "4%", top: "30%", "--fs": "20px", color: "#5d6f96", animationDuration: "8s", animationDelay: "-1s" } },
-  { text: "本季度收入增长如何？", style: { left: "3%", top: "42%", "--fs": "24px", color: "#7189ba", animationDuration: "10s", animationDelay: "-6s" } },
-  { text: "Wie hoch ist unsere Abwanderung?", desktopOnly: true, style: { right: "6%", top: "52%", "--fs": "17px", color: "#4a5878", filter: "blur(1px)", animationDuration: "12s", animationDelay: "-2s" } },
-  { text: "ما هي المناطق الأكثر خطورة؟", dir: "rtl", style: { left: "8%", top: "62%", "--fs": "23px", color: "#6d82b0", animationDuration: "9s", animationDelay: "-4s" } },
-  { text: "Какие регионы под риском?", desktopOnly: true, style: { right: "12%", top: "68%", "--fs": "15px", color: "#4a5878", filter: "blur(1px)", animationDuration: "10s", animationDelay: "-7s" } },
-  { text: "इस तिमाही में राजस्व कितना है?", style: { left: "20%", top: "80%", "--fs": "19px", color: "#5d6f96", animationDuration: "8s", animationDelay: "-2.5s" } },
-  { text: "Qual foi a receita deste mês?", style: { right: "22%", top: "86%", "--fs": "22px", color: "#6d82b0", animationDuration: "11s", animationDelay: "-5.5s" } },
-  { text: "รายได้เดือนนี้เท่าไหร่?", desktopOnly: true, style: { left: "44%", top: "5%", "--fs": "14px", color: "#4a5878", filter: "blur(1px)", animationDuration: "9s", animationDelay: "-1.5s" } },
-  { text: "Hangi bölgeler risk altında?", style: { left: "48%", top: "90%", "--fs": "16px", color: "#5d6f96", animationDuration: "10s", animationDelay: "-8s" } },
-  { text: "Hoeveel klanten verloren we?", desktopOnly: true, style: { right: "34%", top: "14%", "--fs": "15px", color: "#4a5878", filter: "blur(1px)", animationDuration: "12s", animationDelay: "-4.5s" } },
-  { text: "Quali clienti stanno crescendo?", desktopOnly: true, style: { left: "30%", top: "71%", "--fs": "14px", color: "#4a5878", filter: "blur(1px)", animationDuration: "9.5s", animationDelay: "-6.5s" } },
+  {
+    text: "¿Qué clientes tienen mayor riesgo?",
+    desktop: { left: "6%", top: "9%", fs: "22px", color: "#5d6f96", duration: "7s", delay: "0s" },
+    mobile: { left: "3%", top: "5%", fs: "12.5px", color: "#6a7da3", duration: "8s", delay: "0s" },
+  },
+  {
+    text: "解約リスクが最も高い顧客は？",
+    desktop: { right: "8%", top: "7%", fs: "26px", color: "#6d82b0", duration: "9s", delay: "-3s" },
+    mobile: { right: "2%", top: "4.5%", fs: "13px", color: "#7590b8", duration: "9s", delay: "-2s" },
+  },
+  {
+    text: "Quel est le CA ce trimestre ?",
+    desktop: { left: "14%", top: "22%", fs: "15px", color: "#4a5878", duration: "11s", delay: "-5s", blur: true },
+    mobile: { left: "3%", top: "12%", fs: "11.5px", color: "#5a6d90", duration: "10s", delay: "-1s" },
+  },
+  {
+    text: "본 분기 매출 상위 고객은?",
+    desktop: { right: "4%", top: "30%", fs: "20px", color: "#5d6f96", duration: "8s", delay: "-1s" },
+    mobile: { right: "2%", top: "13%", fs: "12px", color: "#6a7da3", duration: "8.5s", delay: "-3.5s" },
+  },
+  {
+    text: "本季度收入增长如何？",
+    desktop: { left: "3%", top: "42%", fs: "24px", color: "#7189ba", duration: "10s", delay: "-6s" },
+    mobile: { left: "3%", top: "20%", fs: "13px", color: "#7a92c4", duration: "9.5s", delay: "-1.5s" },
+  },
+  {
+    text: "Wie hoch ist die Abwanderung?",
+    desktop: { right: "6%", top: "52%", fs: "17px", color: "#4a5878", duration: "12s", delay: "-2s", blur: true },
+    mobile: { right: "2%", top: "21%", fs: "11.5px", color: "#5a6d90", duration: "11s", delay: "-4s" },
+  },
+  {
+    text: "Quali clienti stanno crescendo?",
+    desktop: { left: "30%", top: "71%", fs: "14px", color: "#4a5878", duration: "9.5s", delay: "-6.5s", blur: true },
+    mobile: { left: "3%", top: "28%", fs: "11.5px", color: "#5d7196", duration: "10s", delay: "-2.5s" },
+  },
+  {
+    text: "Hoeveel klanten verloren we?",
+    desktop: { right: "34%", top: "14%", fs: "15px", color: "#4a5878", duration: "12s", delay: "-4.5s", blur: true },
+    mobile: { right: "2%", top: "29%", fs: "11.5px", color: "#5d7196", duration: "11s", delay: "-5s" },
+  },
+  {
+    text: "ما هي المناطق الأكثر خطورة؟",
+    dir: "rtl",
+    desktop: { left: "8%", top: "62%", fs: "23px", color: "#6d82b0", duration: "9s", delay: "-4s" },
+    mobile: { left: "3%", top: "36%", fs: "12.5px", color: "#7590b8", duration: "9s", delay: "-0.5s" },
+  },
+  {
+    text: "Какие регионы под риском?",
+    desktop: { right: "12%", top: "68%", fs: "15px", color: "#4a5878", duration: "10s", delay: "-7s", blur: true },
+    mobile: { right: "2%", top: "37%", fs: "12px", color: "#5a6d90", duration: "10.5s", delay: "-3s" },
+  },
+  {
+    text: "इस तिमाही में राजस्व कितना है?",
+    desktop: { left: "20%", top: "80%", fs: "19px", color: "#5d6f96", duration: "8s", delay: "-2.5s" },
+    mobile: { left: "3%", top: "44%", fs: "11.5px", color: "#6a7da3", duration: "8.5s", delay: "-1s" },
+  },
+  {
+    text: "Qual foi a receita deste mês?",
+    desktop: { right: "22%", top: "86%", fs: "22px", color: "#6d82b0", duration: "11s", delay: "-5.5s" },
+    mobile: { right: "2%", top: "45%", fs: "12px", color: "#7590b8", duration: "10s", delay: "-4.5s" },
+  },
+  {
+    text: "รายได้เดือนนี้เท่าไหร่?",
+    desktop: { left: "44%", top: "5%", fs: "14px", color: "#4a5878", duration: "9s", delay: "-1.5s", blur: true },
+    mobile: { left: "28%", top: "8%", fs: "11px", color: "#556888", duration: "9s", delay: "-2s" },
+  },
+  {
+    text: "Hangi bölgeler risk altında?",
+    desktop: { left: "48%", top: "90%", fs: "16px", color: "#5d6f96", duration: "10s", delay: "-8s" },
+    mobile: { left: "22%", top: "50%", fs: "11.5px", color: "#627796", duration: "10s", delay: "-6s" },
+  },
+  // Mobile-only extras fill remaining gaps in the free band (desktop already dense).
+  {
+    text: "Vilka kunder riskerar churn?",
+    desktop: { left: "62%", top: "40%", fs: "14px", color: "#4a5878", duration: "11s", delay: "-3s", blur: true },
+    mobile: { left: "3%", top: "52%", fs: "11px", color: "#556888", duration: "9.5s", delay: "-2s" },
+  },
+  {
+    text: "Khách hàng nào có rủi ro?",
+    desktop: { right: "48%", top: "58%", fs: "13px", color: "#4a5878", duration: "10s", delay: "-8s", blur: true },
+    mobile: { right: "2%", top: "52.5%", fs: "11px", color: "#556888", duration: "10.5s", delay: "-5.5s" },
+  },
+  {
+    text: "Którzy klienci odejdą?",
+    desktop: { left: "58%", top: "18%", fs: "13px", color: "#4a5878", duration: "12s", delay: "-6s", blur: true },
+    mobile: { left: "30%", top: "16%", fs: "11px", color: "#4f6285", duration: "11s", delay: "-3.5s" },
+  },
+  {
+    text: "ลูกค้าไหนเสี่ยงยกเลิก?",
+    desktop: { right: "40%", top: "78%", fs: "13px", color: "#4a5878", duration: "9s", delay: "-9s", blur: true },
+    mobile: { right: "18%", top: "32%", fs: "11px", color: "#4f6285", duration: "9.5s", delay: "-1.5s" },
+  },
 ];
 
 /**
@@ -469,8 +586,8 @@ export function GalaxyStory() {
                 <span
                   key={q.text}
                   dir={q.dir}
-                  className={`${styles.floatSpan}${q.desktopOnly ? ` ${styles.floatDesktopOnly}` : ""}`}
-                  style={q.style}
+                  className={`${styles.floatSpan}${q.mobile ? "" : ` ${styles.floatDesktopOnly}`}`}
+                  style={floatStyle(q.desktop, q.mobile)}
                 >
                   {q.text}
                 </span>
