@@ -20,12 +20,17 @@ function mapPageScrollToMorph(p: number): number {
   return Math.min(4, 2.8 + ((p - 0.75) / 0.25) * 1.2); // → tunnel
 }
 
+// Mirrors DB_COLORS in galaxy-formations.ts — one chip per satellite in the
+// 01 · Connect particle formation, plus an open-ended "+ more" chip.
 const CONNECT_DBS = [
   { name: "PostgreSQL", color: "#6aa6dd" },
   { name: "MongoDB", color: "#13c25b" },
   { name: "DynamoDB", color: "#8b9aff" },
-  { name: "Weaviate", color: "#6fe0b2" },
+  { name: "Snowflake", color: "#7fd4ff" },
+  { name: "BigQuery", color: "#5f9bff" },
   { name: "Elasticsearch", color: "#ffd24d" },
+  { name: "Redis", color: "#ff9a8a" },
+  { name: "Kafka", color: "#c9a6ff" },
 ];
 
 const SOURCE_MARQUEE = [
@@ -48,17 +53,21 @@ const PROOF_CHIPS = [
 ];
 
 // Chaos + closing copy fade in line by line (each entry = one display line).
-// `em` renders with the gradient accent treatment.
+// `em` renders with the gradient accent treatment. Short lines on purpose:
+// on phones each word fills the width, so the block owns half the screen.
 const CHAOS_HEADLINE_LINES: { pre?: string; em?: string }[] = [
-  { pre: "Getting answers" },
-  { pre: "shouldn't be" },
-  { pre: "this ", em: "hard." },
+  { pre: "Getting" },
+  { pre: "answers" },
+  { pre: "shouldn't" },
+  { pre: "be this" },
+  { em: "hard." },
 ];
 
 const CHAOS_CLOSE_LINES: { pre?: string; em?: string }[] = [
   { pre: "Meanwhile," },
   { pre: "your data" },
-  { em: "already knows." },
+  { em: "already" },
+  { em: "knows." },
 ];
 
 const CHAOS_PAINS = [
@@ -341,6 +350,7 @@ export function GalaxyStory() {
                     {db.name}
                   </span>
                 ))}
+                <span className={`${styles.dbChip} ${styles.dbChipMore}`}>+ 30 more</span>
               </div>
               <p className={styles.beatFoot}>One interface. No switching tools. No stitching results by hand.</p>
             </div>
