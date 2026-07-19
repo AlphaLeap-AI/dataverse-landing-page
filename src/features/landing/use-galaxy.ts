@@ -23,7 +23,7 @@ const BEAT_WINDOWS: Record<BeatKey, [number, number]> = {
   chaos: [0, 0.18773],
   connect: [0.20397, 0.31363],
   learn: [0.32986, 0.45171],
-  skills: [0.46796, 0.57761],
+  skills: [0.46796, 0.59761],
   ask: [0.59386, 0.70758],
   answer: [0.72382, 0.86192],
   private: [0.87816, 1.00812],
@@ -86,7 +86,7 @@ const ANSWER_TRACK_WIN: [number, number] = [0.778, 0.832];
 // start clipping the closing line before it ever reaches full opacity.
 // learn/answer get tighter margins too: their horizontal card tracks need a
 // long fully-visible plateau so the last card parks before fade-out begins.
-const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012, learn: 0.022, answer: 0.022 };
+const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012, learn: 0.022, skills: 0.022, answer: 0.022 };
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 const fadeWin = (p: number, a: number, b: number, f = 0.045): number => {
