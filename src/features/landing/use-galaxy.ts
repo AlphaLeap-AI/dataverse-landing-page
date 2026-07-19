@@ -163,8 +163,14 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // formations span ±15 (lattice) to ±22 (chaos).
     const BASE_CAM_Z = 30;
     const BASE_POINT_SIZE = 0.42;
-    // Widest recognizable formation half-extent (lattice ±15 + jitter).
+    // Widest / tallest recognizable formation half-extents (lattice ±15 +
+    // jitter horizontally; chart + magnifier / lock dome vertically).
     const FIT_HALF_WIDTH = 16.5;
+    const FIT_HALF_HEIGHT = 11.5;
+    // Bottom fraction of a phone viewport reserved for bottom-anchored
+    // chapter copy (eyebrow + headline + cards). The free band above is
+    // where the particle illustration should sit.
+    const PORTRAIT_COPY_BAND = 0.4;
     let camZ = BASE_CAM_Z;
     let portraitView = false;
     camera.position.z = camZ;
@@ -200,15 +206,30 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       camZ = aspect < 1 ? Math.min(46, BASE_CAM_Z / Math.max(0.62, aspect)) : BASE_CAM_Z;
       const halfHeight = Math.tan((camera.fov * Math.PI) / 360) * (camZ - 3.5);
       const halfWidth = halfHeight * aspect;
-      // Portrait: let the formation overflow the frame a little (÷0.8) and
-      // lift it toward the top of the screen — beat copy is bottom-anchored
-      // on phones, so the formation becomes the chapter's illustration
-      // instead of a faint texture behind centered text.
+      // Portrait: middle-align the formation in the free band above the
+      // bottom-anchored chapter copy, and scale it to fill that band.
+      // Previously y ≈ halfHeight*0.5 top-aligned the field and left a
+      // large empty strip between the particles and the "0N · TITLE" block.
       const portrait = aspect < 1;
       portraitView = portrait;
-      const fit = Math.min(1, halfWidth / (portrait ? FIT_HALF_WIDTH * 0.8 : FIT_HALF_WIDTH));
-      group.scale.setScalar(fit);
-      group.position.y = portrait ? halfHeight * 0.5 : 0;
+      if (portrait) {
+        // Free band: top of screen → top of copy. Center of that band is
+        // halfHeight * PORTRAIT_COPY_BAND (see use-galaxy portrait framing).
+        const freeBandHeight = 2 * halfHeight * (1 - PORTRAIT_COPY_BAND);
+        const freeCenterY = halfHeight * PORTRAIT_COPY_BAND;
+        // Mild overflow on both axes so icons stay bold (÷0.72 / ÷0.88).
+        const fitW = halfWidth / (FIT_HALF_WIDTH * 0.72);
+        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT * 0.88);
+        // Cap slightly above 1 so short formations (ask bubble) can still
+        // grow into the free band without dwarfing wider ones (connect).
+        const fit = Math.min(1.12, fitW, fitH);
+        group.scale.setScalar(fit);
+        group.position.y = freeCenterY;
+      } else {
+        const fit = Math.min(1, halfWidth / FIT_HALF_WIDTH);
+        group.scale.setScalar(fit);
+        group.position.y = 0;
+      }
       // sizeAttenuation shrinks points as the camera retreats — compensate,
       // plus a boost on portrait so sparse mobile fields still read bold.
       mat.size = BASE_POINT_SIZE * (camZ / BASE_CAM_Z) * (portrait ? 1.3 : 1);

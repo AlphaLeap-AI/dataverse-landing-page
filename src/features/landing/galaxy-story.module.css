@@ -980,20 +980,23 @@
     height: 1750vh;
   }
 
-  /* Bottom-weighted dim: keep the formation vivid in the top half (it's the
-     chapter's illustration) and darken behind the bottom-anchored copy. */
+  /* Bottom-weighted dim: keep the formation vivid in the free band above
+     the copy (chapter illustration, middle-aligned on phones) and darken
+     behind the bottom-anchored title/cards. */
   .dim {
     background: linear-gradient(
       180deg,
-      rgba(6, 10, 20, 0.14) 0%,
-      rgba(6, 10, 20, 0.3) 46%,
-      rgba(6, 10, 20, 0.88) 84%
+      rgba(6, 10, 20, 0.12) 0%,
+      rgba(6, 10, 20, 0.22) 38%,
+      rgba(6, 10, 20, 0.55) 58%,
+      rgba(6, 10, 20, 0.9) 84%
     );
   }
 
-  /* Phone chapter layout (reference design): particles own the top of the
-     screen, copy is a bottom-anchored, left-aligned block. No nested
-     scrolling — page scroll is the only gesture. */
+  /* Phone chapter layout (reference design): particles fill the free band
+     above the copy (middle-aligned via useGalaxy portrait framing); copy
+     is a bottom-anchored, left-aligned block. No nested scrolling — page
+     scroll is the only gesture. */
   .beat {
     flex-direction: column;
     align-items: stretch;
