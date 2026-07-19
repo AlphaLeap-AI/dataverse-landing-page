@@ -279,11 +279,11 @@
 .story {
   position: relative;
   /* Long track so every beat (chaos, 01–06) stays readable instead of
-     flashing past on a slight wheel scroll. 2216vh = the original 1800vh
-     track plus 416vh for the "chaos" pain-point beat and its two gaps —
-     see the comment above BEAT_WINDOWS in use-galaxy.ts for the exact
-     remap of every beat's timing fraction. */
-  height: 2216vh;
+     flashing past on a slight wheel scroll. 2536vh = 1800vh (01–06) +
+     416vh (initial chaos beat + gaps) + 320vh more chaos dwell so the
+     headline / close lines hold long enough to read — see BEAT_WINDOWS
+     in use-galaxy.ts for the exact remap of every beat's timing fraction. */
+  height: 2536vh;
   z-index: 1;
 }
 .stage {
@@ -984,10 +984,11 @@
   }
 
   /* Shorter story track on phones — thumb flicks cover less ground than
-     wheel ticks, so 2216vh made each chapter feel endless. All beat timing
-     is fractional, so everything scales with the track. */
+     wheel ticks, so the full 2536vh desktop track feels endless. All beat
+     timing is fractional, so everything scales with the track. ~2000vh
+     keeps the same desktop→mobile ratio as the previous 1750/2216 cut. */
   .story {
-    height: 1750vh;
+    height: 2000vh;
   }
 
   /* Bottom-weighted dim: keep the formation vivid in the free band above
@@ -1026,7 +1027,9 @@
     max-width: 100%;
     margin: 0;
     text-align: left;
-    padding: 44px 22px 4px;
+    /* Tight top pad so the eyebrow sits closer to the particle illustration
+       instead of leaving a large empty band above "0N · TITLE". */
+    padding: 22px 22px 4px;
     background: linear-gradient(
       180deg,
       rgba(6, 10, 20, 0) 0%,
@@ -1037,7 +1040,7 @@
   }
 
   .beatWide .beatInner {
-    padding: 36px 22px 4px;
+    padding: 18px 22px 4px;
     max-width: 100%;
   }
 
@@ -1357,8 +1360,9 @@
   }
 
   /* Multilingual atmosphere on phones: each question gets an explicit
-     non-overlapping slot via --m-* vars (free band above the copy).
-     Smaller float travel so neighboring lines never collide. */
+     non-overlapping slot via --m-* vars (free band under nav → above
+     copy, biased low so the field meets "04 · ASK"). Smaller float
+     travel so neighboring lines never collide. */
   .floatSpan {
     top: var(--m-top) !important;
     left: var(--m-left, auto) !important;

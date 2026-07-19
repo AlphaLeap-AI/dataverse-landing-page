@@ -482,14 +482,14 @@ export function buildFormations(N: number): FormationSet {
  * after the chaos pain-point beat (formations: chaos → connect → book →
  * bulb → bubble → chart → lock-in-dome).
  *
- * Aligned to BEAT_WINDOWS in use-galaxy.ts (chaos-shifted track):
- *   chaos   [0.016, 0.188]  — hold scattered chaos (no morph)
- *   connect [0.204, 0.314]  — first morph late in the beat
- *   learn   [0.330, 0.452]
- *   skills  [0.468, 0.578]
- *   ask     [0.594, 0.708]
- *   answer  [0.724, 0.862]
- *   private [0.878, 1.008]
+ * Aligned to BEAT_WINDOWS in use-galaxy.ts (2536vh chaos-dwell track):
+ *   chaos   [0, 0.290]      — hold scattered chaos (no morph)
+ *   connect [0.304, 0.400]  — first morph late in the beat
+ *   learn   [0.414, 0.521]
+ *   skills  [0.535, 0.648]
+ *   ask     [0.645, 0.744]
+ *   answer  [0.759, 0.879]
+ *   private [0.894, 1.007]
  *
  * Each window lands while its beat copy is fully visible, then holds the new
  * shape until the next step.
@@ -497,12 +497,12 @@ export function buildFormations(N: number): FormationSet {
 export const MORPH_WINDOWS: [number, number][] = [
   // Morph early–mid in each numbered step, then HOLD the settled shape for the
   // rest of that beat (and the gap before the next morph).
-  [0.220, 0.258], // 01 Connect — hub + satellites assemble
-  [0.318, 0.355], // 02 Learn  — the book opens
-  [0.458, 0.495], // 03 Skills — the bulb lights
-  [0.580, 0.620], // 04 Ask    — the question forms
-  [0.710, 0.755], // 05 Answer — the chart draws itself
-  [0.865, 0.910], // 06 Private — the lock seals inside the dome
+  [0.31842, 0.35163], // 01 Connect — hub + satellites assemble
+  [0.40406, 0.43639], // 02 Learn  — the book opens
+  [0.52639, 0.55872], // 03 Skills — the bulb lights
+  [0.633, 0.66795], // 04 Ask    — the question forms
+  [0.74659, 0.78591], // 05 Answer — the chart draws itself
+  [0.88203, 0.92136], // 06 Private — the lock seals inside the dome
 ];
 
 // Per-formation ambient jitter — icons stay crisp (low), chaos breathes.

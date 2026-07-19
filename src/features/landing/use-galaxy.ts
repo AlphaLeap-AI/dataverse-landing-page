@@ -11,22 +11,24 @@ export type BeatKey = "chaos" | "connect" | "learn" | "skills" | "ask" | "answer
 // enough plateau that dense copy isn't a blink between fade-in and fade-out
 // on a slight wheel tick. Learn + answer are slightly longer (more UI).
 //
-// "chaos" — the pain-point beat — was inserted ahead of "01 · Connect" by
-// uniformly shifting every window below by +416vh (a 380vh beat + two 36vh
-// gaps) against the original 1800vh track, then re-expressing every
-// fraction against the new 2216vh total (see .story height in
-// galaxy-story.module.css). That shift is affine (new = old*0.81225 +
-// 0.18773), so every window keeps its original relative width, gap, and
-// (for "private") its intentional past-1 overhang.
+// Track history (see .story height in galaxy-story.module.css):
+//   1800vh — original 01–06 beats
+//   2216vh — +416vh for the "chaos" pain-point beat (+ gaps)
+//   2536vh — +320vh more chaos dwell so the two emotional peaks
+//            ("Getting answers shouldn't be this hard." / "Meanwhile,
+//            your data already knows.") stay fully readable on a normal
+//            wheel tick instead of flashing past mid-stagger.
+// Post-chaos windows keep their original relative widths via affine remap
+// (new = (old·2216 + 320) / 2536). "private" keeps its past-1 overhang.
 const BEAT_WINDOWS: Record<BeatKey, [number, number]> = {
   // Chaos opens as soon as the story pins (no long empty starfield after hero).
-  chaos: [0, 0.18773],
-  connect: [0.20397, 0.31363],
-  learn: [0.32986, 0.45171],
-  skills: [0.46796, 0.59761],
-  ask: [0.59386, 0.70758],
-  answer: [0.72382, 0.86192],
-  private: [0.87816, 1.00812],
+  chaos: [0, 0.29022],
+  connect: [0.30442, 0.40024],
+  learn: [0.41442, 0.52089],
+  skills: [0.53509, 0.64838],
+  ask: [0.64511, 0.74448],
+  answer: [0.75867, 0.87934],
+  private: [0.89353, 1.0071],
 };
 
 // One line each, always — a wrapped question breaks the bubble layout on
@@ -41,10 +43,10 @@ const TYPED_QUESTIONS = [
 // readable before the next replaces it. Shifted by the same affine remap as
 // BEAT_WINDOWS above.
 const TYPED_SEGMENTS: [number, number][] = [
-  [0.60198, 0.62635],
-  [0.63041, 0.65477],
-  [0.65884, 0.6832],
-  [0.68726, 0.70595],
+  [0.6522, 0.6735],
+  [0.67705, 0.69833],
+  [0.70189, 0.72317],
+  [0.72672, 0.74305],
 ];
 
 // ── "chaos" beat internal choreography ──────────────────────────────────
@@ -53,31 +55,32 @@ const TYPED_SEGMENTS: [number, number][] = [
 // then the closing lines turn the story toward the answer.
 //
 // Headline starts near p=0 so "Getting answers shouldn't be this hard."
-// appears right as the hero scrolls away (no long empty pin).
-const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.09025, 0.016];
-const CHAOS_HEADLINE_STAGGER = 0.011; // per display line (5 lines)
+// appears right as the hero scrolls away (no long empty pin). Windows are
+// sized so the LAST staggered line still has a long full-opacity plateau
+// (~145vh headline, ~184vh close) — those two phrases are the emotional
+// peaks and must not be a blink between fade-in and fade-out.
+// [start, end, fade] — full opacity ≈ end−start−2·fade (minus stagger).
+const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.125, 0.014];
+const CHAOS_HEADLINE_STAGGER = 0.009; // per display line (5 lines)
 const CHAOS_CARD_WINDOWS: [number, number, number][] = [
-  [0.08348, 0.15569, 0.02031],
-  [0.09251, 0.15569, 0.02031],
-  [0.10154, 0.15569, 0.02031],
+  [0.11, 0.195, 0.018],
+  [0.118, 0.195, 0.018],
+  [0.126, 0.195, 0.018],
 ];
-// Closing lines: slightly longer dwell than the original blink, still fully
-// inside the chaos outer window so Connect timing is unchanged.
-// [start, end, fade] — full opacity ≈ end−start−2·fade.
-const CHAOS_CLOSE_WIN: [number, number, number] = [0.136, 0.1875, 0.011];
+const CHAOS_CLOSE_WIN: [number, number, number] = [0.175, 0.288, 0.012];
 const CHAOS_CLOSE_STAGGER = 0.0055; // per display line (4 lines)
-const CHAOS_GHOST_WIN: [number, number] = [0, 0.18773];
+const CHAOS_GHOST_WIN: [number, number] = [0, 0.29022];
 
 // ── mobile horizontal card tracks (02 · Understand, 05 · Answer) ────────
 // On phones the dense card grids ride a horizontal track driven by vertical
 // page scroll: while p crosses these windows the track translates left, so
 // the reader never lifts a thumb sideways — scrolling down walks the cards,
 // then continues into the next chapter. Windows sit inside each beat's
-// fully-visible plateau (learn 0.330–0.452, answer 0.724–0.862).
+// fully-visible plateau (learn 0.414–0.521, answer 0.759–0.879).
 // Starting later than the beat's fade-in matters: the first card must sit
 // parked long enough to be read before the deck starts walking.
-const LEARN_TRACK_WIN: [number, number] = [0.385, 0.424];
-const ANSWER_TRACK_WIN: [number, number] = [0.778, 0.832];
+const LEARN_TRACK_WIN: [number, number] = [0.4626, 0.4967];
+const ANSWER_TRACK_WIN: [number, number] = [0.806, 0.8532];
 
 // The generic beat loop below fades each beat container in/out with a fixed
 // 0.045 margin, which is fine for beats with one static content block. The
@@ -168,9 +171,21 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     const FIT_HALF_WIDTH = 16.5;
     const FIT_HALF_HEIGHT = 11.5;
     // Bottom fraction of a phone viewport reserved for bottom-anchored
-    // chapter copy (eyebrow + headline + cards). The free band above is
-    // where the particle illustration should sit.
-    const PORTRAIT_COPY_BAND = 0.4;
+    // chapter copy (eyebrow + headline + cards). Top fraction reserved for
+    // the fixed glass nav so tall icons (lightbulb rays, lock dome) don't
+    // tuck under the bar. The free band between them is where the particle
+    // illustration should sit.
+    //
+    // Copy band is intentionally a bit under the true block height: the
+    // beatInner gradient scrim can overlap the lower particles, and a
+    // smaller reserve pulls icons down so short formations (ask bubble)
+    // don't float in a large empty strip above "0N · TITLE".
+    const PORTRAIT_COPY_BAND = 0.34;
+    const PORTRAIT_NAV_BAND = 0.1;
+    // 0 = free-band top (under nav), 1 = free-band bottom (above copy).
+    // Bias toward the title so mid-height icons sit next to the copy
+    // rather than dead-center in a tall empty free band.
+    const PORTRAIT_FREE_BIAS = 0.72;
     let camZ = BASE_CAM_Z;
     let portraitView = false;
     camera.position.z = camZ;
@@ -213,16 +228,23 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       const portrait = aspect < 1;
       portraitView = portrait;
       if (portrait) {
-        // Free band: top of screen → top of copy. Center of that band is
-        // halfHeight * PORTRAIT_COPY_BAND (see use-galaxy portrait framing).
-        const freeBandHeight = 2 * halfHeight * (1 - PORTRAIT_COPY_BAND);
-        const freeCenterY = halfHeight * PORTRAIT_COPY_BAND;
-        // Mild overflow on both axes so icons stay bold (÷0.72 / ÷0.88).
+        // Free band: below the fixed nav → top of bottom-anchored copy.
+        // Without the nav reserve, tall icons (esp. 03 · Teach lightbulb
+        // rays) hide behind the glass bar on phones.
+        const freeBandFrac = 1 - PORTRAIT_COPY_BAND - PORTRAIT_NAV_BAND;
+        const freeBandHeight = 2 * halfHeight * freeBandFrac;
+        // Screen y: +halfHeight at top, −halfHeight at bottom.
+        const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
+        const freeBottomY = halfHeight * (2 * PORTRAIT_COPY_BAND - 1);
+        const freeCenterY = freeTopY + (freeBottomY - freeTopY) * PORTRAIT_FREE_BIAS;
+        // Mild overflow on both axes so icons stay bold (÷0.72 / ÷0.9).
+        // Vertical fit allows a little bleed into the copy scrim so the
+        // formation can sit close to the title without going under the nav.
         const fitW = halfWidth / (FIT_HALF_WIDTH * 0.72);
-        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT * 0.88);
+        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT * 0.9);
         // Cap slightly above 1 so short formations (ask bubble) can still
         // grow into the free band without dwarfing wider ones (connect).
-        const fit = Math.min(1.12, fitW, fitH);
+        const fit = Math.min(1.18, fitW, fitH);
         group.scale.setScalar(fit);
         group.position.y = freeCenterY;
       } else {
@@ -277,8 +299,8 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       const p = clamp01(rawP);
 
       // After 06 · Private, gradually dim the starfield so post-story copy stays
-      // legible while particles remain faintly visible. private beat ≈ 0.878–1.0.
-      const postDim = clamp01((rawP - 0.92) / 0.5); // 0 at late private → 1 into post-story
+      // legible while particles remain faintly visible. private beat ≈ 0.894–1.0.
+      const postDim = clamp01((rawP - 0.9301) / 0.5); // 0 at late private → 1 into post-story
       const starOpacity = 1 - postDim * 0.68; // floor ~0.32
       // Only touch styles when the value actually moved — writing an opacity
       // with a CSS transition attached every frame restarts the transition
@@ -372,7 +394,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         };
         // Count up early in the answer beat so the $ figure is visible for
         // most of the dwell, not only in the final third.
-        const v = 2.41 * smooth((p - 0.74006) / 0.0812);
+        const v = 2.41 * smooth((p - 0.77286) / 0.071);
         bigEl.textContent = v.toFixed(2);
       }
 
@@ -389,7 +411,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       if (sqlEl) {
         // Reveal the analysis cards shortly after the answer headline, and
         // keep them up through the full answer window.
-        const op = fadeWin(p, 0.75225, 0.8619, 0.0325);
+        const op = fadeWin(p, 0.78351, 0.87933, 0.0284);
         sqlEl.style.opacity = String(op);
         const tx = isMobileLayout ? trackShift(sqlEl, ANSWER_TRACK_WIN[0], ANSWER_TRACK_WIN[1]) : 0;
         sqlEl.style.transform = `translate3d(${tx.toFixed(1)}px, ${((1 - op) * 30).toFixed(1)}px, 0)`;
