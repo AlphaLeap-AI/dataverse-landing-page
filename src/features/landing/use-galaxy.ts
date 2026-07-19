@@ -3,7 +3,7 @@
 import { type RefObject, useEffect } from "react";
 import * as THREE from "three";
 
-import { buildFormations, formationState, JITTER, MORPH_WINDOWS, type FormationSet } from "./galaxy-formations";
+import { buildFormations, formationState, JITTER, type FormationSet } from "./galaxy-formations";
 
 export type BeatKey = "chaos" | "connect" | "learn" | "skills" | "ask" | "answer" | "private";
 
@@ -29,11 +29,13 @@ const BEAT_WINDOWS: Record<BeatKey, [number, number]> = {
   private: [0.87816, 1.00812],
 };
 
+// One line each, always — a wrapped question breaks the bubble layout on
+// phones. Short but consequential.
 const TYPED_QUESTIONS = [
-  "Which regions are at highest renewal risk?",
-  "¿Qué regiones tienen mayor riesgo de renovación?",
-  "更新リスクが最も高い地域は？",
-  "Quelles régions sont les plus à risque ?",
+  "Which customers might churn?",
+  "¿Qué clientes están en riesgo?",
+  "解約しそうな顧客は？",
+  "Quels clients sont à risque ?",
 ];
 // Stretch the typewriter across the ask window so each language question is
 // readable before the next replaces it. Shifted by the same affine remap as
@@ -53,7 +55,7 @@ const TYPED_SEGMENTS: [number, number][] = [
 // Headline starts near p=0 so "Getting answers shouldn't be this hard."
 // appears right as the hero scrolls away (no long empty pin).
 const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.09025, 0.016];
-const CHAOS_HEADLINE_STAGGER = 0.013; // per display line
+const CHAOS_HEADLINE_STAGGER = 0.011; // per display line (5 lines)
 const CHAOS_CARD_WINDOWS: [number, number, number][] = [
   [0.08348, 0.15569, 0.02031],
   [0.09251, 0.15569, 0.02031],
@@ -62,8 +64,8 @@ const CHAOS_CARD_WINDOWS: [number, number, number][] = [
 // Closing lines: slightly longer dwell than the original blink, still fully
 // inside the chaos outer window so Connect timing is unchanged.
 // [start, end, fade] — full opacity ≈ end−start−2·fade.
-const CHAOS_CLOSE_WIN: [number, number, number] = [0.139, 0.1875, 0.012];
-const CHAOS_CLOSE_STAGGER = 0.007; // per display line
+const CHAOS_CLOSE_WIN: [number, number, number] = [0.136, 0.1875, 0.011];
+const CHAOS_CLOSE_STAGGER = 0.0055; // per display line (4 lines)
 const CHAOS_GHOST_WIN: [number, number] = [0, 0.18773];
 
 // ── mobile horizontal card tracks (02 · Understand, 05 · Answer) ────────
@@ -72,8 +74,10 @@ const CHAOS_GHOST_WIN: [number, number] = [0, 0.18773];
 // the reader never lifts a thumb sideways — scrolling down walks the cards,
 // then continues into the next chapter. Windows sit inside each beat's
 // fully-visible plateau (learn 0.330–0.452, answer 0.724–0.862).
-const LEARN_TRACK_WIN: [number, number] = [0.372, 0.415];
-const ANSWER_TRACK_WIN: [number, number] = [0.765, 0.825];
+// Starting later than the beat's fade-in matters: the first card must sit
+// parked long enough to be read before the deck starts walking.
+const LEARN_TRACK_WIN: [number, number] = [0.385, 0.424];
+const ANSWER_TRACK_WIN: [number, number] = [0.778, 0.832];
 
 // The generic beat loop below fades each beat container in/out with a fixed
 // 0.045 margin, which is fine for beats with one static content block. The
@@ -82,7 +86,7 @@ const ANSWER_TRACK_WIN: [number, number] = [0.765, 0.825];
 // start clipping the closing line before it ever reaches full opacity.
 // learn/answer get tighter margins too: their horizontal card tracks need a
 // long fully-visible plateau so the last card parks before fade-out begins.
-const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012, learn: 0.03, answer: 0.03 };
+const BEAT_FADE_MARGIN: Partial<Record<BeatKey, number>> = { chaos: 0.012, learn: 0.022, answer: 0.022 };
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 const fadeWin = (p: number, a: number, b: number, f = 0.045): number => {
@@ -295,12 +299,12 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
 
       mx += (tmx - mx) * 0.04;
       my += (tmy - my) * 0.04;
-      const spin = options.calm ? 0.008 : 0.03;
-      const extraSpin = a === 4 || b === 4 ? fadeWin(p, MORPH_WINDOWS[3][0], MORPH_WINDOWS[4][1], 0.1) * 0.25 : 0;
-      // Portrait keeps formations near face-on: the scroll-driven yaw that
-      // reads as parallax on wide screens turns the chart/lattice into an
-      // unreadable edge-on blob at phone aspect ratios.
-      group.rotation.y = time * (spin + extraSpin) + p * (portraitView ? 0.4 : 1.2);
+      // The formations are literal icons (book, bulb, lock…) — they must stay
+      // near face-on to read. A gentle yaw oscillation + pointer parallax
+      // keeps them alive without ever turning them edge-on; the old monotonic
+      // time/scroll spin is gone on purpose.
+      const sway = options.calm ? 0.02 : 0.11;
+      group.rotation.y = Math.sin(time * 0.2) * sway + p * (portraitView ? 0.05 : 0.16) + mx * 0.14;
       group.rotation.x = 0.12 + my * 0.06;
       camera.position.x = mx * 1.8;
       camera.position.y = -my * 1.2;
@@ -320,6 +324,10 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
         const inner = el.firstElementChild as HTMLElement | null;
         if (inner) inner.style.transform = `translateY(${(1 - op) * 26}px)`;
         el.style.visibility = op > 0.001 ? "visible" : "hidden";
+        // Defensive: translated card decks overflow their beat, and any
+        // phantom native scroll on the chain would open a chapter mid-deck.
+        if (el.scrollLeft !== 0) el.scrollLeft = 0;
+        if (el.scrollTop !== 0) el.scrollTop = 0;
       });
       if (refs.dimRef.current) refs.dimRef.current.style.opacity = (maxOp * 0.8).toFixed(3);
 

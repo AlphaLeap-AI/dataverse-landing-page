@@ -518,6 +518,10 @@
   border-radius: 50%;
   display: inline-block;
 }
+.dbChipMore {
+  color: #ffe9ad;
+  border-color: rgba(255, 210, 77, 0.4);
+}
 .tagChip {
   display: inline-flex;
   align-items: center;
@@ -994,7 +998,11 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-end;
+    /* clip, not hidden: a hidden box is still programmatically scrollable,
+       and the translated card decks overflowing it caused a phantom
+       scrollLeft that opened chapters mid-deck. clip forbids scrolling. */
     overflow: hidden;
+    overflow: clip;
     /* Clear the fixed nav; keep a little room above the home indicator. */
     padding: 64px 0 max(22px, env(safe-area-inset-bottom, 0px));
     pointer-events: none;
@@ -1122,14 +1130,16 @@
     text-shadow: 0 2px 26px rgba(6, 10, 20, 0.95);
   }
 
+  /* Half-screen scale: each short line spans nearly the full width, and the
+     stacked block owns ~50% of the viewport height. */
   .chaosLayer .chaosHeadline {
-    font-size: clamp(42px, 12.4vw, 54px);
-    line-height: 1.08;
+    font-size: clamp(60px, 18vw, 78px);
+    line-height: 1.04;
   }
 
   .chaosLayer .chaosClose {
-    font-size: clamp(36px, 11vw, 48px);
-    line-height: 1.1;
+    font-size: clamp(54px, 16.6vw, 72px);
+    line-height: 1.05;
   }
 
   .chaosCards {
@@ -1185,7 +1195,12 @@
   .answerGrid {
     display: flex;
     flex-wrap: nowrap;
-    align-items: stretch;
+    /* Deck starts on card 1: the desktop grid's justify-content: center
+       would center the overflowing row and open the chapter mid-deck. */
+    justify-content: flex-start;
+    /* Bottom-flush deck: shorter cards (joins, stats) hug the baseline and
+       size to their content instead of stretching into empty panels. */
+    align-items: flex-end;
     gap: 12px;
     width: 100%;
     margin-top: 18px;
@@ -1289,12 +1304,11 @@
     overflow-wrap: anywhere;
   }
 
-  /* Deck cards stretch to the tallest card — stack the three stats and
-     center them so the card reads as a deliberate summary slide. */
+  /* Stats as a compact stacked summary card, sized to its content. */
   .statsCard {
     border-radius: 12px;
-    padding: 16px 14px;
-    gap: 20px;
+    padding: 18px 14px;
+    gap: 16px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -1323,6 +1337,10 @@
 
   .askText {
     font-size: 15px;
+    /* Typed questions are curated to one line — never let a long fragment
+       wrap and break the bubble mid-type. */
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   /* Keep the multilingual atmosphere on phones: scale every question down
@@ -1376,11 +1394,11 @@
   }
 
   .chaosLayer .chaosHeadline {
-    font-size: 40px;
+    font-size: 56px;
   }
 
   .chaosLayer .chaosClose {
-    font-size: 34px;
+    font-size: 50px;
   }
 
   .tableCardDesc {
@@ -1420,11 +1438,11 @@
   }
 
   .chaosLayer .chaosHeadline {
-    font-size: clamp(34px, 10.4vw, 44px);
+    font-size: clamp(46px, 14.5vw, 58px);
   }
 
   .chaosLayer .chaosClose {
-    font-size: clamp(30px, 9.4vw, 40px);
+    font-size: clamp(42px, 13vw, 54px);
   }
 
   .learnGrid > *,
