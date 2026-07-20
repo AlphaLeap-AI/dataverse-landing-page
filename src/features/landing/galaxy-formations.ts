@@ -477,6 +477,52 @@ export function buildFormations(N: number): FormationSet {
   return [chaos, connect, learn, skills, ask, answer, priv];
 }
 
+/** Axis-aligned framing box for one formation, in world units (pre-scale). */
+export interface FormationBounds {
+  /** Center of the trimmed extent (formations aren't all centered at y=0). */
+  cx: number;
+  cy: number;
+  /** Half-width / half-height of the trimmed extent. */
+  halfW: number;
+  halfH: number;
+}
+
+/**
+ * Robust bounding box for a formation, used by the portrait framer to center
+ * and scale each chapter's icon inside the free band above its copy.
+ *
+ * Absolute min/max would be dominated by the sparse decorative particles every
+ * icon carries (drifting knowledge motes, light rays, in-flight packets,
+ * trailing chat bubbles), scaling the whole shape down to nothing to fit a few
+ * stray dots. A trimmed extent — the box containing all but the outer `trim`
+ * fraction of points on each axis — tracks the icon's readable mass instead.
+ */
+export function computeFormationBounds(f: Formation, trim = 0.02): FormationBounds {
+  const n = f.pos.length / 3;
+  if (n === 0) return { cx: 0, cy: 0, halfW: 1, halfH: 1 };
+  const xs = new Float32Array(n);
+  const ys = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    xs[i] = f.pos[i * 3];
+    ys[i] = f.pos[i * 3 + 1];
+  }
+  // TypedArray.sort is numeric by default.
+  xs.sort();
+  ys.sort();
+  const lo = Math.min(n - 1, Math.floor(n * trim));
+  const hi = Math.max(0, Math.ceil(n * (1 - trim)) - 1);
+  const xMin = xs[lo];
+  const xMax = xs[hi];
+  const yMin = ys[lo];
+  const yMax = ys[hi];
+  return {
+    cx: (xMin + xMax) / 2,
+    cy: (yMin + yMax) / 2,
+    halfW: Math.max(0.5, (xMax - xMin) / 2),
+    halfH: Math.max(0.5, (yMax - yMin) / 2),
+  };
+}
+
 /**
  * Morph windows over story progress p ∈ [0,1] — one transition per story step
  * after the chaos pain-point beat (formations: chaos → connect → book →

@@ -3,9 +3,30 @@
 import { type RefObject, useEffect } from "react";
 import * as THREE from "three";
 
-import { buildFormations, formationState, JITTER, type FormationSet } from "./galaxy-formations";
+import {
+  buildFormations,
+  computeFormationBounds,
+  type FormationBounds,
+  formationState,
+  JITTER,
+  type FormationSet,
+} from "./galaxy-formations";
 
 export type BeatKey = "chaos" | "connect" | "learn" | "skills" | "ask" | "answer" | "private";
+
+// Which particle formation each beat displays — the index into the
+// FormationSet built in galaxy-formations.ts (chaos, connect, book, bulb,
+// bubble, chart, lock). The portrait framer looks up the active beat's
+// formation to size and center it by that shape's real extent.
+const BEAT_FORMATION_INDEX: Record<BeatKey, number> = {
+  chaos: 0,
+  connect: 1,
+  learn: 2,
+  skills: 3,
+  ask: 4,
+  answer: 5,
+  private: 6,
+};
 
 // Beat dwell windows over story progress p ∈ [0,1]. Every beat gets a long
 // enough plateau that dense copy isn't a blink between fade-in and fade-out
@@ -166,10 +187,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // formations span ±15 (lattice) to ±22 (chaos).
     const BASE_CAM_Z = 30;
     const BASE_POINT_SIZE = 0.42;
-    // Widest / tallest recognizable formation half-extents (lattice ±15 +
-    // jitter horizontally; chart + magnifier / lock dome vertically).
+    // Widest recognizable formation half-extent (chaos scatter ±22, connect
+    // satellites ±12); used for the desktop fit and the chaos scatter framing.
     const FIT_HALF_WIDTH = 16.5;
-    const FIT_HALF_HEIGHT = 11.5;
     // Top fraction of a phone viewport reserved for the fixed glass nav, so
     // tall icons (lightbulb rays, lock dome) don't tuck under the bar. The
     // free band between the nav and the copy is where the particle
@@ -179,10 +199,14 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // measurement lands (or for the "chaos" beat, whose full-bleed layered
     // copy isn't the bottom-anchored .beatInner card the other beats use).
     const PORTRAIT_COPY_BAND_FALLBACK = 0.34;
-    // 0 = free-band top (under nav), 1 = free-band bottom (above copy).
-    // Bias toward the title so mid-height icons sit next to the copy
-    // rather than dead-center in a tall empty free band.
-    const PORTRAIT_FREE_BIAS = 0.75;
+    // Leave a little breathing room so a fitted icon never kisses the nav /
+    // copy edge (height) or the screen sides (width).
+    const PORTRAIT_FIT_MARGIN_H = 0.86;
+    const PORTRAIT_FIT_MARGIN_W = 0.9;
+    // Cap upscaling: points don't grow with the group, so a small icon blown
+    // up to fill a tall band reads as a sparse scatter. Better to leave it a
+    // touch smaller and crisp, centered in its band.
+    const PORTRAIT_MAX_SCALE = 1.15;
     let camZ = BASE_CAM_Z;
     let halfHeight = 0;
     let portraitView = false;
@@ -223,6 +247,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     };
 
     const formations: FormationSet = buildFormations(N);
+    // Per-formation framing boxes (see computeFormationBounds) so each chapter's
+    // icon is centered and scaled by its own real extent, not a global guess.
+    const formationBounds: FormationBounds[] = formations.map((f) => computeFormationBounds(f));
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(formations[0].pos);
     const col = new Float32Array(formations[0].col);
@@ -320,6 +347,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // beat rather than fixed once — a single guessed fraction either
       // strands the icon in empty space or lets it bleed down behind text.
       if (portraitView) {
+        // Beat whose copy is currently most visible drives the framing — its
+        // formation index picks the bounds, its measured copy top sets the
+        // free band's lower edge.
         let activeKey: BeatKey | null = null;
         let activeOp = 0;
         (Object.keys(BEAT_WINDOWS) as BeatKey[]).forEach((key) => {
@@ -330,20 +360,34 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
             activeKey = key;
           }
         });
-        const bandFrac = Math.max(
-          PORTRAIT_NAV_BAND + 0.08,
-          (activeKey && copyTopFrac[activeKey]) ?? 1 - PORTRAIT_COPY_BAND_FALLBACK
-        );
-        const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
-        const freeBottomY = halfHeight * (1 - 2 * bandFrac);
-        const freeBandHeight = freeTopY - freeBottomY;
-        const freeCenterY = freeTopY + (freeBottomY - freeTopY) * PORTRAIT_FREE_BIAS;
         const halfWidth = halfHeight * camera.aspect;
-        const fitW = halfWidth / (FIT_HALF_WIDTH * 0.72);
-        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT);
-        const fit = Math.min(1.1, fitW, fitH);
-        group.scale.setScalar(fit);
-        group.position.y = freeCenterY;
+
+        if (!activeKey || activeKey === "chaos") {
+          // The "chaos" beat is a full-bleed scatter behind full-width copy,
+          // not a bottom-anchored card — let it fill the screen, centered.
+          const fit = Math.min(1, halfWidth / FIT_HALF_WIDTH);
+          group.scale.setScalar(fit);
+          group.position.y = 0;
+        } else {
+          // Free band = the gap between the nav and the top of this beat's
+          // bottom-anchored copy. Center THIS formation (by its own measured
+          // extent) in that band and scale it to fill the band — bounded by
+          // the screen width so wide icons (the connect star) never clip.
+          const bnd = formationBounds[BEAT_FORMATION_INDEX[activeKey]];
+          const bandFrac = clamp01(copyTopFrac[activeKey] ?? 1 - PORTRAIT_COPY_BAND_FALLBACK);
+          const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
+          const freeBottomY = halfHeight * (1 - 2 * bandFrac);
+          const freeBandHeight = Math.max(2, freeTopY - freeBottomY);
+          const freeCenterY = (freeTopY + freeBottomY) / 2;
+          const fitH = (freeBandHeight * PORTRAIT_FIT_MARGIN_H) / (2 * bnd.halfH);
+          const fitW = (halfWidth * PORTRAIT_FIT_MARGIN_W) / bnd.halfW;
+          const fit = Math.min(PORTRAIT_MAX_SCALE, fitH, fitW);
+          group.scale.setScalar(fit);
+          // Land the formation's own vertical center on the band center: local
+          // cy scales to cy*fit inside the group, so offset the group to cancel
+          // it. Icons biased off-center (bulb, book motes) sit true this way.
+          group.position.y = freeCenterY - bnd.cy * fit;
+        }
       }
 
       // After 06 · Private, gradually dim the starfield so post-story copy stays
