@@ -14,19 +14,11 @@ import {
 
 export type BeatKey = "chaos" | "connect" | "learn" | "skills" | "ask" | "answer" | "private";
 
-// Which particle formation each beat displays — the index into the
-// FormationSet built in galaxy-formations.ts (chaos, connect, book, bulb,
-// bubble, chart, lock). The portrait framer looks up the active beat's
-// formation to size and center it by that shape's real extent.
-const BEAT_FORMATION_INDEX: Record<BeatKey, number> = {
-  chaos: 0,
-  connect: 1,
-  learn: 2,
-  skills: 3,
-  ask: 4,
-  answer: 5,
-  private: 6,
-};
+// Formation index → beat, in morph order — the FormationSet built in
+// galaxy-formations.ts is [chaos, connect, book, bulb, bubble, chart, lock].
+// The portrait framer maps each formation the shape is currently blending
+// between back to its beat, so it can size/center by that shape's real extent.
+const FORMATION_BEATS: BeatKey[] = ["chaos", "connect", "learn", "skills", "ask", "answer", "private"];
 
 // Beat dwell windows over story progress p ∈ [0,1]. Every beat gets a long
 // enough plateau that dense copy isn't a blink between fade-in and fade-out
@@ -250,6 +242,34 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // Per-formation framing boxes (see computeFormationBounds) so each chapter's
     // icon is centered and scaled by its own real extent, not a global guess.
     const formationBounds: FormationBounds[] = formations.map((f) => computeFormationBounds(f));
+
+    // Target on-screen frame (uniform scale + world-Y) for one formation in
+    // portrait. Kept as a pure function of formation index so the render loop
+    // can BLEND the frames of the two formations the shape is morphing between
+    // (same blend as the shape morph). That makes the framing a continuous
+    // function of scroll — the icon glides between chapters instead of snapping
+    // to a fallback size when a beat's copy crosses its fade threshold.
+    const portraitFrame = (idx: number): { scale: number; posY: number } => {
+      const halfWidth = halfHeight * camera.aspect;
+      const key = FORMATION_BEATS[idx];
+      // "chaos" is a full-bleed scatter behind full-width copy — fill + center.
+      if (key === "chaos") {
+        return { scale: Math.min(1, halfWidth / FIT_HALF_WIDTH), posY: 0 };
+      }
+      const bnd = formationBounds[idx];
+      const bandFrac = clamp01(copyTopFrac[key] ?? 1 - PORTRAIT_COPY_BAND_FALLBACK);
+      const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
+      const freeBottomY = halfHeight * (1 - 2 * bandFrac);
+      const freeBandHeight = Math.max(2, freeTopY - freeBottomY);
+      const freeCenterY = (freeTopY + freeBottomY) / 2;
+      const fitH = (freeBandHeight * PORTRAIT_FIT_MARGIN_H) / (2 * bnd.halfH);
+      const fitW = (halfWidth * PORTRAIT_FIT_MARGIN_W) / bnd.halfW;
+      const fit = Math.min(PORTRAIT_MAX_SCALE, fitH, fitW);
+      // Land the formation's own vertical center on the band center: local cy
+      // scales to cy*fit inside the group, so offset the group to cancel it.
+      return { scale: fit, posY: freeCenterY - bnd.cy * fit };
+    };
+
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(formations[0].pos);
     const col = new Float32Array(formations[0].col);
@@ -340,54 +360,20 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       const rawP = -rect.top / storyTravel;
       const p = clamp01(rawP);
 
-      // Portrait: resolve the formation's on-screen position/scale for
-      // whichever beat is currently most visible, using its DOM-measured
-      // copy top (see copyTopFrac). Beats vary a lot in copy length (a
-      // two-chip row vs. a four-card grid), so this must be re-derived per
-      // beat rather than fixed once — a single guessed fraction either
-      // strands the icon in empty space or lets it bleed down behind text.
+      // Portrait: place + scale the formation in the free band above each
+      // chapter's copy. Each beat's frame is derived from its own DOM-measured
+      // copy top (copyTopFrac) and the shape's real extent (see portraitFrame);
+      // the loop blends between consecutive beats' frames as the shape morphs.
       if (portraitView) {
-        // Beat whose copy is currently most visible drives the framing — its
-        // formation index picks the bounds, its measured copy top sets the
-        // free band's lower edge.
-        let activeKey: BeatKey | null = null;
-        let activeOp = 0;
-        (Object.keys(BEAT_WINDOWS) as BeatKey[]).forEach((key) => {
-          const [wa, wb] = BEAT_WINDOWS[key];
-          const op = fadeWin(p, wa, wb, BEAT_FADE_MARGIN[key] ?? 0.045);
-          if (op > activeOp) {
-            activeOp = op;
-            activeKey = key;
-          }
-        });
-        const halfWidth = halfHeight * camera.aspect;
-
-        if (!activeKey || activeKey === "chaos") {
-          // The "chaos" beat is a full-bleed scatter behind full-width copy,
-          // not a bottom-anchored card — let it fill the screen, centered.
-          const fit = Math.min(1, halfWidth / FIT_HALF_WIDTH);
-          group.scale.setScalar(fit);
-          group.position.y = 0;
-        } else {
-          // Free band = the gap between the nav and the top of this beat's
-          // bottom-anchored copy. Center THIS formation (by its own measured
-          // extent) in that band and scale it to fill the band — bounded by
-          // the screen width so wide icons (the connect star) never clip.
-          const bnd = formationBounds[BEAT_FORMATION_INDEX[activeKey]];
-          const bandFrac = clamp01(copyTopFrac[activeKey] ?? 1 - PORTRAIT_COPY_BAND_FALLBACK);
-          const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
-          const freeBottomY = halfHeight * (1 - 2 * bandFrac);
-          const freeBandHeight = Math.max(2, freeTopY - freeBottomY);
-          const freeCenterY = (freeTopY + freeBottomY) / 2;
-          const fitH = (freeBandHeight * PORTRAIT_FIT_MARGIN_H) / (2 * bnd.halfH);
-          const fitW = (halfWidth * PORTRAIT_FIT_MARGIN_W) / bnd.halfW;
-          const fit = Math.min(PORTRAIT_MAX_SCALE, fitH, fitW);
-          group.scale.setScalar(fit);
-          // Land the formation's own vertical center on the band center: local
-          // cy scales to cy*fit inside the group, so offset the group to cancel
-          // it. Icons biased off-center (bulb, book motes) sit true this way.
-          group.position.y = freeCenterY - bnd.cy * fit;
-        }
+        // Blend the two morphing formations' target frames with the SAME factor
+        // the shape uses (formationState) — so size + position move continuously
+        // with the shape. No opacity-threshold "active beat" pick, so the icon
+        // never snaps to a fallback size in the gap between two chapters' copy.
+        const [fa, fb, ft] = formationState(p);
+        const frA = portraitFrame(fa);
+        const frB = portraitFrame(fb);
+        group.scale.setScalar(frA.scale + (frB.scale - frA.scale) * ft);
+        group.position.y = frA.posY + (frB.posY - frA.posY) * ft;
       }
 
       // After 06 · Private, gradually dim the starfield so post-story copy stays
