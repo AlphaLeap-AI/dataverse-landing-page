@@ -170,25 +170,57 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // jitter horizontally; chart + magnifier / lock dome vertically).
     const FIT_HALF_WIDTH = 16.5;
     const FIT_HALF_HEIGHT = 11.5;
-    // Bottom fraction of a phone viewport reserved for bottom-anchored
-    // chapter copy (eyebrow + headline + cards). Top fraction reserved for
-    // the fixed glass nav so tall icons (lightbulb rays, lock dome) don't
-    // tuck under the bar. The free band between them is where the particle
+    // Top fraction of a phone viewport reserved for the fixed glass nav, so
+    // tall icons (lightbulb rays, lock dome) don't tuck under the bar. The
+    // free band between the nav and the copy is where the particle
     // illustration should sit.
-    //
-    // Copy band is intentionally a bit under the true block height: the
-    // beatInner gradient scrim can overlap the lower particles, and a
-    // smaller reserve pulls icons down so short formations (ask bubble)
-    // don't float in a large empty strip above "0N · TITLE".
-    const PORTRAIT_COPY_BAND = 0.34;
     const PORTRAIT_NAV_BAND = 0.1;
+    // Fallback bottom-of-free-band fraction, only used before the first DOM
+    // measurement lands (or for the "chaos" beat, whose full-bleed layered
+    // copy isn't the bottom-anchored .beatInner card the other beats use).
+    const PORTRAIT_COPY_BAND_FALLBACK = 0.34;
     // 0 = free-band top (under nav), 1 = free-band bottom (above copy).
     // Bias toward the title so mid-height icons sit next to the copy
     // rather than dead-center in a tall empty free band.
-    const PORTRAIT_FREE_BIAS = 0.72;
+    const PORTRAIT_FREE_BIAS = 0.75;
     let camZ = BASE_CAM_Z;
+    let halfHeight = 0;
     let portraitView = false;
     camera.position.z = camZ;
+    // Per-beat measured top of the bottom-anchored copy card, as a fraction
+    // of the beat's own box height (0 = box top, 1 = box bottom). Each
+    // chapter's copy is a different length (a two-tag chip row vs. a
+    // four-card grid), so a single guessed fraction under- or over-shoots
+    // depending on the beat — the formation then either floats too high or
+    // bleeds down behind the text. Measuring the real DOM box fixes that for
+    // every beat.
+    //
+    // Measured relative to the beat element's own rect, not the viewport:
+    // .beat's ancestor (.stage) is position:sticky, so at measurement time
+    // (mount, before the story section has scrolled into view and "stuck")
+    // its viewport-relative position is wherever it happens to sit in
+    // normal document flow — nowhere near the eventual pinned frame. The
+    // beat box itself is always exactly 100dvh tall regardless of sticky
+    // state, so measuring the copy's offset within that box is scroll-
+    // position-independent.
+    let copyTopFrac: Partial<Record<BeatKey, number>> = {};
+    const measureCopyFractions = () => {
+      const beats = refs.beatRefs.current || {};
+      const out: Partial<Record<BeatKey, number>> = {};
+      (Object.keys(beats) as BeatKey[]).forEach((key) => {
+        // "chaos" uses a full-bleed layered layout (headline/cards/close),
+        // not the bottom-anchored .beatInner card the numbered beats share.
+        if (key === "chaos") return;
+        const el = beats[key];
+        const inner = el?.firstElementChild as HTMLElement | null;
+        if (el && inner) {
+          const boxRect = el.getBoundingClientRect();
+          const innerRect = inner.getBoundingClientRect();
+          if (boxRect.height > 0) out[key] = (innerRect.top - boxRect.top) / boxRect.height;
+        }
+      });
+      copyTopFrac = out;
+    };
 
     const formations: FormationSet = buildFormations(N);
     const geo = new THREE.BufferGeometry();
@@ -219,34 +251,17 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // for whatever width is still missing so every formation (clusters,
       // lattice, chart, shell) stays inside the visible frustum.
       camZ = aspect < 1 ? Math.min(46, BASE_CAM_Z / Math.max(0.62, aspect)) : BASE_CAM_Z;
-      const halfHeight = Math.tan((camera.fov * Math.PI) / 360) * (camZ - 3.5);
+      halfHeight = Math.tan((camera.fov * Math.PI) / 360) * (camZ - 3.5);
       const halfWidth = halfHeight * aspect;
       // Portrait: middle-align the formation in the free band above the
-      // bottom-anchored chapter copy, and scale it to fill that band.
-      // Previously y ≈ halfHeight*0.5 top-aligned the field and left a
-      // large empty strip between the particles and the "0N · TITLE" block.
+      // bottom-anchored chapter copy, and scale it to fill that band. The
+      // exact position/scale (which depends on each beat's copy height) is
+      // resolved every frame in frame() via copyTopFrac — here we only need
+      // the shared camera-derived numbers and a fresh DOM measurement.
       const portrait = aspect < 1;
       portraitView = portrait;
       if (portrait) {
-        // Free band: below the fixed nav → top of bottom-anchored copy.
-        // Without the nav reserve, tall icons (esp. 03 · Teach lightbulb
-        // rays) hide behind the glass bar on phones.
-        const freeBandFrac = 1 - PORTRAIT_COPY_BAND - PORTRAIT_NAV_BAND;
-        const freeBandHeight = 2 * halfHeight * freeBandFrac;
-        // Screen y: +halfHeight at top, −halfHeight at bottom.
-        const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
-        const freeBottomY = halfHeight * (2 * PORTRAIT_COPY_BAND - 1);
-        const freeCenterY = freeTopY + (freeBottomY - freeTopY) * PORTRAIT_FREE_BIAS;
-        // Mild overflow on both axes so icons stay bold (÷0.72 / ÷0.9).
-        // Vertical fit allows a little bleed into the copy scrim so the
-        // formation can sit close to the title without going under the nav.
-        const fitW = halfWidth / (FIT_HALF_WIDTH * 0.72);
-        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT * 0.9);
-        // Cap slightly above 1 so short formations (ask bubble) can still
-        // grow into the free band without dwarfing wider ones (connect).
-        const fit = Math.min(1.18, fitW, fitH);
-        group.scale.setScalar(fit);
-        group.position.y = freeCenterY;
+        measureCopyFractions();
       } else {
         const fit = Math.min(1, halfWidth / FIT_HALF_WIDTH);
         group.scale.setScalar(fit);
@@ -297,6 +312,39 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // Unclamped: 0…1 through the sticky story, >1 once Platform scrolls in.
       const rawP = -rect.top / storyTravel;
       const p = clamp01(rawP);
+
+      // Portrait: resolve the formation's on-screen position/scale for
+      // whichever beat is currently most visible, using its DOM-measured
+      // copy top (see copyTopFrac). Beats vary a lot in copy length (a
+      // two-chip row vs. a four-card grid), so this must be re-derived per
+      // beat rather than fixed once — a single guessed fraction either
+      // strands the icon in empty space or lets it bleed down behind text.
+      if (portraitView) {
+        let activeKey: BeatKey | null = null;
+        let activeOp = 0;
+        (Object.keys(BEAT_WINDOWS) as BeatKey[]).forEach((key) => {
+          const [wa, wb] = BEAT_WINDOWS[key];
+          const op = fadeWin(p, wa, wb, BEAT_FADE_MARGIN[key] ?? 0.045);
+          if (op > activeOp) {
+            activeOp = op;
+            activeKey = key;
+          }
+        });
+        const bandFrac = Math.max(
+          PORTRAIT_NAV_BAND + 0.08,
+          (activeKey && copyTopFrac[activeKey]) ?? 1 - PORTRAIT_COPY_BAND_FALLBACK
+        );
+        const freeTopY = halfHeight * (1 - 2 * PORTRAIT_NAV_BAND);
+        const freeBottomY = halfHeight * (1 - 2 * bandFrac);
+        const freeBandHeight = freeTopY - freeBottomY;
+        const freeCenterY = freeTopY + (freeBottomY - freeTopY) * PORTRAIT_FREE_BIAS;
+        const halfWidth = halfHeight * camera.aspect;
+        const fitW = halfWidth / (FIT_HALF_WIDTH * 0.72);
+        const fitH = freeBandHeight / (2 * FIT_HALF_HEIGHT);
+        const fit = Math.min(1.1, fitW, fitH);
+        group.scale.setScalar(fit);
+        group.position.y = freeCenterY;
+      }
 
       // After 06 · Private, gradually dim the starfield so post-story copy stays
       // legible while particles remain faintly visible. private beat ≈ 0.894–1.0.
