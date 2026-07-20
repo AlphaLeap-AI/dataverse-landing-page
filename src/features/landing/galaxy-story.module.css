@@ -421,6 +421,13 @@
 }
 .chaosLine em {
   font-style: normal;
+  /* inline-block + padded/negative-margin box: Safari clips the ink of a
+     -webkit-background-clip:text glyph to the line box, which lops the tail
+     off italic descenders ("already"). The extra bottom room lets the 'y'
+     render fully; the negative margin keeps line spacing unchanged. */
+  display: inline-block;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
   background: linear-gradient(100deg, #5ee7ff 0%, #8eb6ff 45%, #c9a6ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1153,9 +1160,11 @@
     line-height: 1.04;
   }
 
+  /* Same display scale as the headline — this close is the other emotional
+     peak and should read just as large. */
   .chaosLayer .chaosClose {
-    font-size: clamp(54px, 16.6vw, 72px);
-    line-height: 1.05;
+    font-size: clamp(60px, 18vw, 78px);
+    line-height: 1.06;
   }
 
   .chaosCards {
@@ -1429,7 +1438,7 @@
   }
 
   .chaosLayer .chaosClose {
-    font-size: 50px;
+    font-size: 56px;
   }
 
   .tableCardDesc {
@@ -1473,7 +1482,7 @@
   }
 
   .chaosLayer .chaosClose {
-    font-size: clamp(42px, 13vw, 54px);
+    font-size: clamp(46px, 14.5vw, 58px);
   }
 
   .learnGrid > *,

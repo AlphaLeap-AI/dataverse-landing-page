@@ -76,19 +76,19 @@ const TYPED_SEGMENTS: [number, number][] = [
 // then the closing lines turn the story toward the answer.
 //
 // Headline starts near p=0 so "Getting answers shouldn't be this hard."
-// appears right as the hero scrolls away (no long empty pin). Windows are
-// sized so the LAST staggered line still has a long full-opacity plateau
-// (~145vh headline, ~184vh close) — those two phrases are the emotional
-// peaks and must not be a blink between fade-in and fade-out.
+// appears right as the hero scrolls away (no long empty pin). A tighter
+// fade + smaller per-line stagger snaps it in faster, and both emotional
+// peaks now dwell for a shorter plateau (~120vh headline, ~108vh close) —
+// still comfortably readable on a normal wheel tick, just less lingering.
 // [start, end, fade] — full opacity ≈ end−start−2·fade (minus stagger).
-const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.125, 0.014];
-const CHAOS_HEADLINE_STAGGER = 0.009; // per display line (5 lines)
+const CHAOS_HEADLINE_WIN: [number, number, number] = [0.004, 0.102, 0.010];
+const CHAOS_HEADLINE_STAGGER = 0.006; // per display line (5 lines)
 const CHAOS_CARD_WINDOWS: [number, number, number][] = [
   [0.11, 0.195, 0.018],
   [0.118, 0.195, 0.018],
   [0.126, 0.195, 0.018],
 ];
-const CHAOS_CLOSE_WIN: [number, number, number] = [0.175, 0.288, 0.012];
+const CHAOS_CLOSE_WIN: [number, number, number] = [0.205, 0.288, 0.012];
 const CHAOS_CLOSE_STAGGER = 0.0055; // per display line (4 lines)
 const CHAOS_GHOST_WIN: [number, number] = [0, 0.29022];
 
