@@ -86,6 +86,16 @@ const CHAOS_CLOSE_WIN: [number, number, number] = [0.205, 0.288, 0.012];
 const CHAOS_CLOSE_STAGGER = 0.0055; // per display line (4 lines)
 const CHAOS_GHOST_WIN: [number, number] = [0, 0.29022];
 
+// Phones tighten the two emotional-peak plateaus. A thumb flick covers less
+// ground than a wheel tick, so the desktop plateaus made the headline and the
+// close each sit fully-visible for ~1.5 screens of scroll before releasing —
+// the reader kept flicking and the line wouldn't leave. These trim the
+// plateau (headline releases sooner; the close appears later and hugs the
+// morph into 01) so a normal scroll walks past each line, while the chaos
+// particle field + drifting ghost fill the short holds between phases.
+const CHAOS_HEADLINE_WIN_MOBILE: [number, number, number] = [0.004, 0.078, 0.010];
+const CHAOS_CLOSE_WIN_MOBILE: [number, number, number] = [0.222, 0.288, 0.012];
+
 // ── mobile horizontal card tracks (02 · Understand, 05 · Answer) ────────
 // On phones the dense card grids ride a horizontal track driven by vertical
 // page scroll: while p crosses these windows the track translates left, so
@@ -171,6 +181,10 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
     // Phones: fewer, larger particles + capped DPR — the formation stays a
     // bold illustration while each frame costs far less.
     if (isMobileLayout) N = Math.min(N, 2600);
+
+    // Tighter headline/close plateaus on phones (see the *_MOBILE constants).
+    const chaosHeadlineWin = isMobileLayout ? CHAOS_HEADLINE_WIN_MOBILE : CHAOS_HEADLINE_WIN;
+    const chaosCloseWin = isMobileLayout ? CHAOS_CLOSE_WIN_MOBILE : CHAOS_CLOSE_WIN;
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileLayout ? 1.5 : 2));
@@ -528,9 +542,9 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       for (let i = 0; i < lines.length; i++) {
         const el = lines[i];
         if (!el) continue;
-        const a = CHAOS_HEADLINE_WIN[0] + i * CHAOS_HEADLINE_STAGGER;
-        const b = CHAOS_HEADLINE_WIN[1];
-        const f = CHAOS_HEADLINE_WIN[2];
+        const a = chaosHeadlineWin[0] + i * CHAOS_HEADLINE_STAGGER;
+        const b = chaosHeadlineWin[1];
+        const f = chaosHeadlineWin[2];
         const op = fadeWin(p, a, b, f);
         el.style.opacity = String(op);
         el.style.filter = `blur(${(1 - op) * 8}px)`;
@@ -552,7 +566,7 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       // inside staggers in — the same treatment as the opening headline.
       const closeEl = refs.chaosCloseRef.current;
       if (closeEl) {
-        const [xa, xb, xf] = CHAOS_CLOSE_WIN;
+        const [xa, xb, xf] = chaosCloseWin;
         const op = fadeWin(p, xa, xb, xf);
         closeEl.style.opacity = String(op);
         closeEl.style.transform = `translateY(${(1 - op) * 30}px)`;
@@ -561,8 +575,8 @@ export function useGalaxy(refs: GalaxyRefs, options: GalaxyOptions): void {
       for (let i = 0; i < closeLines.length; i++) {
         const el = closeLines[i];
         if (!el) continue;
-        const a = CHAOS_CLOSE_WIN[0] + i * CHAOS_CLOSE_STAGGER;
-        const op = fadeWin(p, a, CHAOS_CLOSE_WIN[1], CHAOS_CLOSE_WIN[2]);
+        const a = chaosCloseWin[0] + i * CHAOS_CLOSE_STAGGER;
+        const op = fadeWin(p, a, chaosCloseWin[1], chaosCloseWin[2]);
         el.style.opacity = String(op);
         el.style.filter = `blur(${(1 - op) * 8}px)`;
         el.style.transform = `translateY(${(1 - op) * 20}px)`;
