@@ -15,7 +15,7 @@ import {
 export type BeatKey = "chaos" | "connect" | "learn" | "skills" | "ask" | "answer" | "private";
 
 // Formation index (into the FormationSet built in galaxy-formations.ts:
-// chaos, connect, book, bulb, bubble, chart, lock) → the beat whose copy
+// chaos, connect, book, bulb, bubble, chart, vault) → the beat whose copy
 // that shape backs. Beats and formations share one ordering, so this is the
 // inverse of that ordering. The portrait framer uses it to look up a
 // formation's owning beat (for its measured copy top) while gliding the

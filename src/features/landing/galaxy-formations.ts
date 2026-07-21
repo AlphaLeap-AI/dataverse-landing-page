@@ -10,7 +10,7 @@ import * as THREE from "three";
  *   03 Teach      — a lightbulb with a burning filament (knowledge taught)
  *   04 Ask        — a speech bubble with a big question mark
  *   05 Answer     — a bar chart under a magnifying glass
- *   06 Private    — a padlock sealed inside a protective dome
+ *   06 Private    — a data vault sealed inside a wireframe security sphere
  *
  * Kept free of DOM/canvas access so it can be unit-reasoned about
  * independently of the render loop in use-galaxy.ts.
@@ -163,6 +163,26 @@ export function buildFormations(N: number): FormationSet {
   const MAG_CX = -5.6; // magnifier ring over the tallest bar
   const MAG_CY = 5.6;
   const MAG_R = 2.55;
+
+  // ── 06 Private: a data vault sealed inside a wireframe security sphere ──
+  // The whole scene is enclosed by a geodesic "wireframe" globe (dot-lines
+  // along meridians + parallels). A metallic safe with a spoked combination
+  // dial sits front-and-centre; a stream of data flows into its left flank;
+  // concentric halo rings ground it. Everything reads front-on so the safe's
+  // door, dial, hinges and feet stay legible.
+  const SPHERE_R = 12.2; // globe radius (dominates the formation's extent)
+  const SPHERE_CY = 0.4; // globe centre, lifted slightly above the safe
+  const V_MERID = 18; // longitude dot-lines
+  const V_PARAL = 12; // latitude dot-lines
+  const VAULT_CX = 0;
+  const VAULT_CY = -1.6; // safe sits in the lower-centre of the globe
+  const VAULT_CZ = 3.4; // pushed toward the camera, in front of the core
+  const VAULT_HW = 4.0; // safe body half-width
+  const VAULT_HH = 4.7; // safe body half-height (taller than wide)
+  const DIAL_CY = VAULT_CY + 0.2; // combination wheel centre
+  const STREAM_STRANDS = 9;
+  const STREAM_ENTRY_X = VAULT_CX - VAULT_HW + 0.2; // where the flow meets the safe
+  const STREAM_ENTRY_Y = VAULT_CY + 0.3;
 
   for (let i = 0; i < N; i++) {
     const i3 = i * 3;
@@ -433,44 +453,148 @@ export function buildFormations(N: number): FormationSet {
       );
     }
 
-    // ── 06 Private: padlock sealed inside a protective dome ──
-    if (u < 0.38) {
-      // dome shell with a faint wireframe hint
+    // ── 06 Private: a data vault sealed inside a wireframe security sphere ──
+    if (u < 0.34) {
+      // wireframe globe — dots strung along meridians + parallels so the
+      // shell reads as a geodesic network rather than a solid ball. Front
+      // hemisphere stays faint so the safe shows through it.
+      let sx: number;
+      let sy: number;
+      let sz: number;
+      if (Math.random() < 0.5) {
+        // meridian: fixed longitude, latitude runs pole to pole
+        const lon = ((i % V_MERID) / V_MERID) * Math.PI * 2;
+        const lat = (Math.random() - 0.5) * Math.PI;
+        const cl = Math.cos(lat);
+        sx = SPHERE_R * cl * Math.cos(lon);
+        sy = SPHERE_CY + SPHERE_R * Math.sin(lat);
+        sz = SPHERE_R * cl * Math.sin(lon);
+      } else {
+        // parallel: fixed latitude ring, longitude sweeps around
+        const lat = (-0.5 + (i % V_PARAL) / (V_PARAL - 1)) * Math.PI * 0.94;
+        const lon = Math.random() * Math.PI * 2;
+        const cl = Math.cos(lat);
+        sx = SPHERE_R * cl * Math.cos(lon);
+        sy = SPHERE_CY + SPHERE_R * Math.sin(lat);
+        sz = SPHERE_R * cl * Math.sin(lon);
+      }
+      const node = Math.random() > 0.9; // bright vertex where lines cross
+      tmp
+        .copy(node ? cWhite : cAccent)
+        .lerp(cSoft, Math.random() * 0.5)
+        .multiplyScalar(node ? 1.0 : 0.28 + Math.random() * 0.32);
+      put(priv, i3, sx, sy, sz);
+    } else if (u < 0.4) {
+      // scattered surface stars — the sparkle dusting the globe
       const th = Math.random() * Math.PI * 2;
       const ph = Math.acos(2 * Math.random() - 1);
-      const wire = Math.abs(Math.sin(ph * 6)) > 0.94 || Math.abs(Math.sin(th * 4)) > 0.965;
-      tmp.copy(cAccent).lerp(cWhite, Math.random() * 0.3).multiplyScalar(wire ? 0.75 : 0.22 + Math.random() * 0.18);
-      put(priv, i3, Math.sin(ph) * Math.cos(th) * 12.0, Math.cos(ph) * 8.9, Math.sin(ph) * Math.sin(th) * 9.5);
-    } else if (u < 0.6) {
-      // lock body (filled rounded square)
-      const [bx, by] = bubblePoint(3.2, 2.4);
-      const fill = Math.sqrt(Math.random());
-      tmp.copy(cAccent).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.55 + Math.random() * 0.5);
-      put(priv, i3, bx * fill + jit(0.1), -1.9 + by * fill + jit(0.1), jit(0.5));
-    } else if (u < 0.78) {
-      // shackle arc
-      const ang = Math.random() * Math.PI;
-      tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.5).multiplyScalar(0.85 + Math.random() * 0.4);
-      put(priv, i3, Math.cos(ang) * 2.1 + jit(0.3), 0.6 + Math.sin(ang) * 2.4 + jit(0.3), jit(0.4));
-    } else if (u < 0.88) {
-      // gold keyhole: circle + slot
-      if (Math.random() < 0.55) {
-        const ang = Math.random() * Math.PI * 2;
-        const r = 0.55 * Math.sqrt(Math.random());
-        tmp.copy(cGold).multiplyScalar(1.0 + Math.random() * 0.4);
-        put(priv, i3, Math.cos(ang) * r, -1.35 + Math.sin(ang) * r, 0.6 + jit(0.2));
+      const cl = Math.sin(ph);
+      tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.55 + Math.random() * 0.6);
+      put(priv, i3, SPHERE_R * cl * Math.cos(th), SPHERE_CY + SPHERE_R * Math.cos(ph), SPHERE_R * cl * Math.sin(th));
+    } else if (u < 0.52) {
+      // safe body — bright rounded-rect outline, with a faint offset rim
+      // up-and-back to imply the steel's thickness.
+      const depth = Math.random() < 0.22;
+      const [bx, by] = bubblePoint(VAULT_HW, VAULT_HH);
+      tmp
+        .copy(cSoft)
+        .lerp(cWhite, Math.random() * 0.5)
+        .multiplyScalar(depth ? 0.4 : 0.8 + Math.random() * 0.4);
+      put(
+        priv,
+        i3,
+        VAULT_CX + bx + (depth ? 0.9 : 0) + jit(0.06),
+        VAULT_CY + by + (depth ? 0.7 : 0) + jit(0.06),
+        VAULT_CZ + (depth ? -1.3 : 0) + jit(0.1)
+      );
+    } else if (u < 0.62) {
+      // door seam (inset rounded rect) + four corner bolts
+      if (Math.random() < 0.82) {
+        const [bx, by] = bubblePoint(VAULT_HW - 0.7, VAULT_HH - 0.7);
+        tmp.copy(cAccent).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.55 + Math.random() * 0.4);
+        put(priv, i3, VAULT_CX + bx + jit(0.05), VAULT_CY + by + jit(0.05), VAULT_CZ + 0.2 + jit(0.08));
       } else {
-        const t = Math.random();
-        tmp.copy(cGold).multiplyScalar(1.0 + Math.random() * 0.4);
-        put(priv, i3, jit(0.5 - t * 0.3), -1.75 - t * 1.15, 0.6 + jit(0.2));
+        const sxg = i % 2 === 0 ? -1 : 1;
+        const syg = i % 4 < 2 ? -1 : 1;
+        const ang = Math.random() * Math.PI * 2;
+        const r = 0.26 * Math.sqrt(Math.random());
+        tmp.copy(cWhite).multiplyScalar(0.9 + Math.random() * 0.4);
+        put(
+          priv,
+          i3,
+          VAULT_CX + sxg * (VAULT_HW - 1.15) + Math.cos(ang) * r,
+          VAULT_CY + syg * (VAULT_HH - 1.15) + Math.sin(ang) * r,
+          VAULT_CZ + 0.3
+        );
       }
+    } else if (u < 0.74) {
+      // combination dial: concentric rings + radial spokes + bright hub
+      const r = Math.random();
+      if (r < 0.5) {
+        const rr = 0.7 + (i % 3) * 0.55;
+        const ang = Math.random() * Math.PI * 2;
+        tmp.copy(cAccent).lerp(cWhite, Math.random() * 0.5).multiplyScalar(0.7 + Math.random() * 0.5);
+        put(priv, i3, VAULT_CX + Math.cos(ang) * rr, DIAL_CY + Math.sin(ang) * rr, VAULT_CZ + 0.5);
+      } else if (r < 0.82) {
+        const ang = ((i % 8) / 8) * Math.PI * 2 + 0.2;
+        const t = 0.2 + Math.random() * 1.65;
+        tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.7 + Math.random() * 0.5);
+        put(priv, i3, VAULT_CX + Math.cos(ang) * t, DIAL_CY + Math.sin(ang) * t, VAULT_CZ + 0.55);
+      } else {
+        const ang = Math.random() * Math.PI * 2;
+        const rr = 0.42 * Math.sqrt(Math.random());
+        tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.3).multiplyScalar(1.1 + Math.random() * 0.4);
+        put(priv, i3, VAULT_CX + Math.cos(ang) * rr, DIAL_CY + Math.sin(ang) * rr, VAULT_CZ + 0.6);
+      }
+    } else if (u < 0.79) {
+      // hinges down the right edge + two feet under the body
+      if (Math.random() < 0.58) {
+        const hy = VAULT_CY + (Math.random() < 0.5 ? 2.6 : -2.6) + jit(0.55);
+        tmp.copy(cSlate).lerp(cSoft, Math.random() * 0.5).multiplyScalar(0.6 + Math.random() * 0.4);
+        put(priv, i3, VAULT_CX + VAULT_HW - 0.1 + jit(0.28), hy, VAULT_CZ + jit(0.15));
+      } else {
+        const left = Math.random() < 0.5;
+        tmp.copy(cSlate).multiplyScalar(0.5 + Math.random() * 0.35);
+        put(
+          priv,
+          i3,
+          VAULT_CX + (left ? -1 : 1) * (VAULT_HW - 1.0) + jit(0.35),
+          VAULT_CY - VAULT_HH - 0.35 + jit(0.2),
+          VAULT_CZ + jit(0.2)
+        );
+      }
+    } else if (u < 0.84) {
+      // faint interior fill so the door reads as a solid steel face
+      const [bx, by] = bubblePoint(VAULT_HW - 1.0, VAULT_HH - 1.0);
+      const fill = Math.sqrt(Math.random());
+      tmp.copy(cAccent).multiplyScalar(0.1 + Math.random() * 0.14);
+      put(priv, i3, VAULT_CX + bx * fill, VAULT_CY + by * fill, VAULT_CZ - 0.15 + jit(0.1));
+    } else if (u < 0.93) {
+      // data stream flowing in from the left, converging on the safe flank
+      const k = i % STREAM_STRANDS;
+      const t = Math.random(); // 0 = far-left origin → 1 = entry point
+      const startX = -15 - (k % 3) * 1.6;
+      const startY = STREAM_ENTRY_Y + (k - STREAM_STRANDS / 2) * 1.8;
+      const ex = t * t; // accelerate inward
+      const ey = t * t * (3 - 2 * t);
+      const x = startX + (STREAM_ENTRY_X - startX) * ex;
+      const y = startY + (STREAM_ENTRY_Y - startY) * ey + Math.sin(t * Math.PI * 2 + k) * (1 - t) * 0.7;
+      const packet = Math.random() > 0.9; // bright data packet in flight
+      tmp.copy(cSoft).lerp(cWhite, t * 0.7).multiplyScalar(packet ? 1.2 : 0.24 + t * 0.6);
+      put(priv, i3, x + jit(0.14), y + jit(0.14), 0.5 + t * (VAULT_CZ - 0.5) + jit(0.35));
     } else {
-      // grounding rings under the dome (reference: vault sits on halo rings)
-      const ring = i % 3;
-      const r = 8.2 + ring * 1.7;
+      // grounding halo — concentric rings the safe rests on
+      const ring = i % 4;
+      const r = 5.0 + ring * 1.6;
       const ang = Math.random() * Math.PI * 2;
-      tmp.copy(cAccent).multiplyScalar(0.3 + Math.random() * 0.2);
-      put(priv, i3, Math.cos(ang) * r, -8.6 + ring * 0.12 + jit(0.1), Math.sin(ang) * r * 0.35);
+      tmp.copy(cAccent).lerp(cSoft, Math.random() * 0.4).multiplyScalar(0.3 + Math.random() * 0.3);
+      put(
+        priv,
+        i3,
+        VAULT_CX + Math.cos(ang) * r,
+        VAULT_CY - VAULT_HH - 0.6 + ring * 0.05 + jit(0.1),
+        VAULT_CZ + Math.sin(ang) * r * 0.32
+      );
     }
   }
 
@@ -548,7 +672,7 @@ export const MORPH_WINDOWS: [number, number][] = [
   [0.52639, 0.55872], // 03 Skills — the bulb lights
   [0.633, 0.66795], // 04 Ask    — the question forms
   [0.74659, 0.78591], // 05 Answer — the chart draws itself
-  [0.88203, 0.92136], // 06 Private — the lock seals inside the dome
+  [0.88203, 0.92136], // 06 Private — the safe seals inside the security sphere
 ];
 
 // Per-formation ambient jitter — icons stay crisp (low), chaos breathes.
