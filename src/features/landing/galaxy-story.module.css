@@ -423,11 +423,13 @@
   font-style: normal;
   /* inline-block + padded/negative-margin box: Safari clips the ink of a
      -webkit-background-clip:text glyph to the line box, which lops the tail
-     off italic descenders ("already"). The extra bottom room lets the 'y'
-     render fully; the negative margin keeps line spacing unchanged. */
+     off italic descenders ("already"). The italic slant throws the 'y' tail
+     down AND to the right, so it needs bottom + right room, not just bottom;
+     0.14em bottom alone still clipped it. The matching negative margins keep
+     the line spacing and left-alignment unchanged. */
   display: inline-block;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
+  padding: 0 0.08em 0.26em 0;
+  margin: 0 -0.08em -0.26em 0;
   background: linear-gradient(100deg, #5ee7ff 0%, #8eb6ff 45%, #c9a6ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1133,7 +1135,9 @@
   }
 
   .chaosLayer {
-    padding: 0 24px;
+    /* Slim side gutters so the near-full-bleed display lines (esp. the close's
+       long "Meanwhile,") have room to read large without clipping the edge. */
+    padding: 0 8px;
   }
 
   /* Screen-filling, left-aligned display type — the pain-point headline and
@@ -1160,11 +1164,16 @@
     line-height: 1.04;
   }
 
-  /* Same display scale as the headline — this close is the other emotional
-     peak and should read just as large. */
+  /* The close is the story's payoff line — size it a step larger than the
+     headline so "your data already knows." lands with more weight and fills
+     the screen. "Meanwhile," is the widest word and sets the ceiling; the
+     slimmer chaos gutters (8px) plus tighter tracking here buy the extra size
+     while keeping that word on one line, edge-safe, down to ~381px phones
+     (narrower widths fall to the 380px rule below). */
   .chaosLayer .chaosClose {
-    font-size: clamp(60px, 18vw, 78px);
-    line-height: 1.06;
+    font-size: clamp(62px, 19vw, 75px);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
   }
 
   .chaosCards {
@@ -1438,7 +1447,7 @@
   }
 
   .chaosLayer .chaosClose {
-    font-size: 56px;
+    font-size: 66px;
   }
 
   .tableCardDesc {
@@ -1482,7 +1491,7 @@
   }
 
   .chaosLayer .chaosClose {
-    font-size: clamp(46px, 14.5vw, 58px);
+    font-size: clamp(50px, 16vw, 66px);
   }
 
   .learnGrid > *,
