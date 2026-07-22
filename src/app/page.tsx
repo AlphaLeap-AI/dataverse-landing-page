@@ -123,8 +123,11 @@ export default function Home() {
         <div className={styles.postStory}>
           <PlatformSection />
           <ProofSection />
-          <DemoCta />
-          <Footer />
+          {/* Final scroll frame: CTA + footer fill one viewport at page end. */}
+          <div className={styles.finalFrame}>
+            <DemoCta />
+            <Footer />
+          </div>
         </div>
       </main>
     </div>

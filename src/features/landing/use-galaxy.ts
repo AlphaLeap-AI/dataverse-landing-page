@@ -35,7 +35,7 @@ const FORMATION_BEAT: BeatKey[] = ["chaos", "connect", "learn", "skills", "ask",
 //            wheel tick instead of flashing past mid-stagger.
 // Post-chaos windows keep their original relative widths via affine remap
 // (new = (old·2216 + 320) / 2536). "private" keeps its past-1 overhang.
-const BEAT_WINDOWS: Record<BeatKey, [number, number]> = {
+export const BEAT_WINDOWS: Record<BeatKey, [number, number]> = {
   // Chaos opens as soon as the story pins (no long empty starfield after hero).
   chaos: [0, 0.29022],
   connect: [0.30442, 0.40024],

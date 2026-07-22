@@ -182,6 +182,30 @@
   background: transparent;
 }
 
+/* Last scroll stop: demo CTA + footer compose one full viewport so the
+   entire "Your data is ready" block is on-screen when the user reaches end. */
+.finalFrame {
+  min-height: 100svh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.finalFrame > :first-child {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.finalFrame .footer {
+  flex-shrink: 0;
+  width: 100%;
+}
+
 /* Soft radial pool behind section heads only (not a full-section veil). */
 .postStory .sectHead {
   position: relative;

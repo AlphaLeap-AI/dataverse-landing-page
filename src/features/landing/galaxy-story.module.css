@@ -12,6 +12,108 @@
   transition: opacity 0.15s linear;
 }
 
+/* ── Chapter rail — fixed index of the six numbered chapters. Sits below
+   the glass nav (z 50) but above the story canvases; each item is a dash +
+   number that extends and reveals its label when hovered or active.
+   Hidden below 900px: on phones the copy already owns the screen. */
+.rail {
+  position: fixed;
+  left: clamp(14px, 2.2vw, 32px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s;
+}
+.railVisible {
+  opacity: 1;
+  visibility: visible;
+}
+.railItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--mono);
+}
+/* The leading dash — extends and lights up on hover / active chapter. */
+.railItem::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: rgba(140, 165, 210, 0.35);
+  transition:
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease;
+}
+.railItem:hover::before,
+.railItemActive::before {
+  width: 34px;
+  background: var(--accent-soft);
+}
+.railNum {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  transition: color 0.3s ease;
+}
+.railItem:hover .railNum,
+.railItemActive .railNum {
+  color: var(--accent-soft);
+}
+/* Label rolls out of zero width so the rail stays a thin spine at rest. */
+.railLabel {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    max-width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease;
+}
+.railItem:hover .railLabel,
+.railItemActive .railLabel {
+  max-width: 120px;
+  opacity: 1;
+}
+.railItemActive .railLabel {
+  color: #eef2fa;
+}
+@media (max-width: 900px) {
+  .rail {
+    display: none;
+  }
+}
+
+/* ── Film grain — static SVG noise over everything at ~5% opacity. Keeps
+   the large dark gradients from banding and gives the particle field a
+   filmic texture. No animation: free on the compositor and inherently
+   safe for reduced motion. z 70 > nav (50) so the texture is uniform. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
 /* ── Hero ── */
 .hero {
   position: relative;
@@ -194,6 +296,47 @@
 }
 /* Short viewports (laptops, split-screen): drop non-essential chrome so
    the primary CTAs stay in the first screen without scrolling. */
+/* ── Hero entrance — staggered rise + unblur on first paint. Delays climb
+   down the page (badge → headline → sub → ask → chips → CTAs → marquee →
+   cue). The reduced-motion query at the end of the file neutralises the
+   whole set, so every rule here can assume motion is allowed. */
+@keyframes dvHeroIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.heroBadge {
+  animation: dvHeroIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+.heroTitle {
+  animation: dvHeroIn 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+.heroScrim .heroSub {
+  animation: dvHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.34s both;
+}
+.heroAsk {
+  animation: dvHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.48s both;
+}
+.heroChips {
+  animation: dvHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+.heroCtas {
+  animation: dvHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.74s both;
+}
+.heroMarquee {
+  animation: dvHeroIn 1s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+}
+.scrollCue {
+  animation: dvHeroIn 1s cubic-bezier(0.22, 1, 0.36, 1) 1.05s both;
+}
+
 @media (max-height: 820px) {
   .hero {
     padding: 76px 24px 28px;
@@ -329,7 +472,7 @@
 }
 .beatH2 {
   font-weight: 600;
-  font-size: clamp(32px, 4vw, 56px);
+  font-size: clamp(36px, 4.6vw, 64px);
   line-height: 1.1;
   margin: 16px 0 0;
 }
@@ -1563,7 +1706,15 @@
   .livePulse,
   .floatSpan,
   .heroMarqueeTrack,
-  .heroBadgeDot {
+  .heroBadgeDot,
+  .heroBadge,
+  .heroTitle,
+  .heroScrim .heroSub,
+  .heroAsk,
+  .heroChips,
+  .heroCtas,
+  .heroMarquee,
+  .scrollCue {
     animation: none;
   }
 }

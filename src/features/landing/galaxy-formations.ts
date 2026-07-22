@@ -3,14 +3,24 @@ import * as THREE from "three";
 /**
  * Particle formation math for the scroll-driven galaxy background.
  *
- * Each of the six numbered chapters gets a literal particle "icon" so the
- * shape alone tells the chapter's story before the copy is read:
- *   01 Connect    — satellite database cylinders wired into one glowing hub
- *   02 Understand — an open book with lines of documentation
- *   03 Teach      — a lightbulb with a burning filament (knowledge taught)
- *   04 Ask        — a speech bubble with a big question mark
- *   05 Answer     — a bar chart under a magnifying glass
- *   06 Private    — a data vault sealed inside a wireframe security sphere
+ * Visual language — "solid emblems": every chapter is a bold, instantly
+ * readable icon built from FILLED masses (solid silhouettes with bright
+ * structural rims and one hot focal element), not sparse wireframe
+ * outlines. Masses stay monochrome-blue; a single warm accent per chapter
+ * marks the focal point. Benchmarked against the 06 reference: dome +
+ * beam + keep + columns + steps inside a bold containment ring.
+ *
+ *   01 Connect    — a hot solid hub; every satellite DB beamed into it
+ *   02 Understand — an open book: filled pages, bright self-writing lines
+ *   03 Teach      — a solid glowing bulb: hot filament, bold base, rays
+ *   04 Ask        — a solid speech bubble with a thick bright "?"
+ *   05 Answer     — a solid Pareto chart under a bold magnifying glass
+ *   06 Private    — a walled treasury: dome, vault keep, colonnade and
+ *                   stepped base sealed inside the containment ring
+ *
+ * Brightness floors (hard-won): at the 2600-particle phone budget a fill
+ * under ~0.3 luminance reads as dust, not mass. Fills live at 0.3–0.55,
+ * structural rims/edges at 0.75–1.1, focal points at 1.0–1.5.
  *
  * Kept free of DOM/canvas access so it can be unit-reasoned about
  * independently of the render loop in use-galaxy.ts.
@@ -38,6 +48,7 @@ const smooth = (t: number): number => {
 };
 const gauss = (): number => (Math.random() + Math.random() + Math.random() - 1.5) * 0.85;
 const jit = (s: number): number => (Math.random() - 0.5) * s;
+const TAU = Math.PI * 2;
 
 export interface Formation {
   pos: Float32Array;
@@ -49,16 +60,65 @@ export type FormationSet = [Formation, Formation, Formation, Formation, Formatio
 
 /** Question-mark glyph polyline for the 04 · Ask bubble (x, y pairs). */
 const QM_PATH: [number, number][] = [
-  [-2.1, 2.9],
-  [-1.6, 4.4],
-  [-0.1, 5.15],
-  [1.5, 4.7],
-  [2.15, 3.3],
-  [1.65, 1.95],
-  [0.5, 1.15],
-  [0.15, 0.35],
-  [0.15, -0.5],
+  [-1.51, 2.09],
+  [-1.15, 3.17],
+  [-0.07, 3.71],
+  [1.08, 3.38],
+  [1.55, 2.38],
+  [1.19, 1.4],
+  [0.36, 0.83],
+  [0.11, 0.25],
+  [0.11, -0.36],
 ];
+
+// ── solid-emblem primitives ──────────────────────────────────────────────
+// Coordinate samplers for FILLED masses. Each returns [x, y] (or [x, y, z]
+// where depth matters); the caller sets the color and writes via `put`.
+
+/** Uniform fill of a disc. */
+const disc = (cx: number, cy: number, r: number): [number, number] => {
+  const a = Math.random() * TAU;
+  const rr = r * Math.sqrt(Math.random());
+  return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
+};
+
+/** Points ON a circle of radius r (± wobble), for rims/rings. */
+const ring = (cx: number, cy: number, r: number, wobble = 0.2): [number, number] => {
+  const a = Math.random() * TAU;
+  const rr = r + jit(wobble);
+  return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
+};
+
+/** Uniform fill of an axis-aligned rect. */
+const rect = (x0: number, x1: number, y0: number, y1: number): [number, number] => [
+  x0 + Math.random() * (x1 - x0),
+  y0 + Math.random() * (y1 - y0),
+];
+
+/** Uniform point along a segment, with perpendicular thickness w. */
+const seg = (x0: number, y0: number, x1: number, y1: number, w: number): [number, number] => {
+  const t = Math.random();
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy) || 1;
+  const off = jit(w);
+  return [x0 + dx * t + (-dy / len) * off, y0 + dy * t + (dx / len) * off];
+};
+
+/** Superellipse (rounded-rect) outline point, exponent p=4. */
+const superellipse = (hw: number, hh: number): [number, number] => {
+  const a = Math.random() * TAU;
+  const co = Math.cos(a);
+  const si = Math.sin(a);
+  return [hw * Math.sign(co) * Math.pow(Math.abs(co), 0.5), hh * Math.sign(si) * Math.pow(Math.abs(si), 0.5)];
+};
+
+/** Filled superellipse (rounded-rect slab). */
+const superellipseFill = (hw: number, hh: number): [number, number] => {
+  const [x, y] = superellipse(hw, hh);
+  const rr = Math.sqrt(Math.random());
+  return [x * rr, y * rr];
+};
 
 export function buildFormations(N: number): FormationSet {
   const mk = (): Formation => ({ pos: new Float32Array(N * 3), col: new Float32Array(N * 3) });
@@ -93,14 +153,14 @@ export function buildFormations(N: number): FormationSet {
   const SAT = 8;
   const satPos: [number, number, number][] = [];
   for (let k = 0; k < SAT; k++) {
-    const a = (k / SAT) * Math.PI * 2 + 0.42;
-    satPos.push([Math.cos(a) * 11.2, Math.sin(a) * 6.1, Math.sin(a * 2) * 1.6]);
+    const a = (k / SAT) * TAU + 0.42;
+    satPos.push([Math.cos(a) * 10.0, Math.sin(a) * 5.5, Math.sin(a * 2) * 1.6]);
   }
 
   // ── 02 Understand: open book geometry ───────────────────────────────
-  const PAGE_W = 10.4; // inner margin → outer edge
-  const PAGE_TOP = 4.4;
-  const PAGE_BOT = -4.0;
+  const PAGE_W = 8.2; // inner margin → outer edge
+  const PAGE_TOP = 3.6;
+  const PAGE_BOT = -3.3;
   const pageDrop = (px: number) => -Math.pow(px / PAGE_W, 2) * 1.0; // outer edge dips
   const pageZ = (px: number) => -(px / PAGE_W) * 2.8; // pages recede
   // Ragged right edge per text row (fraction of full line width).
@@ -124,21 +184,11 @@ export function buildFormations(N: number): FormationSet {
       QM_PATH[s - 1][1] + (QM_PATH[s][1] - QM_PATH[s - 1][1]) * t,
     ];
   };
-  // Rounded-rect (superellipse) bubble outline.
-  const bubblePoint = (hw: number, hh: number): [number, number] => {
-    const a = Math.random() * Math.PI * 2;
-    const co = Math.cos(a);
-    const si = Math.sin(a);
-    const n = 2 / 4; // superellipse exponent 4 → rounded rectangle
-    return [hw * Math.sign(co) * Math.pow(Math.abs(co), n), hh * Math.sign(si) * Math.pow(Math.abs(si), n)];
-  };
 
-  // ── 05 Answer: combo chart (bars + trend line + magnifier) ──────────
-  // Compact width so portrait phones keep the full chart on-screen; tall
-  // bars fill the free band above the chapter copy. Magnifier sits on the
-  // first bar without hanging past the left edge.
+  // ── 05 Answer: Pareto chart geometry (descending bars — matches the
+  // answer card's ranked regions) + magnifier over the tallest bar. ─────
   const barVals = [2.41, 1.82, 1.03, 0.41];
-  const barX = [-5.8, -1.9, 1.9, 5.8];
+  const barX = [-4.8, -1.6, 1.6, 4.8];
   const total = barVals.reduce((a, b) => a + b, 0);
   const barCum: number[] = [];
   let acc = 0;
@@ -147,42 +197,43 @@ export function buildFormations(N: number): FormationSet {
     barCum.push(acc);
   }
   const barCols = [cAccent, new THREE.Color("#5f9bff"), new THREE.Color("#8db8ff"), new THREE.Color("#b9d2f5")];
-  const BAR_BASE = -8.2;
-  const barH = (b: number) => (barVals[b] / barVals[0]) * 15.2;
-  // Trend-line y at each bar (slightly above the caps so the series reads).
-  const lineY = (b: number) => BAR_BASE + barH(b) + 1.15;
+  const BAR_BASE = -6.0;
+  const barH = (b: number) => (barVals[b] / barVals[0]) * 11.0;
+  // Trend-line y at each bar — an ASCENDING cumulative series crossing the
+  // descending caps, so the two read as distinct layers (classic Pareto).
+  const lineY = (b: number) => -0.8 + b * 1.9;
   const sampleTrend = (): [number, number] => {
-    const seg = Math.random() * (barX.length - 1);
-    const s = Math.min(barX.length - 2, Math.floor(seg));
-    const t = seg - s;
+    const segI = Math.random() * (barX.length - 1);
+    const s = Math.min(barX.length - 2, Math.floor(segI));
+    const t = segI - s;
     const sm = t * t * (3 - 2 * t);
     const x = barX[s] + (barX[s + 1] - barX[s]) * sm;
     const y = lineY(s) + (lineY(s + 1) - lineY(s)) * sm + Math.sin(t * Math.PI) * 0.55;
     return [x, y];
   };
-  const MAG_CX = -5.6; // magnifier ring over the tallest bar
-  const MAG_CY = 5.6;
-  const MAG_R = 2.55;
+  const MAG_CX = -4.4; // magnifier ring over the tallest bar
+  const MAG_CY = 4.6;
+  const MAG_R = 2.3;
 
-  // ── 06 Private: a data vault sealed inside a wireframe security sphere ──
-  // The whole scene is enclosed by a geodesic "wireframe" globe (dot-lines
-  // along meridians + parallels). A metallic safe with a spoked combination
-  // dial sits front-and-centre; a stream of data flows into its left flank;
-  // concentric halo rings ground it. Everything reads front-on so the safe's
-  // door, dial, hinges and feet stay legible.
-  const SPHERE_R = 12.2; // globe radius (dominates the formation's extent)
-  const SPHERE_CY = 0.4; // globe centre, lifted slightly above the safe
-  const V_MERID = 18; // longitude dot-lines
-  const V_PARAL = 12; // latitude dot-lines
-  const VAULT_CX = 0;
-  const VAULT_CY = -1.6; // safe sits in the lower-centre of the globe
-  const VAULT_CZ = 3.4; // pushed toward the camera, in front of the core
-  const VAULT_HW = 4.0; // safe body half-width
-  const VAULT_HH = 4.7; // safe body half-height (taller than wide)
-  const DIAL_CY = VAULT_CY + 0.2; // combination wheel centre
+  // ── 06 Private: the walled treasury ──────────────────────────────────
+  // A domed stronghold sealed inside the containment ring ("your walls"):
+  // solid dome roof on a bright entablature beam, a massive vault keep on
+  // the left with a glowing lock dial, a colonnade on the right, stepped
+  // foundation at the bottom, and the data stream flowing in from the
+  // lower-left. Monochrome blue — the dial is the hot focal point.
+  const RING_R = 11.2;
+  const RING_CY = 0.2;
+  const DOME_CY = 2.9; // dome base sits on the beam (top y ≈ 2.9)
+  const DOME_R = 4.0;
+  const KEEP = { x0: -3.9, x1: -0.6, y0: -4.9, y1: 1.6 }; // vault hall (left)
+  const DIAL = { x: -2.25, y: -1.25 };
+  const COLS_X = [0.65, 2.1, 3.55]; // colonnade (right)
+  const STEPS = [
+    { hw: 4.6, y0: -5.7, y1: -5.0 },
+    { hw: 5.3, y0: -6.4, y1: -5.8 },
+    { hw: 6.0, y0: -7.1, y1: -6.5 },
+  ];
   const STREAM_STRANDS = 9;
-  const STREAM_ENTRY_X = VAULT_CX - VAULT_HW + 0.2; // where the flow meets the safe
-  const STREAM_ENTRY_Y = VAULT_CY + 0.3;
 
   for (let i = 0; i < N; i++) {
     const i3 = i * 3;
@@ -202,39 +253,92 @@ export function buildFormations(N: number): FormationSet {
       chaos.col[i3 + 2] = tmp.b;
     }
 
-    // ── 01 Connect: db cylinders around a hub, wired in ──
-    if (u < 0.15) {
-      // glowing hub core
-      const th = Math.random() * Math.PI * 2;
+    // ── 01 Connect: one hot hub, every source beamed in ──
+    if (u < 0.16) {
+      // hub core — the brightest solid mass on screen
+      const th = Math.random() * TAU;
       const ph = Math.acos(2 * Math.random() - 1);
-      const r = Math.pow(Math.random(), 0.6) * 2.1;
-      tmp.copy(cWhite).lerp(cAccent, Math.random() * 0.65).multiplyScalar(0.75 + Math.random() * 0.5);
+      const r = Math.pow(Math.random(), 0.45) * 2.4;
+      tmp.copy(cWhite).lerp(cAccent, Math.random() * 0.5).multiplyScalar(0.95 + Math.random() * 0.5);
       put(connect, i3, Math.sin(ph) * Math.cos(th) * r, Math.cos(ph) * r * 0.85, Math.sin(ph) * Math.sin(th) * r);
-    } else if (u < 0.62) {
-      // satellite database cylinders: three stacked discs, rim-biased
+    } else if (u < 0.2) {
+      // hub halo ring — gives the core a crisp edge to orbit
+      const [hx, hy] = ring(0, 0, 3.2, 0.3);
+      tmp.copy(cAccent).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.5 + Math.random() * 0.3);
+      put(connect, i3, hx, hy * 0.85, jit(0.4));
+    } else if (u < 0.64) {
+      // satellite database cylinders — SOLID stacked discs (filled, with
+      // dark groove lines so the disc stack reads)
       const k = i % SAT;
       const [cx, cy, cz] = satPos[k];
+      const ang = Math.random() * TAU;
+      const rr = 1.5 * (0.4 + 0.6 * Math.sqrt(Math.random()));
       const band = Math.floor(Math.random() * 3) - 1; // -1 | 0 | 1
-      const ang = Math.random() * Math.PI * 2;
-      const rim = Math.random() < 0.6 ? 1.55 : 1.55 * Math.sqrt(Math.random());
-      tmp.copy(dbCols[k]).multiplyScalar(0.6 + Math.random() * 0.6);
-      put(connect, i3, cx + Math.cos(ang) * rim, cy + band * 0.95 + jit(0.28), cz + Math.sin(ang) * rim * 0.5);
-    } else {
-      // connection lines: satellite → hub, with bright "packets" in flight
+      const y = band * 0.95 + jit(0.66);
+      const groove = Math.abs(Math.abs(y) - 0.48) < 0.14; // dark seams between discs
+      const cap = band === 1 && y > 0.62; // top cap catches the light
+      tmp
+        .copy(dbCols[k])
+        .multiplyScalar(groove ? 0.22 : cap ? 0.95 + Math.random() * 0.35 : 0.55 + Math.random() * 0.4);
+      put(connect, i3, cx + Math.cos(ang) * rr, cy + y, cz + Math.sin(ang) * rr * 0.5);
+    } else if (u < 0.97) {
+      // beams — THICK bands from each satellite into the hub, brightening
+      // as they arrive, with hot packets in flight
       const k = i % SAT;
       const [cx, cy, cz] = satPos[k];
       const t = Math.random();
-      const sx = cx * 0.82;
-      const sy = cy * 0.82;
-      const sz = cz * 0.82;
-      const packet = Math.random() > 0.88;
-      tmp.copy(dbCols[k]).lerp(cWhite, t * 0.7).multiplyScalar(packet ? 1.1 : 0.22 + t * 0.35);
-      put(connect, i3, sx * (1 - t) + jit(0.14), sy * (1 - t) + jit(0.14), sz * (1 - t) + jit(0.14));
+      const sx = cx * 0.84;
+      const sy = cy * 0.84;
+      const sz = cz * 0.84;
+      // land on the hub rim, not the center, so the core stays readable
+      const ex = (cx / 11.2) * 2.6;
+      const ey = (cy / 6.1) * 2.2;
+      const w = 0.55 * (1 - t * 0.55);
+      const packet = Math.random() > 0.9;
+      tmp
+        .copy(dbCols[k])
+        .lerp(cWhite, t * 0.75)
+        .multiplyScalar(packet ? 1.25 : 0.38 + t * 0.65);
+      put(
+        connect,
+        i3,
+        sx + (ex - sx) * t + jit(w),
+        sy + (ey - sy) * t + jit(w),
+        sz * (1 - t) + jit(w * 0.7)
+      );
+    } else {
+      // faint orbit ellipse threading the satellites — structural rhyme
+      const a = Math.random() * TAU;
+      tmp.copy(cSoft).multiplyScalar(0.16 + Math.random() * 0.14);
+      put(connect, i3, Math.cos(a) * 10.0, Math.sin(a) * 5.5, Math.sin(a * 2) * 1.6 + jit(0.2));
     }
 
-    // ── 02 Understand: open book with documented lines ──
-    if (u < 0.2) {
-      // page outlines (both pages)
+    // ── 02 Understand: the book that writes itself ──
+    if (u < 0.4) {
+      // SOLID page slabs — filled dim masses so the book reads as an object
+      const side = Math.random() < 0.5 ? -1 : 1;
+      const px = 0.55 + Math.random() * (PAGE_W - 0.8);
+      const py = PAGE_BOT + Math.random() * (PAGE_TOP - PAGE_BOT);
+      const edge = px > PAGE_W - 0.75 || py > PAGE_TOP - 0.4 || py < PAGE_BOT + 0.4;
+      tmp.copy(cSoft).multiplyScalar(edge ? 0.6 + Math.random() * 0.25 : 0.3 + Math.random() * 0.15);
+      put(learn, i3, side * px, py + pageDrop(px), pageZ(px) + jit(0.22));
+    } else if (u < 0.72) {
+      // text lines — the documentation writing itself, bright on the slab
+      const side = Math.random() < 0.5 ? -1 : 1;
+      const row = i % ROW_LEN.length;
+      const len = (PAGE_W - 1.6) * ROW_LEN[row];
+      const px = 1.3 + Math.random() * len;
+      const py = 2.8 - row * 0.95;
+      if (row === 0) {
+        // first line on each page = the heading, white-hot
+        tmp.copy(cWhite).multiplyScalar(0.95 + Math.random() * 0.4);
+      } else {
+        const green = row % 3 === 1;
+        tmp.copy(green ? cGreen : cSoft).multiplyScalar(green ? 0.7 + Math.random() * 0.3 : 0.6 + Math.random() * 0.4);
+      }
+      put(learn, i3, side * px + jit(0.1), py + pageDrop(px) + jit(0.12), pageZ(px) + 0.25 + jit(0.14));
+    } else if (u < 0.84) {
+      // page rims — crisp outline over the slab edges
       const side = Math.random() < 0.5 ? -1 : 1;
       const per = 2 * (PAGE_W - 0.5) + 2 * (PAGE_TOP - PAGE_BOT);
       let d = Math.random() * per;
@@ -255,346 +359,320 @@ export function buildFormations(N: number): FormationSet {
         px = 0.5;
         py = PAGE_TOP - (d - wSeg);
       }
-      tmp.copy(cWhite).multiplyScalar(0.5 + Math.random() * 0.25);
+      tmp.copy(cWhite).multiplyScalar(0.75 + Math.random() * 0.35);
       put(learn, i3, side * px + jit(0.1), py + pageDrop(px) + jit(0.1), pageZ(px) + jit(0.15));
-    } else if (u < 0.72) {
-      // text lines — the documentation writing itself
-      const side = Math.random() < 0.5 ? -1 : 1;
-      const row = i % ROW_LEN.length;
-      const len = (PAGE_W - 1.6) * ROW_LEN[row];
-      const px = 1.3 + Math.random() * len;
-      const py = 3.3 - row * 1.22;
-      const green = row % 3 === 1;
-      tmp.copy(green ? cGreen : cSoft).multiplyScalar(green ? 0.75 : 0.5 + Math.random() * 0.45);
-      put(learn, i3, side * px + jit(0.08), py + pageDrop(px) + jit(0.09), pageZ(px) + jit(0.12));
-    } else if (u < 0.82) {
-      // bright spine
+    } else if (u < 0.92) {
+      // bright spine — the focal fold of the book
       const py = PAGE_BOT - 0.2 + Math.random() * (PAGE_TOP - PAGE_BOT + 0.6);
-      tmp.copy(cWhite).multiplyScalar(0.8 + Math.random() * 0.4);
-      put(learn, i3, jit(0.22), py, 0.35 + jit(0.2));
-    } else if (u < 0.88) {
-      // sparse knowledge motes drifting up off the pages
-      tmp.copy(cGold).multiplyScalar(0.12 + Math.random() * 0.3);
-      put(learn, i3, jit(19), 5 + Math.random() * 4.5, jit(5) - 1);
+      tmp.copy(cWhite).multiplyScalar(0.85 + Math.random() * 0.45);
+      put(learn, i3, jit(0.26), py, 0.4 + jit(0.22));
     } else {
-      // extra pass over the text lines so the writing stays the focus
-      const side = Math.random() < 0.5 ? -1 : 1;
-      const row = i % ROW_LEN.length;
-      const len = (PAGE_W - 1.6) * ROW_LEN[row];
-      const px = 1.3 + Math.random() * len;
-      const py = 3.3 - row * 1.22;
-      tmp.copy(cSoft).multiplyScalar(0.5 + Math.random() * 0.4);
-      put(learn, i3, side * px + jit(0.08), py + pageDrop(px) + jit(0.09), pageZ(px) + jit(0.12));
+      // sparse knowledge motes drifting up off the pages
+      tmp.copy(cGold).multiplyScalar(0.3 + Math.random() * 0.4);
+      put(learn, i3, jit(14), 4.2 + Math.random() * 2.6, jit(4.5) - 1);
     }
 
-    // ── 03 Teach: lightbulb, filament burning ──
+    // ── 03 Teach: the bulb, lit from within ──
     // Scaled to match other chapter icons (book/chart/connect span ~±10–12).
-    // The unscaled bulb sat at ~±7 and read as a small floating ornament —
-    // especially on phones, where it left a large empty band around it.
-    const BULB = 1.62;
-    if (u < 0.3) {
-      // glass envelope
-      const th = Math.random() * Math.PI * 2;
+    const BULB = 1.3;
+    const BULB_CY = 2.4 * BULB;
+    const GLASS_R = 4.4 * BULB;
+    if (u < 0.22) {
+      // SOLID glass envelope — filled orb, brighter toward the rim so the
+      // silhouette reads even at phone density
+      const th = Math.random() * TAU;
       const ph = Math.acos(2 * Math.random() - 1);
-      const gr = 4.4 * BULB;
-      tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.28 + Math.random() * 0.2);
+      const rr = GLASS_R * (0.55 + 0.45 * Math.cbrt(Math.random()));
+      const rim = rr > GLASS_R * 0.88;
+      tmp
+        .copy(cSoft)
+        .lerp(cWhite, Math.random() * 0.3)
+        .multiplyScalar(rim ? 0.7 + Math.random() * 0.3 : 0.32 + Math.random() * 0.16);
       put(
         skills,
         i3,
-        Math.sin(ph) * Math.cos(th) * gr,
-        2.4 * BULB + Math.cos(ph) * gr,
-        Math.sin(ph) * Math.sin(th) * gr
+        Math.sin(ph) * Math.cos(th) * rr,
+        BULB_CY + Math.cos(ph) * rr,
+        Math.sin(ph) * Math.sin(th) * rr
       );
+    } else if (u < 0.4) {
+      // crisp rim ring — the bulb's silhouette edge
+      const th = Math.random() * TAU;
+      tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.8 + Math.random() * 0.4);
+      put(skills, i3, Math.cos(th) * GLASS_R, BULB_CY + Math.sin(th) * GLASS_R, jit(1.2));
     } else if (u < 0.6) {
-      // filament coil + leads
+      // filament coil + leads — the hot focal point (knowledge, lit)
       if (i % 5 === 0) {
         const side = i % 10 === 0 ? -1 : 1;
         const t = Math.random();
-        tmp.copy(cGold).multiplyScalar(0.65 + Math.random() * 0.35);
+        tmp.copy(cGold).multiplyScalar(0.7 + Math.random() * 0.35);
         put(
           skills,
           i3,
-          side * (1.5 - t * 0.6) * BULB + jit(0.08),
-          (0.9 - t * 3.4) * BULB + jit(0.08),
-          jit(0.1)
+          side * (1.5 - t * 0.6) * BULB + jit(0.1),
+          (0.9 - t * 3.4) * BULB + jit(0.1),
+          jit(0.12)
         );
       } else {
         const t = Math.random();
         const coil = t * Math.PI * 6;
-        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.35).multiplyScalar(0.95 + Math.random() * 0.45);
+        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.45).multiplyScalar(1.05 + Math.random() * 0.5);
         put(
           skills,
           i3,
-          ((t - 0.5) * 3.0) * BULB + jit(0.07),
-          (1.15 + Math.sin(coil) * 0.75) * BULB + jit(0.07),
-          Math.cos(coil) * 0.35 * BULB
+          ((t - 0.5) * 3.0) * BULB + jit(0.12),
+          (1.15 + Math.sin(coil) * 0.75) * BULB + jit(0.12),
+          Math.cos(coil) * 0.4 * BULB
         );
       }
-    } else if (u < 0.82) {
-      // screw base: three stacked rings
+    } else if (u < 0.62) {
+      // white-hot glow core around the filament
+      const [gx, gy] = disc(0, 1.1 * BULB, 1.0 * BULB);
+      tmp.copy(cWhite).multiplyScalar(1.1 + Math.random() * 0.4);
+      put(skills, i3, gx, gy, jit(0.6));
+    } else if (u < 0.66) {
+      // neck — the solid collar joining the glass to the screw base
+      const [nx, ny] = rect(-1.05 * BULB, 1.05 * BULB, -2.85 * BULB, -1.95 * BULB);
+      tmp.copy(cSlate).multiplyScalar(0.5 + Math.random() * 0.3);
+      put(skills, i3, nx, ny, jit(0.5));
+    } else if (u < 0.86) {
+      // SOLID screw base — three filled bands with bright top edges
       const band = i % 3;
-      const r = (1.75 - band * 0.14) * BULB;
-      const ang = Math.random() * Math.PI * 2;
-      tmp.copy(cSlate).multiplyScalar(0.4 + Math.random() * 0.3);
-      put(
-        skills,
-        i3,
-        Math.cos(ang) * r + jit(0.1),
-        (-2.85 - band * 0.72) * BULB + jit(0.2),
-        Math.sin(ang) * r * 0.6
-      );
+      const r = (1.8 - band * 0.16) * BULB;
+      const ang = Math.random() * TAU;
+      const rr = r * (0.45 + 0.55 * Math.sqrt(Math.random()));
+      const y = (-2.75 - band * 0.78) * BULB + jit(0.56);
+      const topEdge = y > (-2.75 - band * 0.78 + 0.18) * BULB;
+      tmp.copy(cSlate).multiplyScalar(topEdge ? 0.95 + Math.random() * 0.35 : 0.55 + Math.random() * 0.3);
+      put(skills, i3, Math.cos(ang) * rr, y, Math.sin(ang) * rr * 0.6);
     } else {
-      // light rays
+      // bold light rays — 12 spokes, hot near the glass, fading outward
       const k = i % 12;
-      const ang = (k / 12) * Math.PI * 2 + 0.26;
+      const ang = (k / 12) * TAU + 0.26;
       const t = Math.random();
-      const r = (5.2 + t * 1.7) * BULB;
-      tmp.copy(cGold).multiplyScalar((1 - t) * 0.6 + 0.1);
-      put(
-        skills,
-        i3,
-        Math.cos(ang) * r + jit(0.1),
-        2.4 * BULB + Math.sin(ang) * r + jit(0.1),
-        jit(0.4)
-      );
+      const r = GLASS_R * 1.08 + t * 1.3 * BULB;
+      tmp.copy(cGold).multiplyScalar((1 - t) * 0.6 + 0.12);
+      put(skills, i3, Math.cos(ang) * r + jit(0.3), BULB_CY + Math.sin(ang) * r + jit(0.3), jit(0.5));
     }
 
-    // ── 04 Ask: speech bubble + question mark ──
+    // ── 04 Ask: the question, said out loud ──
+    const BUB_HW = 5.6;
+    const BUB_HH = 3.1;
+    const BUB_CY = 1.4;
     if (u < 0.3) {
-      // bubble outline
-      const [bx, by] = bubblePoint(8.2, 4.6);
-      tmp.copy(cSoft).multiplyScalar(0.55 + Math.random() * 0.35);
-      put(ask, i3, bx + jit(0.2), 1.6 + by + jit(0.2), jit(0.3));
-    } else if (u < 0.37) {
-      // tail toward the asker
+      // SOLID bubble slab — filled rounded-rect mass
+      const [bx, by] = superellipseFill(BUB_HW, BUB_HH);
+      tmp.copy(cSoft).multiplyScalar(0.3 + Math.random() * 0.15);
+      put(ask, i3, bx, BUB_CY + by, jit(0.35));
+    } else if (u < 0.42) {
+      // bright bubble rim
+      const [bx, by] = superellipse(BUB_HW, BUB_HH);
+      tmp.copy(cSoft).multiplyScalar(0.85 + Math.random() * 0.35);
+      put(ask, i3, bx + jit(0.24), BUB_CY + by + jit(0.24), jit(0.3));
+    } else if (u < 0.48) {
+      // solid tail toward the asker
       const t = Math.random();
-      const w = (1 - t) * 1.4;
-      tmp.copy(cSoft).multiplyScalar(0.5 + Math.random() * 0.3);
-      put(ask, i3, -3.4 - t * 2.3 + jit(w), -2.95 - t * 2.4 + jit(w * 0.5), jit(0.3));
-    } else if (u < 0.78) {
-      // the question mark — brightest element on screen
-      if (Math.random() < 0.18) {
-        // dot
-        const ang = Math.random() * Math.PI * 2;
-        const r = 0.45 * Math.sqrt(Math.random());
-        tmp.copy(cWhite).lerp(cGold, Math.random() * 0.5).multiplyScalar(1.05 + Math.random() * 0.35);
-        put(ask, i3, 0.15 + Math.cos(ang) * r, -1.95 + Math.sin(ang) * r * 1.1, jit(0.2));
+      const w = (1 - t) * 1.2;
+      tmp.copy(cSoft).multiplyScalar(0.55 + Math.random() * 0.3);
+      put(ask, i3, -2.6 - t * 2.4 + jit(w), BUB_CY - 3.05 - t * 1.8 + jit(w * 0.55), jit(0.3));
+    } else if (u < 0.82) {
+      // the question mark — THICK, white-hot, the loudest glyph on screen
+      if (Math.random() < 0.16) {
+        // dot — solid, heavy
+        const [dx, dy] = disc(0.11, -1.4, 0.5);
+        tmp.copy(cWhite).lerp(cGold, Math.random() * 0.4).multiplyScalar(1.1 + Math.random() * 0.4);
+        put(ask, i3, dx, dy, jit(0.2));
       } else {
         const [qx, qy] = sampleQM();
-        tmp.copy(cWhite).lerp(cGold, Math.random() * 0.5).multiplyScalar(1.0 + Math.random() * 0.4);
-        put(ask, i3, qx + jit(0.3), qy + jit(0.3), jit(0.25));
+        tmp.copy(cWhite).lerp(cGold, Math.random() * 0.45).multiplyScalar(1.0 + Math.random() * 0.45);
+        put(ask, i3, qx + jit(0.52), qy + jit(0.52), jit(0.28));
       }
     } else {
-      // two smaller bubbles trailing off — the conversation continues
+      // two smaller bubbles trailing off — filled, the conversation continues
       const minor = Math.random() < 0.6;
-      const r = minor ? 1.15 : 0.7;
-      const cx = minor ? 10.3 : 12.4;
-      const cy = minor ? 6.3 : 8.1;
-      const ang = Math.random() * Math.PI * 2;
-      tmp.copy(cSoft).multiplyScalar(0.35 + Math.random() * 0.25);
-      put(ask, i3, cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, jit(0.3));
+      const r = minor ? 1.0 : 0.65;
+      const cx = minor ? 8.2 : 9.6;
+      const cy = minor ? 4.9 : 6.3;
+      if (Math.random() < 0.45) {
+        const [mx2, my2] = ring(cx, cy, r, 0.16);
+        tmp.copy(cSoft).multiplyScalar(0.65 + Math.random() * 0.3);
+        put(ask, i3, mx2, my2, jit(0.3));
+      } else {
+        const [mx2, my2] = disc(cx, cy, r);
+        tmp.copy(cSoft).multiplyScalar(0.3 + Math.random() * 0.2);
+        put(ask, i3, mx2, my2, jit(0.3));
+      }
     }
 
-    // ── 05 Answer: tall bars + trend line under a magnifying glass ──
-    if (u < 0.5) {
-      // crisp histogram bars (narrower half-width so they stay on-screen)
+    // ── 05 Answer: the ranked truth, magnified ──
+    if (u < 0.51) {
+      // SOLID Pareto bars — crisp uniform fills, hot caps, bright side rims
       let b = 0;
-      const uu = u / 0.5;
+      const uu = u / 0.51;
       while (b < 3 && uu > barCum[b]) b++;
       const h = barH(b);
       const py = BAR_BASE + Math.random() * h;
-      const cap = py > BAR_BASE + h - 0.85;
-      tmp.copy(barCols[b]).multiplyScalar((cap ? 1.15 : 0.5) + Math.random() * 0.55);
-      put(answer, i3, barX[b] + jit(1.65), py, jit(1.15));
+      const cap = py > BAR_BASE + h - 0.7;
+      const ex = (Math.random() * 2 - 1) * 0.85;
+      const edge = Math.abs(ex) > 0.68;
+      tmp
+        .copy(barCols[b])
+        .multiplyScalar(cap ? 1.1 + Math.random() * 0.35 : edge ? 0.95 : 0.5 + Math.random() * 0.3);
+      put(answer, i3, barX[b] + ex, py, jit(1.0));
     } else if (u < 0.64) {
-      // trend line over the bars — shows multi-series / line+bar combos
-      if (Math.random() < 0.22) {
-        // bright vertices at each bar top
+      // trend line over the bars — bright, with hot vertex nodes
+      if (Math.random() < 0.24) {
         const b = i % barX.length;
-        const ang = Math.random() * Math.PI * 2;
-        const r = 0.38 * Math.sqrt(Math.random());
-        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.4).multiplyScalar(1.05 + Math.random() * 0.35);
-        put(answer, i3, barX[b] + Math.cos(ang) * r, lineY(b) + Math.sin(ang) * r * 0.7, 0.5 + jit(0.25));
+        const [vx, vy] = disc(barX[b], lineY(b), 0.4);
+        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.4).multiplyScalar(1.05 + Math.random() * 0.4);
+        put(answer, i3, vx, vy, 0.55 + jit(0.25));
       } else {
         const [lx, ly] = sampleTrend();
-        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.45).multiplyScalar(0.75 + Math.random() * 0.45);
-        put(answer, i3, lx + jit(0.18), ly + jit(0.16), 0.45 + jit(0.3));
-      }
-    } else if (u < 0.72) {
-      // axis lines — span only the chart width so phones don't clip
-      if (Math.random() < 0.72) {
-        tmp.copy(cWhite).multiplyScalar(0.3 + Math.random() * 0.15);
-        put(answer, i3, -8.2 + Math.random() * 16.4, BAR_BASE - 0.35 + jit(0.12), jit(0.3));
-      } else {
-        tmp.copy(cWhite).multiplyScalar(0.25 + Math.random() * 0.15);
-        put(answer, i3, -8.2 + jit(0.12), BAR_BASE - 0.35 + Math.random() * 15.5, jit(0.3));
-      }
-    } else if (u < 0.9) {
-      // magnifying glass ring over the tallest bar — "digs for the why"
-      const ang = Math.random() * Math.PI * 2;
-      tmp.copy(cGold).multiplyScalar(0.8 + Math.random() * 0.5);
-      put(
-        answer,
-        i3,
-        MAG_CX + Math.cos(ang) * MAG_R + jit(0.18),
-        MAG_CY + Math.sin(ang) * MAG_R + jit(0.18),
-        0.8 + jit(0.3)
-      );
-    } else {
-      // magnifier handle (angles down-right — stays inside the frame)
-      const t = Math.random();
-      tmp.copy(cGold).multiplyScalar(0.7 + Math.random() * 0.4);
-      put(
-        answer,
-        i3,
-        MAG_CX + Math.cos(-0.55) * (MAG_R + t * 3.0) + jit(0.18),
-        MAG_CY + Math.sin(-0.55) * (MAG_R + t * 3.0) + jit(0.18),
-        0.8 + jit(0.3)
-      );
-    }
-
-    // ── 06 Private: a data vault sealed inside a wireframe security sphere ──
-    if (u < 0.34) {
-      // wireframe globe — dots strung along meridians + parallels so the
-      // shell reads as a geodesic network rather than a solid ball. Front
-      // hemisphere stays faint so the safe shows through it.
-      let sx: number;
-      let sy: number;
-      let sz: number;
-      if (Math.random() < 0.5) {
-        // meridian: fixed longitude, latitude runs pole to pole
-        const lon = ((i % V_MERID) / V_MERID) * Math.PI * 2;
-        const lat = (Math.random() - 0.5) * Math.PI;
-        const cl = Math.cos(lat);
-        sx = SPHERE_R * cl * Math.cos(lon);
-        sy = SPHERE_CY + SPHERE_R * Math.sin(lat);
-        sz = SPHERE_R * cl * Math.sin(lon);
-      } else {
-        // parallel: fixed latitude ring, longitude sweeps around
-        const lat = (-0.5 + (i % V_PARAL) / (V_PARAL - 1)) * Math.PI * 0.94;
-        const lon = Math.random() * Math.PI * 2;
-        const cl = Math.cos(lat);
-        sx = SPHERE_R * cl * Math.cos(lon);
-        sy = SPHERE_CY + SPHERE_R * Math.sin(lat);
-        sz = SPHERE_R * cl * Math.sin(lon);
-      }
-      const node = Math.random() > 0.9; // bright vertex where lines cross
-      tmp
-        .copy(node ? cWhite : cAccent)
-        .lerp(cSoft, Math.random() * 0.5)
-        .multiplyScalar(node ? 1.0 : 0.28 + Math.random() * 0.32);
-      put(priv, i3, sx, sy, sz);
-    } else if (u < 0.4) {
-      // scattered surface stars — the sparkle dusting the globe
-      const th = Math.random() * Math.PI * 2;
-      const ph = Math.acos(2 * Math.random() - 1);
-      const cl = Math.sin(ph);
-      tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.55 + Math.random() * 0.6);
-      put(priv, i3, SPHERE_R * cl * Math.cos(th), SPHERE_CY + SPHERE_R * Math.cos(ph), SPHERE_R * cl * Math.sin(th));
-    } else if (u < 0.52) {
-      // safe body — bright rounded-rect outline, with a faint offset rim
-      // up-and-back to imply the steel's thickness.
-      const depth = Math.random() < 0.22;
-      const [bx, by] = bubblePoint(VAULT_HW, VAULT_HH);
-      tmp
-        .copy(cSoft)
-        .lerp(cWhite, Math.random() * 0.5)
-        .multiplyScalar(depth ? 0.4 : 0.8 + Math.random() * 0.4);
-      put(
-        priv,
-        i3,
-        VAULT_CX + bx + (depth ? 0.9 : 0) + jit(0.06),
-        VAULT_CY + by + (depth ? 0.7 : 0) + jit(0.06),
-        VAULT_CZ + (depth ? -1.3 : 0) + jit(0.1)
-      );
-    } else if (u < 0.62) {
-      // door seam (inset rounded rect) + four corner bolts
-      if (Math.random() < 0.82) {
-        const [bx, by] = bubblePoint(VAULT_HW - 0.7, VAULT_HH - 0.7);
-        tmp.copy(cAccent).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.55 + Math.random() * 0.4);
-        put(priv, i3, VAULT_CX + bx + jit(0.05), VAULT_CY + by + jit(0.05), VAULT_CZ + 0.2 + jit(0.08));
-      } else {
-        const sxg = i % 2 === 0 ? -1 : 1;
-        const syg = i % 4 < 2 ? -1 : 1;
-        const ang = Math.random() * Math.PI * 2;
-        const r = 0.26 * Math.sqrt(Math.random());
-        tmp.copy(cWhite).multiplyScalar(0.9 + Math.random() * 0.4);
-        put(
-          priv,
-          i3,
-          VAULT_CX + sxg * (VAULT_HW - 1.15) + Math.cos(ang) * r,
-          VAULT_CY + syg * (VAULT_HH - 1.15) + Math.sin(ang) * r,
-          VAULT_CZ + 0.3
-        );
-      }
-    } else if (u < 0.74) {
-      // combination dial: concentric rings + radial spokes + bright hub
-      const r = Math.random();
-      if (r < 0.5) {
-        const rr = 0.7 + (i % 3) * 0.55;
-        const ang = Math.random() * Math.PI * 2;
-        tmp.copy(cAccent).lerp(cWhite, Math.random() * 0.5).multiplyScalar(0.7 + Math.random() * 0.5);
-        put(priv, i3, VAULT_CX + Math.cos(ang) * rr, DIAL_CY + Math.sin(ang) * rr, VAULT_CZ + 0.5);
-      } else if (r < 0.82) {
-        const ang = ((i % 8) / 8) * Math.PI * 2 + 0.2;
-        const t = 0.2 + Math.random() * 1.65;
-        tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.4).multiplyScalar(0.7 + Math.random() * 0.5);
-        put(priv, i3, VAULT_CX + Math.cos(ang) * t, DIAL_CY + Math.sin(ang) * t, VAULT_CZ + 0.55);
-      } else {
-        const ang = Math.random() * Math.PI * 2;
-        const rr = 0.42 * Math.sqrt(Math.random());
-        tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.3).multiplyScalar(1.1 + Math.random() * 0.4);
-        put(priv, i3, VAULT_CX + Math.cos(ang) * rr, DIAL_CY + Math.sin(ang) * rr, VAULT_CZ + 0.6);
-      }
-    } else if (u < 0.79) {
-      // hinges down the right edge + two feet under the body
-      if (Math.random() < 0.58) {
-        const hy = VAULT_CY + (Math.random() < 0.5 ? 2.6 : -2.6) + jit(0.55);
-        tmp.copy(cSlate).lerp(cSoft, Math.random() * 0.5).multiplyScalar(0.6 + Math.random() * 0.4);
-        put(priv, i3, VAULT_CX + VAULT_HW - 0.1 + jit(0.28), hy, VAULT_CZ + jit(0.15));
-      } else {
-        const left = Math.random() < 0.5;
-        tmp.copy(cSlate).multiplyScalar(0.5 + Math.random() * 0.35);
-        put(
-          priv,
-          i3,
-          VAULT_CX + (left ? -1 : 1) * (VAULT_HW - 1.0) + jit(0.35),
-          VAULT_CY - VAULT_HH - 0.35 + jit(0.2),
-          VAULT_CZ + jit(0.2)
-        );
+        tmp.copy(cGold).lerp(cWhite, Math.random() * 0.45).multiplyScalar(0.9 + Math.random() * 0.5);
+        put(answer, i3, lx + jit(0.24), ly + jit(0.22), 0.5 + jit(0.3));
       }
     } else if (u < 0.84) {
-      // faint interior fill so the door reads as a solid steel face
-      const [bx, by] = bubblePoint(VAULT_HW - 1.0, VAULT_HH - 1.0);
-      const fill = Math.sqrt(Math.random());
-      tmp.copy(cAccent).multiplyScalar(0.1 + Math.random() * 0.14);
-      put(priv, i3, VAULT_CX + bx * fill, VAULT_CY + by * fill, VAULT_CZ - 0.15 + jit(0.1));
+      // the magnifier — bold double ring + solid handle, digging for the why
+      if (Math.random() < 0.68) {
+        const rr = MAG_R + (Math.random() < 0.5 ? -0.14 : 0.14);
+        const [mx2, my2] = ring(MAG_CX, MAG_CY, rr, 0.26);
+        tmp.copy(cGold).multiplyScalar(0.95 + Math.random() * 0.5);
+        put(answer, i3, mx2, my2, 0.85 + jit(0.3));
+      } else {
+        const [hx, hy] = seg(
+          MAG_CX + Math.cos(-0.55) * (MAG_R + 0.2),
+          MAG_CY + Math.sin(-0.55) * (MAG_R + 0.2),
+          MAG_CX + Math.cos(-0.55) * (MAG_R + 3.4),
+          MAG_CY + Math.sin(-0.55) * (MAG_R + 3.4),
+          0.66
+        );
+        tmp.copy(cGold).multiplyScalar(0.85 + Math.random() * 0.45);
+        put(answer, i3, hx, hy, 0.85 + jit(0.3));
+      }
     } else if (u < 0.93) {
-      // data stream flowing in from the left, converging on the safe flank
-      const k = i % STREAM_STRANDS;
-      const t = Math.random(); // 0 = far-left origin → 1 = entry point
-      const startX = -15 - (k % 3) * 1.6;
-      const startY = STREAM_ENTRY_Y + (k - STREAM_STRANDS / 2) * 1.8;
-      const ex = t * t; // accelerate inward
-      const ey = t * t * (3 - 2 * t);
-      const x = startX + (STREAM_ENTRY_X - startX) * ex;
-      const y = startY + (STREAM_ENTRY_Y - startY) * ey + Math.sin(t * Math.PI * 2 + k) * (1 - t) * 0.7;
-      const packet = Math.random() > 0.9; // bright data packet in flight
-      tmp.copy(cSoft).lerp(cWhite, t * 0.7).multiplyScalar(packet ? 1.2 : 0.24 + t * 0.6);
-      put(priv, i3, x + jit(0.14), y + jit(0.14), 0.5 + t * (VAULT_CZ - 0.5) + jit(0.35));
+      // axis lines — span only the chart width so phones don't clip
+      if (Math.random() < 0.72) {
+        tmp.copy(cWhite).multiplyScalar(0.45 + Math.random() * 0.2);
+        put(answer, i3, -6.4 + Math.random() * 12.8, BAR_BASE - 0.35 + jit(0.14), jit(0.3));
+      } else {
+        tmp.copy(cWhite).multiplyScalar(0.38 + Math.random() * 0.18);
+        put(answer, i3, -6.4 + jit(0.14), BAR_BASE - 0.35 + Math.random() * 11.8, jit(0.3));
+      }
     } else {
-      // grounding halo — concentric rings the safe rests on
-      const ring = i % 4;
-      const r = 5.0 + ring * 1.6;
-      const ang = Math.random() * Math.PI * 2;
-      tmp.copy(cAccent).lerp(cSoft, Math.random() * 0.4).multiplyScalar(0.3 + Math.random() * 0.3);
-      put(
-        priv,
-        i3,
-        VAULT_CX + Math.cos(ang) * r,
-        VAULT_CY - VAULT_HH - 0.6 + ring * 0.05 + jit(0.1),
-        VAULT_CZ + Math.sin(ang) * r * 0.32
-      );
+      // faint horizontal gridlines behind the bars — chart furniture
+      const g = i % 3;
+      const gy = BAR_BASE + 11.0 * (0.25 + g * 0.25);
+      tmp.copy(cWhite).multiplyScalar(0.16 + Math.random() * 0.12);
+      put(answer, i3, -6.4 + Math.random() * 12.8, gy + jit(0.1), -0.4 + jit(0.2));
+    }
+
+    // ── 06 Private: the walled treasury (benchmark composition) ──
+    if (u < 0.13) {
+      // containment ring — the walls themselves, bold and bright
+      const [rx, ry] = ring(0, RING_CY, RING_R, 0.5);
+      const node = Math.random() > 0.92;
+      tmp
+        .copy(node ? cWhite : cAccent)
+        .lerp(cSoft, Math.random() * 0.45)
+        .multiplyScalar(node ? 1.1 : 0.8 + Math.random() * 0.35);
+      put(priv, i3, rx, ry, jit(0.5));
+    } else if (u < 0.3) {
+      // SOLID dome roof — a filled half-disc, brighter toward its rim,
+      // bulging slightly toward the camera so it reads as a cupola
+      const a = Math.random() * Math.PI; // upper half
+      const rr = DOME_R * Math.sqrt(Math.random());
+      const x = Math.cos(a) * rr;
+      const y = DOME_CY + Math.sin(a) * rr;
+      const rimT = rr / DOME_R;
+      tmp
+        .copy(cSoft)
+        .lerp(cWhite, Math.random() * 0.25)
+        .multiplyScalar(0.38 + rimT * 0.55 + Math.random() * 0.15);
+      put(priv, i3, x, y, (1 - rimT) * 1.3 + jit(0.6));
+    } else if (u < 0.31) {
+      // finial — the bright bead crowning the dome
+      const [fx, fy] = disc(0, DOME_CY + DOME_R + 0.35, 0.42);
+      tmp.copy(cWhite).multiplyScalar(1.0 + Math.random() * 0.4);
+      put(priv, i3, fx, fy, 0.6 + jit(0.3));
+    } else if (u < 0.39) {
+      // entablature beam — the solid horizontal bar the dome rests on
+      const [bx, by] = rect(-4.3, 4.3, 2.1, 2.9);
+      const top = by > 2.68;
+      tmp.copy(cSoft).multiplyScalar(top ? 1.0 + Math.random() * 0.3 : 0.55 + Math.random() * 0.3);
+      put(priv, i3, bx, by, jit(0.6));
+    } else if (u < 0.55) {
+      // vault keep — the massive solid block on the left, bright left rim
+      const [kx, ky] = rect(KEEP.x0, KEEP.x1, KEEP.y0, KEEP.y1);
+      const leftRim = kx < KEEP.x0 + 0.35;
+      const topRim = ky > KEEP.y1 - 0.32;
+      tmp
+        .copy(cAccent)
+        .lerp(cSoft, Math.random() * 0.5)
+        .multiplyScalar(leftRim ? 1.05 + Math.random() * 0.25 : topRim ? 0.8 + Math.random() * 0.2 : 0.35 + Math.random() * 0.15);
+      put(priv, i3, kx, ky, 0.35 + jit(0.5));
+    } else if (u < 0.62) {
+      // lock dial on the keep face — concentric rings + spokes + hot hub
+      const r = Math.random();
+      if (r < 0.42) {
+        const [dx2, dy2] = ring(DIAL.x, DIAL.y, 0.85, 0.14);
+        tmp.copy(cWhite).multiplyScalar(0.9 + Math.random() * 0.4);
+        put(priv, i3, dx2, dy2, 1.0 + jit(0.2));
+      } else if (r < 0.68) {
+        const [dx2, dy2] = ring(DIAL.x, DIAL.y, 0.5, 0.11);
+        tmp.copy(cSoft).lerp(cWhite, Math.random() * 0.5).multiplyScalar(0.7 + Math.random() * 0.4);
+        put(priv, i3, dx2, dy2, 1.0 + jit(0.2));
+      } else if (r < 0.86) {
+        const a = ((i % 8) / 8) * TAU + 0.2;
+        const t = 0.18 + Math.random() * 0.62;
+        tmp.copy(cSoft).multiplyScalar(0.65 + Math.random() * 0.4);
+        put(priv, i3, DIAL.x + Math.cos(a) * t, DIAL.y + Math.sin(a) * t, 1.05 + jit(0.15));
+      } else {
+        const [dx2, dy2] = disc(DIAL.x, DIAL.y, 0.26);
+        tmp.copy(cWhite).multiplyScalar(1.15 + Math.random() * 0.4);
+        put(priv, i3, dx2, dy2, 1.1 + jit(0.15));
+      }
+    } else if (u < 0.78) {
+      // colonnade — three solid columns on the right, bright caps + bases
+      const cxp = COLS_X[i % COLS_X.length];
+      const py = KEEP.y0 + Math.random() * (KEEP.y1 - KEEP.y0);
+      const capOrBase = py > KEEP.y1 - 0.36 || py < KEEP.y0 + 0.36;
+      tmp.copy(cSoft).multiplyScalar(capOrBase ? 1.0 + Math.random() * 0.25 : 0.55 + Math.random() * 0.3);
+      put(priv, i3, cxp + jit(0.8), py, jit(0.55));
+    } else if (u < 0.87) {
+      // stepped foundation — three solid slabs, widest at the bottom
+      const s = STEPS[i % STEPS.length];
+      const [sx2, sy2] = rect(-s.hw, s.hw, s.y0, s.y1);
+      const topEdge = sy2 > s.y1 - 0.28;
+      tmp.copy(cSoft).multiplyScalar(topEdge ? 0.9 + Math.random() * 0.3 : 0.5 + Math.random() * 0.25);
+      put(priv, i3, sx2, sy2, jit(0.6));
+    } else if (u < 0.97) {
+      // the data stream — strands flowing in from the lower-left,
+      // converging into the keep, hot packets riding them
+      const k = i % STREAM_STRANDS;
+      const t = Math.random();
+      const startX = -11 - (k % 3) * 1.2;
+      const startY = -6.2 + (k - STREAM_STRANDS / 2) * 0.85;
+      const ex = t * t;
+      const ey = t * t * (3 - 2 * t);
+      const x = startX + (KEEP.x0 - 0.2 - startX) * ex;
+      const y = startY + (-2.1 - startY) * ey + Math.sin(t * Math.PI * 2 + k) * (1 - t) * 0.7;
+      const packet = Math.random() > 0.9;
+      tmp
+        .copy(cSoft)
+        .lerp(cWhite, t * 0.7)
+        .multiplyScalar(packet ? 1.3 : 0.4 + t * 0.65);
+      put(priv, i3, x + jit(0.16), y + jit(0.16), 0.5 + t * 0.6 + jit(0.35));
+    } else {
+      // interior stars + bright glints on the ring — the night inside the walls
+      if (Math.random() < 0.7) {
+        const [sx2, sy2] = disc(0, RING_CY, RING_R - 1.0);
+        tmp.copy(cWhite).lerp(cSoft, Math.random() * 0.6).multiplyScalar(0.35 + Math.random() * 0.35);
+        put(priv, i3, sx2, sy2, jit(1.5));
+      } else {
+        const [gx2, gy2] = ring(0, RING_CY, RING_R, 0.3);
+        tmp.copy(cWhite).multiplyScalar(0.95 + Math.random() * 0.4);
+        put(priv, i3, gx2, gy2, jit(0.4));
+      }
     }
   }
 
@@ -621,7 +699,7 @@ export interface FormationBounds {
  * stray dots. A trimmed extent — the box containing all but the outer `trim`
  * fraction of points on each axis — tracks the icon's readable mass instead.
  */
-export function computeFormationBounds(f: Formation, trim = 0.02): FormationBounds {
+export function computeFormationBounds(f: Formation, trim = 0.015): FormationBounds {
   const n = f.pos.length / 3;
   if (n === 0) return { cx: 0, cy: 0, halfW: 1, halfH: 1 };
   const xs = new Float32Array(n);
@@ -650,7 +728,7 @@ export function computeFormationBounds(f: Formation, trim = 0.02): FormationBoun
 /**
  * Morph windows over story progress p ∈ [0,1] — one transition per story step
  * after the chaos pain-point beat (formations: chaos → connect → book →
- * bulb → bubble → chart → lock-in-dome).
+ * bulb → bubble → chart → treasury-in-ring).
  *
  * Aligned to BEAT_WINDOWS in use-galaxy.ts (2536vh chaos-dwell track):
  *   chaos   [0, 0.290]      — hold scattered chaos (no morph)
@@ -672,11 +750,11 @@ export const MORPH_WINDOWS: [number, number][] = [
   [0.52639, 0.55872], // 03 Skills — the bulb lights
   [0.633, 0.66795], // 04 Ask    — the question forms
   [0.74659, 0.78591], // 05 Answer — the chart draws itself
-  [0.88203, 0.92136], // 06 Private — the safe seals inside the security sphere
+  [0.88203, 0.92136], // 06 Private — the treasury seals inside the ring
 ];
 
 // Per-formation ambient jitter — icons stay crisp (low), chaos breathes.
-export const JITTER = [1.0, 0.1, 0.05, 0.07, 0.06, 0.09, 0.1];
+export const JITTER = [1.0, 0.08, 0.05, 0.06, 0.05, 0.07, 0.08];
 
 /** Returns [formationIndexA, formationIndexB, blendT] for story progress p. */
 export function formationState(p: number): [number, number, number] {

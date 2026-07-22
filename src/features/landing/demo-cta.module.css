@@ -1,7 +1,16 @@
 .section {
+  /* Width constraint lives here; the parent .finalFrame owns min-height so
+     CTA + footer share one full viewport at the bottom of the page. */
   max-width: 920px;
+  width: 100%;
   margin: 0 auto;
-  padding: 160px 28px 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* Tighter than the old 160/140 so headline + form + trust fit in-view. */
+  padding: 72px 28px 40px;
+  box-sizing: border-box;
   text-align: center;
   position: relative;
   z-index: 1;
@@ -14,10 +23,10 @@
 .glow {
   position: absolute;
   left: 50%;
-  top: 38%;
+  top: 42%;
   /* Size against the section, not the viewport — 120vw overflows mobile. */
   width: min(900px, 120%);
-  height: 520px;
+  height: min(560px, 70%);
   transform: translate(-50%, -50%);
   background:
     radial-gradient(ellipse 55% 45% at 50% 40%, rgba(61, 130, 255, 0.14), transparent 70%),
@@ -42,6 +51,8 @@
 }
 
 .headline {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,27 +65,56 @@
   line-height: 1.08;
 }
 
+/* Dark radial pool behind the display type — same idea as .sectHead, so
+   glyphs stay legible over the bright particle sphere. */
+.headline::before {
+  content: "";
+  position: absolute;
+  inset: -28px -72px -36px;
+  background: radial-gradient(
+    ellipse 72% 58% at 50% 42%,
+    rgba(6, 10, 20, 0.82) 0%,
+    rgba(6, 10, 20, 0.48) 52%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/*
+  Character-centered halo: stacked 0-offset shadows with rising blur +
+  falling opacity, so each glyph reads against the starfield the same way
+  "From ask the data team…" does in the proof section.
+*/
 .lineMuted {
-  font-size: clamp(44px, 7.2vw, 88px);
-  color: #c2ccd9;
+  font-size: clamp(40px, 6.6vw, 80px);
+  color: #d5dce8;
   font-weight: 500;
   text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 6px 28px rgba(6, 10, 20, 0.85);
+    0 0 2px rgba(6, 10, 20, 1),
+    0 0 8px rgba(6, 10, 20, 0.95),
+    0 0 20px rgba(6, 10, 20, 0.9),
+    0 0 40px rgba(6, 10, 20, 0.75),
+    0 0 70px rgba(6, 10, 20, 0.5),
+    0 1px 2px rgba(6, 10, 20, 0.95);
 }
 
 .lineReady {
-  font-size: clamp(52px, 8.4vw, 104px);
-  color: #eef3fb;
+  font-size: clamp(48px, 7.8vw, 96px);
+  color: #f2f5fb;
   font-weight: 500;
   margin-top: 0.02em;
   text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 8px 36px rgba(6, 10, 20, 0.9);
+    0 0 2px rgba(6, 10, 20, 1),
+    0 0 10px rgba(6, 10, 20, 0.95),
+    0 0 24px rgba(6, 10, 20, 0.9),
+    0 0 48px rgba(6, 10, 20, 0.78),
+    0 0 80px rgba(6, 10, 20, 0.52),
+    0 1px 2px rgba(6, 10, 20, 0.95);
 }
 
 .lineGradient {
-  font-size: clamp(52px, 8.4vw, 104px);
+  font-size: clamp(48px, 7.8vw, 96px);
   font-weight: 500;
   font-style: italic;
   margin-top: 0.04em;
@@ -90,20 +130,45 @@
   color: transparent;
   /* Avoid parent overflow-x:clip nipping the italic ? */
   overflow: visible;
+  /* background-clip:text kills text-shadow; drop-shadow paints per-glyph. */
+  filter:
+    drop-shadow(0 0 2px rgba(6, 10, 20, 0.98))
+    drop-shadow(0 0 10px rgba(6, 10, 20, 0.92))
+    drop-shadow(0 0 24px rgba(6, 10, 20, 0.8))
+    drop-shadow(0 0 48px rgba(6, 10, 20, 0.55));
 }
 
 /* `.lead` alone loses to landing.module.css's `.root p { margin: 0 }` reset
    (class+element beats a single class). Qualifying with `.copy` wins. */
 .copy .lead {
+  position: relative;
+  isolation: isolate;
   font-size: clamp(16px, 1.5vw, 18.5px);
-  color: #c0cbe0;
+  color: #d0d8ea;
   line-height: 1.65;
-  margin: 36px auto 0;
+  margin: 28px auto 0;
   max-width: 28em;
   text-align: center;
   text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 4px 20px rgba(6, 10, 20, 0.85);
+    0 0 2px rgba(6, 10, 20, 1),
+    0 0 8px rgba(6, 10, 20, 0.95),
+    0 0 18px rgba(6, 10, 20, 0.85),
+    0 0 36px rgba(6, 10, 20, 0.65),
+    0 1px 2px rgba(6, 10, 20, 0.95);
+}
+
+.copy .lead::before {
+  content: "";
+  position: absolute;
+  inset: -12px -28px -16px;
+  background: radial-gradient(
+    closest-side,
+    rgba(6, 10, 20, 0.72) 0%,
+    rgba(6, 10, 20, 0.35) 58%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
 }
 
 .form {
@@ -114,7 +179,7 @@
   align-items: center;
   gap: 14px;
   width: 100%;
-  margin-top: 48px;
+  margin-top: 36px;
 }
 
 /* Inline email + CTA shell — one pill, not a card stack. */
@@ -218,7 +283,7 @@
 }
 
 .successShell {
-  margin: 48px auto 0;
+  margin: 36px auto 0;
   max-width: 520px;
   width: 100%;
 }
@@ -253,7 +318,7 @@
 
 .trust {
   list-style: none;
-  margin: 28px 0 0;
+  margin: 24px 0 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
@@ -267,20 +332,31 @@
   align-items: center;
   gap: 8px;
   font-size: 13.5px;
-  color: #7a869c;
+  color: #b0bacd;
   line-height: 1.3;
+  text-shadow:
+    0 0 2px rgba(6, 10, 20, 1),
+    0 0 8px rgba(6, 10, 20, 0.92),
+    0 0 18px rgba(6, 10, 20, 0.75),
+    0 0 32px rgba(6, 10, 20, 0.5);
 }
 
 .trustIcon {
   width: 15px;
   height: 15px;
   flex-shrink: 0;
-  color: #6d7a92;
+  color: #9aa6bc;
+  filter: drop-shadow(0 0 6px rgba(6, 10, 20, 0.9));
 }
 
 @media (max-width: 560px) {
   .section {
-    padding: 120px 20px 100px;
+    /* Nav is fixed — extra top pad clears it without blowing the frame. */
+    padding: 80px 20px 28px;
+  }
+
+  .headline::before {
+    inset: -18px -28px -24px;
   }
 
   .pill {
@@ -304,10 +380,46 @@
   .trust {
     flex-direction: column;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 20px;
   }
 
   .copy .lead {
+    margin-top: 22px;
+  }
+
+  .form,
+  .successShell {
     margin-top: 28px;
+  }
+}
+
+/* Short viewports (landscape phones / small laptops): compact spacing so
+   the full CTA still fits without vertical overflow. */
+@media (max-height: 720px) {
+  .section {
+    padding-top: 64px;
+    padding-bottom: 40px;
+  }
+
+  .copy .lead {
+    margin-top: 18px;
+  }
+
+  .form,
+  .successShell {
+    margin-top: 24px;
+  }
+
+  .trust {
+    margin-top: 16px;
+  }
+
+  .lineMuted {
+    font-size: clamp(34px, 6vw, 64px);
+  }
+
+  .lineReady,
+  .lineGradient {
+    font-size: clamp(40px, 7vw, 76px);
   }
 }

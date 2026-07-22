@@ -7,7 +7,7 @@ import { AskBar } from "./ask-bar";
 import { DataUniverse, type MorphMapperRef, type MorphProgressRef } from "./data-universe";
 import styles from "./galaxy-story.module.css";
 import landingStyles from "./landing.module.css";
-import { type BeatKey, useGalaxy } from "./use-galaxy";
+import { type BeatKey, BEAT_WINDOWS, useGalaxy } from "./use-galaxy";
 
 /** Ambient DataUniverse morph axis — subtle backdrop, independent of the
  *  story formation canvas (which still owns beat-driven shape morphs). */
@@ -50,6 +50,17 @@ const PROOF_CHIPS = [
   { Icon: Check, label: "No SQL required" },
   { Icon: Network, label: "Every source, one interface" },
   { Icon: Zap, label: "Answers in ~3 seconds" },
+];
+
+// Chapter rail entries — mirror the six numbered beats (chaos is the intro,
+// not a chapter). Windows come from BEAT_WINDOWS in use-galaxy.ts.
+const CHAPTERS: { key: BeatKey; num: string; label: string }[] = [
+  { key: "connect", num: "01", label: "Connect" },
+  { key: "learn", num: "02", label: "Understand" },
+  { key: "skills", num: "03", label: "Teach" },
+  { key: "ask", num: "04", label: "Ask" },
+  { key: "answer", num: "05", label: "Answer" },
+  { key: "private", num: "06", label: "Private" },
 ];
 
 // Chaos + closing copy fade in line by line (each entry = one display line).
@@ -270,6 +281,10 @@ export function GalaxyStory() {
   // Phones only run the story canvas — a second ambient WebGL context is a
   // big part of why mobile scrolling stuttered.
   const [showAmbient, setShowAmbient] = useState(false);
+  // Chapter rail: which of the six numbered beats the reader is inside
+  // (-1 = chaos intro / past the story), and whether the rail is on screen.
+  const [activeChapter, setActiveChapter] = useState(-1);
+  const [railVisible, setRailVisible] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -294,6 +309,56 @@ export function GalaxyStory() {
       window.removeEventListener("resize", onScroll);
     };
   }, []);
+
+  // Chapter rail — track story progress with the same formula useGalaxy
+  // uses (rawP = scrolled fraction of the sticky track) and map it onto
+  // BEAT_WINDOWS. rAF-throttled; React bails out on unchanged state.
+  useEffect(() => {
+    const story = storyRef.current;
+    if (!story) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = story.getBoundingClientRect();
+      const travel = Math.max(1, rect.height - window.innerHeight);
+      const rawP = -rect.top / travel;
+      // Show from the tail of the chaos intro through the end of 06.
+      setRailVisible(rawP > 0.24 && rawP < 1.02);
+      let idx = -1;
+      CHAPTERS.forEach((c, i) => {
+        const [a, b] = BEAT_WINDOWS[c.key];
+        // Small lead so the rail lights up as the beat fades in.
+        if (rawP >= a - 0.012 && rawP <= b) idx = i;
+      });
+      setActiveChapter(idx);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Jump to a chapter: land 45% into its window so the copy is fully faded
+  // in and the formation has settled.
+  const scrollToChapter = (key: BeatKey) => {
+    const story = storyRef.current;
+    if (!story) return;
+    const [a, b] = BEAT_WINDOWS[key];
+    const rect = story.getBoundingClientRect();
+    const travel = Math.max(1, rect.height - window.innerHeight);
+    const storyTop = rect.top + window.scrollY;
+    window.scrollTo({
+      top: storyTop + (a + (b - a) * 0.45) * travel,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  };
 
   useGalaxy(
     {
@@ -331,6 +396,25 @@ export function GalaxyStory() {
       ) : null}
       {/* Original beat-driven particle morph canvas (useGalaxy) */}
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+
+      {/* Chapter rail — fixed index of the six chapters (desktop only). */}
+      <nav className={`${styles.rail} ${railVisible ? styles.railVisible : ""}`} aria-label="Story chapters">
+        {CHAPTERS.map((c, i) => (
+          <button
+            key={c.key}
+            type="button"
+            className={`${styles.railItem} ${i === activeChapter ? styles.railItemActive : ""}`}
+            onClick={() => scrollToChapter(c.key)}
+            aria-current={i === activeChapter ? "true" : undefined}
+          >
+            <span className={styles.railNum}>{c.num}</span>
+            <span className={styles.railLabel}>{c.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* Film grain — static noise texture over everything (see CSS). */}
+      <div className={styles.grain} aria-hidden="true" />
 
       <section id="top" className={styles.hero}>
         <div className={styles.heroScrim}>
@@ -705,6 +789,14 @@ export function GalaxyStory() {
               <h2 className={styles.beatH2}>
                 And it all stays inside <em>your walls</em>.
               </h2>
+              <div className={styles.chipRow}>
+                <span className={styles.tagChip}>VPC / on-prem</span>
+                <span className={styles.tagChip}>SSO + RBAC</span>
+                <span className={`${styles.tagChip} ${styles.tagGreen}`}>
+                  <i className={styles.tagDot} />
+                  Zero data egress
+                </span>
+              </div>
               <p className={styles.beatFoot}>
                 Deploy inside your VPC or on-prem. Role-based access.{" "}
                 <span className={styles.blue}>Zero data leaves your infrastructure.</span>
