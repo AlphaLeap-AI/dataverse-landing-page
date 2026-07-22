@@ -1,0 +1,865 @@
+/* ── Journey: hero + pinned chapter track ────────────────────── */
+
+/* ── HERO ── */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 110px 20px 70px;
+  transition: padding-top 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.heroInner {
+  width: min(1120px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  will-change: opacity, transform;
+}
+
+/* Badge + title + subtitle — one collapsible block. On mobile it folds
+   away while the ask demo runs so pipeline + bridge fit the viewport. */
+.heroLead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-height: 380px;
+  overflow: hidden;
+  transition:
+    max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(13, 20, 38, 0.6);
+  border: 1px solid rgba(140, 165, 210, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a8b4d0;
+}
+
+.heroBadgeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #67e8f9;
+  box-shadow: 0 0 10px #67e8f9;
+  animation: badgePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.heroTitle {
+  font-size: clamp(42px, 6.4vw, 80px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: #eef2fb;
+  transition: opacity 0.6s;
+}
+
+.heroTitle em {
+  font-style: italic;
+  background: linear-gradient(120deg, #7fb0ff 0%, #67e8f9 55%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroTitleDim {
+  opacity: 0.22;
+}
+
+.heroSub {
+  max-width: 580px;
+  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  line-height: 1.6;
+  color: #a8b4d0;
+}
+
+/* Short-form copy shown only on phones (long version stays for desktop). */
+.copyShort {
+  display: none;
+}
+
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+  max-height: 80px;
+  overflow: hidden;
+  transition:
+    opacity 0.4s,
+    max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.5s;
+}
+
+.heroCtasHidden {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.scrollCue {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #5f6b88;
+}
+
+.scrollCueLine {
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(180deg, #7fb0ff, transparent);
+  animation: cueDrop 1.8s ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes cueDrop {
+  0% {
+    transform: scaleY(0);
+  }
+  45% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* ── TRACK ── */
+
+.track {
+  position: relative;
+  z-index: 1;
+  height: 620vh;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.chapter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.chapterInner {
+  width: min(1120px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #7fb0ff;
+}
+
+.h2 {
+  font-size: clamp(32px, 4.6vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: #f4f7ff;
+  /* Soft edge for solid white glyphs only (see em reset below). */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.65),
+    0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.h2 em {
+  font-style: italic;
+  background: linear-gradient(120deg, #a8c9ff 0%, #7aefff 55%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Inherited text-shadow paints black silhouettes on transparent fill — kill it. */
+  text-shadow: none;
+  filter: none;
+}
+
+.lead {
+  max-width: 560px;
+  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  line-height: 1.65;
+  color: #a8b4d0;
+}
+
+.foot {
+  font-size: 14px;
+  color: #8b96ad;
+  max-width: 620px;
+  line-height: 1.65;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: #7fb0ff;
+}
+
+.gold {
+  color: #ffd24d;
+}
+
+.mint {
+  color: #4ade80;
+}
+
+.mintText {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* Staggered entrances when a chapter becomes active. */
+.anim {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+.isActive .anim {
+  animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.isActive .anim:nth-of-type(1) {
+  animation-delay: 0.05s;
+}
+
+.isActive .anim:nth-of-type(2) {
+  animation-delay: 0.16s;
+}
+
+.isActive .anim:nth-of-type(3) {
+  animation-delay: 0.27s;
+}
+
+.isActive .anim:nth-of-type(4) {
+  animation-delay: 0.38s;
+}
+
+@keyframes riseIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── 01 pain cards ── */
+
+.painGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: min(920px, 100%);
+}
+
+.painCard {
+  background: rgba(9, 14, 28, 0.88);
+  border: 1px solid rgba(255, 138, 118, 0.18);
+  border-radius: 18px;
+  padding: 22px 20px;
+  text-align: left;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.painIcon {
+  color: #ff9a8a;
+  margin-bottom: 14px;
+}
+
+.painStat {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 600;
+  color: #ff9a8a;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.painTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #eef2fb;
+  margin-bottom: 8px;
+}
+
+.painBody {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #8b96ad;
+}
+
+/* ── 02 chips ── */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  max-width: 720px;
+}
+
+.dbChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(13, 20, 38, 0.72);
+  border: 1px solid rgba(140, 165, 210, 0.2);
+  font-size: 13.5px;
+  color: #d9e2f5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dbChip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dbChipMore {
+  border-style: dashed;
+  color: #8b96ad;
+}
+
+.vaultChip {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(10, 26, 18, 0.6);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #c9f5da;
+  font-size: 13.5px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── 03 understand ── */
+
+.learnGrid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 14px;
+  width: min(880px, 100%);
+  text-align: left;
+}
+
+.tableCard {
+  background: rgba(9, 14, 28, 0.9);
+  border: 1px solid rgba(140, 165, 210, 0.16);
+  border-radius: 18px;
+  padding: 20px 22px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.tableCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tableCardHeadLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #c3d2ee;
+}
+
+.livePulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: badgePulse 1.6s ease-in-out infinite;
+}
+
+.aiTag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(77, 141, 255, 0.14);
+  border: 1px solid rgba(77, 141, 255, 0.35);
+  color: #7fb0ff;
+}
+
+.tableCardDesc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #a8b4d0;
+  margin-bottom: 14px;
+}
+
+.columnGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 16px;
+  font-size: 12.5px;
+}
+
+.colName {
+  font-family: var(--mono);
+  color: #67e8f9;
+}
+
+.colDesc {
+  color: #8b96ad;
+}
+
+.statsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  background: rgba(9, 14, 28, 0.9);
+  border: 1px solid rgba(140, 165, 210, 0.16);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 12px;
+  color: #8b96ad;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.statCell b {
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: #eef2fb;
+}
+
+.statCell b.mint {
+  color: #4ade80;
+}
+
+/* ── 04 answer ── */
+
+.answerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: min(920px, 100%);
+  text-align: left;
+}
+
+.sqlCard,
+.answerCard {
+  background: rgba(9, 14, 28, 0.9);
+  border: 1px solid rgba(140, 165, 210, 0.16);
+  border-radius: 18px;
+  padding: 18px 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.answerCardMint {
+  border-color: rgba(74, 222, 128, 0.28);
+}
+
+.cardLabel {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7fb0ff;
+  margin-bottom: 12px;
+}
+
+.labelGold {
+  color: #ffd24d;
+}
+
+.labelMint {
+  color: #4ade80;
+}
+
+.sqlPre {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c3d2ee;
+  white-space: pre-wrap;
+  min-height: 108px;
+}
+
+.sqlCaret {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  vertical-align: -2px;
+  background: #7fb0ff;
+  animation: sqlBlink 0.9s steps(1) infinite;
+}
+
+@keyframes sqlBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.answerBig {
+  font-family: var(--serif);
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 600;
+  line-height: 1.05;
+  color: #ffd24d;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.answerBigCaption {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: #a8b4d0;
+}
+
+.regionBars {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: #8b96ad;
+}
+
+.regionBar {
+  height: 7px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #4d8dff, #67e8f9);
+  box-shadow: 0 0 12px rgba(77, 141, 255, 0.4);
+}
+
+.answerText {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #c3d2ee;
+}
+
+.answerText b {
+  color: #eef2fb;
+}
+
+/* ── responsive ── */
+
+@media (max-width: 900px) {
+  .track {
+    /* Shorter story on small screens — less thumb travel. */
+    height: 560vh;
+  }
+
+  .painGrid,
+  .answerGrid,
+  .learnGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .learnGrid {
+    width: min(560px, 100%);
+  }
+
+  /* SQL + answer cards full width; why/plan share a 2-col row. */
+  .answerGrid {
+    grid-template-columns: 1fr 1fr;
+    width: min(560px, 100%);
+    gap: 10px;
+  }
+
+  .answerGrid > :nth-child(1),
+  .answerGrid > :nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  .statsCard {
+    flex-direction: row;
+  }
+
+  .statCell {
+    padding: 12px 14px;
+    font-size: 12.5px;
+  }
+
+  .statCell b {
+    font-size: 22px;
+  }
+
+  /* Readable body copy on small screens — 12px text is for labels only. */
+  .lead {
+    font-size: 15.5px;
+  }
+
+  .painBody {
+    font-size: 14px;
+    color: #a8b4d0;
+  }
+
+  .dbChip,
+  .vaultChip {
+    font-size: 14px;
+  }
+
+  .tableCardDesc {
+    font-size: 14px;
+  }
+
+  .columnGrid {
+    font-size: 12.5px;
+  }
+
+  .colDesc {
+    color: #a8b4d0;
+  }
+
+  .foot {
+    color: #a8b4d0;
+  }
+
+  .chapter {
+    padding: 64px 20px 36px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  /* Short chapters sit better vertically centered — via auto margins, so
+     an overflowing chapter stays reachable from the top (align-items:
+     center would clip the top with no way to scroll to it). */
+  .chapterCenter .chapterInner {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .chapterInner {
+    gap: 18px;
+  }
+
+  .painCard {
+    padding: 14px 16px;
+  }
+
+  .tableCard {
+    padding: 16px 18px;
+  }
+
+  .columnGrid {
+    gap: 5px 12px;
+    font-size: 12px;
+  }
+
+  .sqlCard,
+  .answerCard {
+    padding: 14px 16px;
+  }
+
+  .sqlPre {
+    min-height: 56px;
+    font-size: 11px;
+  }
+
+  .answerBig {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+
+  .answerText {
+    font-size: 13px;
+  }
+
+  .regionBars {
+    gap: 6px 10px;
+  }
+
+  .regionBar {
+    height: 6px;
+  }
+
+  .foot {
+    font-size: 13px;
+  }
+}
+
+/* Collapse the hero intro while the ask demo runs (mobile only — desktop
+   has room to keep the dimmed title). */
+@media (max-width: 720px) {
+  .heroLeadCollapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .heroAskActive {
+    padding-top: 72px;
+  }
+
+  /* Fewer stacked blurs on mobile GPUs — higher opacity instead. */
+  .painCard,
+  .tableCard,
+  .statCell,
+  .sqlCard,
+  .answerCard {
+    background: rgba(9, 14, 28, 0.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+}
+
+@media (max-width: 560px) {
+  .hero {
+    padding: 84px 20px 40px;
+  }
+
+  .heroBadgeOpt {
+    display: none;
+  }
+
+  .heroInner {
+    gap: 14px;
+  }
+
+  .heroTitle {
+    font-size: clamp(40px, 12vw, 52px);
+  }
+
+  .heroBadge {
+    font-size: 11.5px;
+  }
+
+  /* Short mobile copy + readable size: the sub supports, never competes. */
+  .heroSub {
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: #c3d2ee;
+  }
+
+  .copyFull {
+    display: none;
+  }
+
+  .copyShort {
+    display: inline;
+  }
+
+  .h2 {
+    font-size: clamp(29px, 8.6vw, 40px);
+  }
+
+  .chapterInner {
+    gap: 14px;
+  }
+
+  .painStat {
+    font-size: 24px;
+  }
+
+  /* Chapter 04 is the tallest — compact the secondary cards so the whole
+     analysis fits short viewports. Short mobile copy keeps 13.5px text. */
+  .answerGrid {
+    gap: 8px;
+  }
+
+  .sqlCard,
+  .answerCard {
+    padding: 12px 14px;
+  }
+
+  .cardLabel {
+    font-size: 9.5px;
+    margin-bottom: 8px;
+  }
+
+  .answerText {
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .regionBars {
+    font-size: 11px;
+  }
+
+  /* CTAs stack full-width — big targets, both above the fold. */
+  .heroCtas {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-height: 120px;
+  }
+
+  .heroCtas a {
+    min-height: 48px;
+  }
+
+  .scrollCue {
+    display: none;
+  }
+}

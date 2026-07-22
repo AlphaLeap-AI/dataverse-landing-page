@@ -2,17 +2,18 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 
 import { DemoCta } from "@/features/landing/demo-cta";
-import { Footer } from "@/features/landing/footer";
-import { GalaxyStory } from "@/features/landing/galaxy-story";
+import { Journey } from "@/features/landing/journey";
 import styles from "@/features/landing/landing.module.css";
 import { NavBar } from "@/features/landing/nav-bar";
 import { PlatformSection } from "@/features/landing/platform-section";
 import { ProofSection } from "@/features/landing/proof-section";
+import { FloatingCta } from "@/features/landing/ui/floating-cta";
 import { getMetadataBase, getSiteUrl, siteName } from "@/lib/site";
 
 const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-source-serif",
   display: "swap",
 });
@@ -31,9 +32,9 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const pageTitle = "Dataverse | Enterprise Data Agent for Grounded Database Answers";
+const pageTitle = "Dataverse | Ask Anything. Trust the Answer.";
 const pageDescription =
-  "Dataverse is an enterprise data agent that connects to your databases, grounds answers in approved schema context, and returns SQL-backed results your team can inspect.";
+  "Dataverse is the enterprise data agent that plugs into every database you own, grounds each question in your approved schema, and returns SQL-backed answers in seconds — inside your network.";
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
@@ -95,11 +96,12 @@ export default function Home() {
         operatingSystem: "Web",
         description: pageDescription,
         featureList: [
+          "Natural-language querying across every database",
           "Schema-aware retrieval",
           "Enterprise text-to-SQL",
           "Generated SQL inspection",
           "Metadata review workflow",
-          "Reusable dashboard views",
+          "Private deployment in your VPC or air-gapped",
         ],
         audience: {
           "@type": "Audience",
@@ -119,14 +121,17 @@ export default function Home() {
       <NavBar />
 
       <main>
-        <GalaxyStory />
-        <div className={styles.postStory}>
+        <Journey />
+        <div className={styles.solid}>
           <PlatformSection />
           <ProofSection />
-          <DemoCta />
-          <Footer />
         </div>
+        {/* Sticky full-viewport conversion — the finale. The footer is
+            docked inside its pinned panel so the page ends on the pin. */}
+        <DemoCta />
       </main>
+
+      <FloatingCta />
     </div>
   );
 }

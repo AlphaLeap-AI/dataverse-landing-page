@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 
 import styles from "./landing.module.css";
 
-/** Fixed glass nav with a scroll-progress bar. */
+/** Fixed glass nav with a scroll-progress bar and persistent demo CTA. */
 export function NavBar() {
   const progressRef = useRef<HTMLDivElement | null>(null);
 
@@ -38,9 +38,10 @@ export function NavBar() {
           <span className={styles.brandWordmark}>Dataverse</span>
         </Link>
         <nav className={styles.navLinks}>
+          <Link href="#story">The story</Link>
           <Link href="#platform">Platform</Link>
-          <Link href="#proof">Why it works</Link>
-          <Link href="#demo" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm}`}>
+          <Link href="#proof">Proof</Link>
+          <Link href="#demo" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm} ${styles.navCta}`}>
             Book a demo
           </Link>
         </nav>

@@ -20,6 +20,8 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* No page-level scroll-snap — a tall sticky finale + snap caused the
+     demo panel to bounce back when the user released mid-pin. */
 }
 
 @media (prefers-reduced-motion: reduce) {

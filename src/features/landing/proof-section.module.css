@@ -1,136 +1,95 @@
+/* Proof: count-up stats + testimonial + wordmarks. */
+
 .stats {
   display: grid;
-  /* min(240px, 100%) avoids forcing a wider-than-viewport track on narrow phones. */
-  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
-  gap: 18px;
-  margin-top: 56px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 64px;
 }
+
 .stat {
-  position: relative;
-  isolation: isolate;
-  border-top: 1px solid rgba(127, 176, 255, 0.45);
-  padding: 26px 8px 12px;
+  padding: 30px 28px;
+  border-radius: 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
 }
-/* Soft local pool so stat copy stays readable over the particle sphere. */
-.stat::before {
-  content: "";
-  position: absolute;
-  inset: -8px -12px -16px;
-  background: radial-gradient(
-    closest-side,
-    rgba(6, 10, 20, 0.72) 0%,
-    rgba(6, 10, 20, 0.35) 60%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: -1;
-}
+
 .statValue {
   font-family: var(--serif);
+  font-size: clamp(40px, 4.6vw, 58px);
   font-weight: 600;
-  font-size: clamp(44px, 4.4vw, 64px);
-  color: #a8c8ff;
-  text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 4px 24px rgba(6, 10, 20, 0.85);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #7fb0ff, #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
 }
-/* `.statDesc` alone loses to landing.module.css's `.root p { margin: 0 }`
-   reset (class+element beats a single class). Qualifying with `.stat` wins. */
-.stat .statDesc {
-  font-size: 15px;
-  color: #c5d0e6;
-  line-height: 1.6;
-  margin: 10px 0 0;
-  text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 3px 18px rgba(6, 10, 20, 0.8);
+
+.statDesc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-dim);
 }
 
 .testimonial {
-  position: relative;
-  isolation: isolate;
-  margin-top: 90px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  gap: 26px;
-  padding: 12px 16px 8px;
+  max-width: 780px;
+  margin: 0 auto;
 }
-.testimonial::before {
-  content: "";
-  position: absolute;
-  inset: -20px -40px -28px;
-  background: radial-gradient(
-    ellipse 70% 60% at 50% 40%,
-    rgba(6, 10, 20, 0.75) 0%,
-    rgba(6, 10, 20, 0.4) 55%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: -1;
-}
+
 .quote {
   font-family: var(--serif);
+  font-size: clamp(22px, 2.8vw, 32px);
   font-style: italic;
-  font-size: clamp(21px, 2.3vw, 29px);
-  line-height: 1.5;
-  color: #e4ebf8;
-  max-width: 34ch;
-  margin: 0;
-  text-shadow:
-    0 1px 2px rgba(6, 10, 20, 0.95),
-    0 6px 28px rgba(6, 10, 20, 0.85);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 18px;
 }
+
 .attribution {
   font-family: var(--mono);
   font-size: 12px;
-  letter-spacing: 0.18em;
-  color: #9aabc8;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-shadow: 0 1px 12px rgba(6, 10, 20, 0.95);
+  color: var(--ink-faint);
 }
+
 .logos {
   display: flex;
-  gap: 44px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 18px;
-  opacity: 0.8;
+  align-items: center;
+  gap: 20px 44px;
+  margin-top: 48px;
+  padding-top: 40px;
+  border-top: 1px solid rgba(140, 165, 210, 0.1);
 }
+
 .logo {
-  color: #b8c4dc;
-  font-size: 18px;
-  text-shadow: 0 1px 10px rgba(6, 10, 20, 0.9);
+  font-size: 15px;
+  color: var(--ink-faint);
+  opacity: 0.75;
+  transition:
+    opacity 0.3s,
+    color 0.3s;
+}
+
+.logo:hover {
+  opacity: 1;
+  color: var(--ink-dim);
 }
 
 @media (max-width: 720px) {
   .stats {
-    margin-top: 32px;
-    gap: 6px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 44px;
   }
+
   .stat {
-    padding: 18px 4px 10px;
-  }
-  .statValue {
-    font-size: clamp(40px, 11vw, 52px);
-  }
-  .stat .statDesc {
-    font-size: 14px;
-    margin-top: 8px;
-  }
-  .testimonial {
-    margin-top: 52px;
-    gap: 20px;
-  }
-  .quote {
-    font-size: clamp(19px, 5.8vw, 24px);
-  }
-  .logos {
-    gap: 14px 28px;
-    margin-top: 8px;
-  }
-  .logo {
-    font-size: 16px;
+    padding: 22px 20px;
   }
 }

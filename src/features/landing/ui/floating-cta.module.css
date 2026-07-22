@@ -1,0 +1,102 @@
+/* Floating conversion pill. */
+
+.root {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(18px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4d8dff, #67e8f9);
+  color: #06101f !important;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow:
+    0 14px 40px rgba(77, 141, 255, 0.45),
+    0 2px 0 rgba(255, 255, 255, 0.15) inset;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
+}
+
+.pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgba(77, 141, 255, 0.6);
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #06101f;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(10, 16, 32, 0.85);
+  border: 1px solid rgba(140, 165, 210, 0.25);
+  color: #8b96ad;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+}
+
+/* 44px touch target around the 28px visual. */
+.close::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.close:hover {
+  color: #eef2fb;
+  border-color: rgba(127, 176, 255, 0.5);
+}
+
+@media (max-width: 560px) {
+  .root {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .pill {
+    padding: 11px 18px;
+    font-size: 13.5px;
+  }
+}
