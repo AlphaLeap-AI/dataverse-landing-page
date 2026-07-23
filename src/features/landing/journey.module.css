@@ -688,25 +688,18 @@
     color: #a8b4d0;
   }
 
+  /* Chapters are pinned cross-fade panels — each must fit one screen, NOT
+     scroll internally. Internal scroll here traps the finger (you scroll
+     the card instead of advancing the page) and lets the headline clip
+     off the top. Content is compressed below to fit instead. */
   .chapter {
-    padding: 64px 20px 36px;
+    padding: 56px 20px 28px;
     align-items: flex-start;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* Base .chapter is pointer-events: none (inactive chapters are stacked
-     underneath and must not intercept touches). The active chapter needs
-     it back so overflow-y: auto above is actually reachable by touch —
-     without this, an overflowing chapter is stuck showing only its
-     top-aligned slice with no way to scroll down to the rest. */
-  .chapter.isActive {
-    pointer-events: auto;
-  }
-
-  /* Short chapters sit better vertically centered — via auto margins, so
-     an overflowing chapter stays reachable from the top (align-items:
-     center would clip the top with no way to scroll to it). */
+  /* Center the (now-fitting) content block. Auto margins keep the headline
+     anchored at the top if a very small screen still can't fit everything,
+     rather than clipping both ends. */
   .chapterCenter .chapterInner {
     margin-top: auto;
     margin-bottom: auto;
@@ -825,11 +818,34 @@
   }
 
   .chapterInner {
-    gap: 14px;
+    gap: 11px;
+  }
+
+  /* Compress the stacked pain cards (chapter 01) so all three fit one
+     screen without internal scroll. */
+  .painGrid {
+    gap: 10px;
+  }
+
+  .painCard {
+    padding: 12px 15px;
+  }
+
+  .painIcon {
+    margin-bottom: 8px;
   }
 
   .painStat {
-    font-size: 24px;
+    font-size: 22px;
+    margin-bottom: 3px;
+  }
+
+  .painTitle {
+    margin-bottom: 5px;
+  }
+
+  .painBody {
+    line-height: 1.5;
   }
 
   /* Chapter 04 is the tallest — compact the secondary cards so the whole
