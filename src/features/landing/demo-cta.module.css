@@ -329,9 +329,12 @@
   .panel {
     padding-left: 18px;
     padding-right: 18px;
-    /* Room for fixed nav above; footer is absolute so it doesn't affect stack. */
+    /* Room for fixed nav above; footer is absolute so it doesn't affect stack.
+       Bottom padding must cover the compact footer's real height (~72px
+       fixed content) plus its own safe-area padding, so the two never
+       overlap regardless of notch/home-indicator inset. */
     padding-top: max(64px, calc(env(safe-area-inset-top) + 48px));
-    padding-bottom: 72px;
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
     /* Center the packed headline+form unit as one block. */
     justify-content: center;
   }
@@ -440,15 +443,26 @@
   }
 
   .upper {
-    padding-top: 4px;
+    padding-top: 0;
   }
 
   .copy {
-    gap: 10px;
+    gap: 8px;
   }
 
   .bottomSlot {
-    padding-top: 14px;
+    padding-top: 8px;
+  }
+
+  /* Narrower phones can't fit two trust items per row at the default size —
+     the extra wrapped row makes the block tall enough to push into the
+     footer's reserved space. Tighten it back down to two per row. */
+  .trust {
+    gap: 8px 12px;
+  }
+
+  .trustItem {
+    font-size: 12.5px;
   }
 
   .bottomCluster {

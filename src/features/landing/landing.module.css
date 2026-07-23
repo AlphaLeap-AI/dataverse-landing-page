@@ -324,6 +324,19 @@
     min-height: 40px;
   }
 
+  /* Compact footer strip (docked inside the pinned finale panel) has to fit
+     inside a hard-reserved slice of the panel's height on phones — shrink
+     its footprint so it can't grow past what .panel reserves and overlap
+     the trust row above it. */
+  .footerCompact {
+    padding: 10px 4px calc(8px + env(safe-area-inset-bottom));
+    gap: 6px 16px;
+  }
+
+  .footerCompact .footLinks a {
+    min-height: 30px;
+  }
+
   .section {
     padding: 72px 20px;
   }
