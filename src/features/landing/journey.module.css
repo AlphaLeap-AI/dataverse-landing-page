@@ -692,6 +692,16 @@
     padding: 64px 20px 36px;
     align-items: flex-start;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Base .chapter is pointer-events: none (inactive chapters are stacked
+     underneath and must not intercept touches). The active chapter needs
+     it back so overflow-y: auto above is actually reachable by touch —
+     without this, an overflowing chapter is stuck showing only its
+     top-aligned slice with no way to scroll down to the rest. */
+  .chapter.isActive {
+    pointer-events: auto;
   }
 
   /* Short chapters sit better vertically centered — via auto margins, so
