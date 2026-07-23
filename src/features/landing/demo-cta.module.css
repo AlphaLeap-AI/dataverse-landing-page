@@ -135,9 +135,34 @@
   will-change: opacity, transform;
 }
 
+/* ── docked footer bar ──
+   Absolutely pinned to the panel floor and pushed a full height below it
+   (clipped by the panel's overflow) until pin progress floats it up. The
+   panel owns 24px side padding; the dock re-adds it so the bar aligns with
+   the CTA content above. */
+
+.footerDock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding-left: 24px;
+  padding-right: 24px;
+  /* Pre-JS / hidden state; scroll progress overwrites transform inline. */
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
+  /* Reads as a solid bar rising over the CTA's lower edge. */
+  background: linear-gradient(180deg, rgba(4, 6, 13, 0) 0%, var(--bg) 42%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bottomCluster {
     opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .footerDock {
     transform: none !important;
   }
 }
@@ -417,16 +442,8 @@
     font-size: 13.5px;
   }
 
-  /* Footer sits on the panel floor without participating in the flex stack,
-     so it can't re-open a gap between copy and form. */
-  .panel > :global(footer) {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: auto;
-    max-width: none;
-    margin: 0;
+  /* Tighter side padding for the floated footer bar on phones. */
+  .footerDock {
     padding-left: 18px;
     padding-right: 18px;
   }
