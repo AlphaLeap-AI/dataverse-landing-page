@@ -163,6 +163,59 @@ export function Journey() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  /* Fit each pinned chapter into the band the reader can actually see.
+     Two things decide that band: the fixed nav overlapping the top of the
+     panel (--nav-h, so the CSS can pad past it and centre what's left), and
+     the panel's own height. Chapters must not scroll internally, so anything
+     that still overflows after the CSS compaction is scaled down (--fit)
+     instead of being clipped off the top and bottom. */
+  useEffect(() => {
+    const root = document.documentElement;
+
+    const fit = () => {
+      const nav = document.querySelector("header");
+      const navH = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+      if (navH > 0) root.style.setProperty("--nav-h", `${navH}px`);
+
+      for (const ch of CHAPTERS) {
+        const panel = chapterRefs.current[ch.key];
+        const inner = panel?.firstElementChild;
+        if (!panel || !(inner instanceof HTMLElement)) continue;
+        const cs = getComputedStyle(panel);
+        const avail = panel.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        // offsetHeight ignores transforms, so it reads the natural height
+        // whatever --fit is — and without the 26px the not-yet-played .anim
+        // children add to the scrollable overflow.
+        const natural = inner.offsetHeight;
+        // 0.6 is a sanity bound, not a target — the CSS above keeps real
+        // phones at 1, and phone landscape bottoms out around 0.68.
+        const scale = natural > 0 && avail > 0 && natural > avail ? Math.max(0.6, (avail - 1) / natural) : 1;
+        inner.style.setProperty("--fit", scale.toFixed(4));
+      }
+    };
+
+    fit();
+    // Text metrics move once the display faces land; re-fit against them.
+    document.fonts?.ready.then(fit).catch(() => {});
+
+    // Reflows that change content height (wrapping, nav collapse) don't fire
+    // a resize event, so watch the boxes themselves as well.
+    const ro = new ResizeObserver(fit);
+    const nav = document.querySelector("header");
+    if (nav) ro.observe(nav);
+    for (const ch of CHAPTERS) {
+      const inner = chapterRefs.current[ch.key]?.firstElementChild;
+      if (inner) ro.observe(inner);
+    }
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+    };
+  }, []);
+
   const setChapterRef = (key: ChapterKey) => (el: HTMLDivElement | null) => {
     chapterRefs.current[key] = el;
   };
