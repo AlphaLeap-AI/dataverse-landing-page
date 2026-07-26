@@ -39,6 +39,7 @@ export function NavBar() {
         </Link>
         <nav className={styles.navLinks}>
           <Link href="#story">The story</Link>
+          <Link href="#ecosystem">Ecosystem</Link>
           <Link href="#platform">Platform</Link>
           <Link href="#proof">Proof</Link>
           <Link href="#demo" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm} ${styles.navCta}`}>

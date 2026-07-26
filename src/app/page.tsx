@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 
 import { DemoCta } from "@/features/landing/demo-cta";
+import { EcosystemSection } from "@/features/landing/ecosystem-section";
 import { Journey } from "@/features/landing/journey";
 import styles from "@/features/landing/landing.module.css";
 import { NavBar } from "@/features/landing/nav-bar";
@@ -101,6 +102,8 @@ export default function Home() {
           "Enterprise text-to-SQL",
           "Generated SQL inspection",
           "Metadata review workflow",
+          "17+ LLM providers — cloud, open-weight, or fully local",
+          "MCP tool connectors with per-user OAuth",
           "Private deployment in your VPC or air-gapped",
         ],
         audience: {
@@ -123,6 +126,7 @@ export default function Home() {
       <main>
         <Journey />
         <div className={styles.solid}>
+          <EcosystemSection />
           <PlatformSection />
           <ProofSection />
         </div>
