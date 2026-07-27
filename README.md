@@ -60,7 +60,7 @@ Your data never needs to leave your network. Deploy in your VPC, air-gapped envi
 
 Thirty minutes. An engineer in the room. Your governance questions welcome.
 
-**[Book a demo →](https://alphaleap-ai.github.io/dataverse-landing-page/#demo)** · **[Explore the platform →](https://alphaleap-ai.github.io/dataverse-landing-page/)**
+**[Book a demo →](https://dataverse.alphaleap.co/#demo)** · **[Explore the platform →](https://dataverse.alphaleap.co/)**
 
 ---
 

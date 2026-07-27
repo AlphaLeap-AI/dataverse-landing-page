@@ -2,8 +2,10 @@ import type { NextConfig } from "next";
 
 // Marketing site only — no backend API rewrites or product app proxies.
 //
-// GitHub Pages (project site) serves under /dataverse-landing-page.
-// Local dev and custom domains stay at the root.
+// Root by default (local dev + custom domain dataverse.alphaleap.co).
+// Only set GITHUB_PAGES=true when publishing to the bare project URL
+// (https://<org>.github.io/dataverse-landing-page) without a custom domain.
+// With a custom domain, Pages serves at / — a basePath breaks all assets.
 const repoName = "dataverse-landing-page";
 const isGithubPages = process.env.GITHUB_PAGES === "true";
 const basePath = isGithubPages ? `/${repoName}` : "";

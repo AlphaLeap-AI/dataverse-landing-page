@@ -30,10 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Custom domain (dataverse.alphaleap.co) serves the Pages artifact at /
+      # — do not set GITHUB_PAGES=true (that injects basePath=/dataverse-landing-page
+      # for the project URL and breaks CSS/JS on the custom domain).
       - name: Build static site
         env:
-          GITHUB_PAGES: "true"
-          NEXT_PUBLIC_SITE_URL: https://alphaleap-ai.github.io/dataverse-landing-page
+          NEXT_PUBLIC_SITE_URL: https://dataverse.alphaleap.co
           NEXT_PUBLIC_DEMO_EMAIL: ${{ vars.NEXT_PUBLIC_DEMO_EMAIL }}
         run: npm run build
 
