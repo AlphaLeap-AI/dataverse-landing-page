@@ -2,40 +2,23 @@
 
 /* ── HERO ── */
 
+/* The hero is a frame around the video panel: the fixed nav sits above it,
+   a thin gutter around the rest. HeroVideo's .stage fills what's left. */
 .hero {
   position: relative;
   z-index: 1;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 110px 20px 70px;
-  transition: padding-top 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: calc(var(--nav-h, 64px) + clamp(8px, 1.1vw, 14px)) clamp(10px, 1.6vw, 22px)
+    clamp(10px, 1.6vw, 22px);
 }
 
-.heroInner {
-  width: min(1120px, 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-  will-change: opacity, transform;
-}
-
-/* Badge + title + subtitle — one collapsible block. On mobile it folds
-   away while the ask demo runs so pipeline + bridge fit the viewport. */
-.heroLead {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  max-height: 380px;
-  overflow: hidden;
-  transition:
-    max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.4s;
+/* z-index: 1 makes the hero a stacking context, so the expanded player's own
+   z-index can only compete inside it — against the fixed nav (50) it would
+   lose. Lift the whole context while the player owns the screen. */
+:global(html[data-video-open]) .hero {
+  z-index: 100;
 }
 
 .heroBadge {
@@ -75,7 +58,11 @@
   line-height: 1.02;
   letter-spacing: -0.025em;
   color: #eef2fb;
-  transition: opacity 0.6s;
+  /* Over footage the scrim alone can't guarantee contrast — same soft edge
+     the chapter headings use for solid white glyphs. */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.7),
+    0 3px 18px rgba(0, 0, 0, 0.5);
 }
 
 .heroTitle em {
@@ -84,17 +71,16 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-.heroTitleDim {
-  opacity: 0.22;
+  /* Inherited text-shadow paints black silhouettes on transparent fill. */
+  text-shadow: none;
 }
 
 .heroSub {
   max-width: 580px;
   font-size: clamp(14.5px, 1.5vw, 16.5px);
   line-height: 1.6;
-  color: #a8b4d0;
+  color: #c3d2ee;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
 
 /* Short-form copy shown only on phones (long version stays for desktop). */
@@ -107,27 +93,16 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
-  margin-top: 4px;
-  max-height: 80px;
-  overflow: hidden;
-  transition:
-    opacity 0.4s,
-    max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    margin 0.5s;
+  margin-top: 6px;
 }
 
-.heroCtasHidden {
-  opacity: 0;
-  max-height: 0;
-  margin-top: 0;
-  pointer-events: none;
-}
-
+/* Docked inside the panel's bottom-left, balancing the play pill on the
+   right. Hidden once the pill goes full-width (≤900px). */
 .scrollCue {
   position: absolute;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
+  z-index: 2;
+  bottom: clamp(24px, 3.4vw, 44px);
+  left: clamp(28px, 3.6vw, 52px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -787,18 +762,14 @@
   }
 }
 
-/* Collapse the hero intro while the ask demo runs (mobile only — desktop
-   has room to keep the dimmed title). */
+@media (max-width: 900px) {
+  /* The play pill spans the panel below this width — no room for the cue. */
+  .scrollCue {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
-  .heroLeadCollapsed {
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .heroAskActive {
-    padding-top: 72px;
-  }
-
   /* Fewer stacked blurs on mobile GPUs — higher opacity instead. */
   .painCard,
   .tableCard,
@@ -813,15 +784,11 @@
 
 @media (max-width: 560px) {
   .hero {
-    padding: 84px 20px 40px;
+    padding: calc(var(--nav-h, 60px) + 8px) 10px 10px;
   }
 
   .heroBadgeOpt {
     display: none;
-  }
-
-  .heroInner {
-    gap: 14px;
   }
 
   .heroTitle {
@@ -903,15 +870,10 @@
     flex-direction: column;
     align-items: stretch;
     width: 100%;
-    max-height: 120px;
   }
 
   .heroCtas a {
     min-height: 48px;
-  }
-
-  .scrollCue {
-    display: none;
   }
 }
 

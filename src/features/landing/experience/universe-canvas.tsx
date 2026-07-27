@@ -108,10 +108,11 @@ function Particles({ count }: { count: number }) {
     const s = THREE.MathUtils.clamp(smooth.current, 0, MORPH_MAX);
     uniforms.uProgress.value = s;
 
-    // The ask pulse belongs to the hero — release it as the hero exits so
-    // it never damps the storm's turbulence.
-    const heroHold = 1 - THREE.MathUtils.clamp(scrollState.heroExit * 6, 0, 1);
-    smoothAsk.current = THREE.MathUtils.damp(smoothAsk.current, askState.pulse * heroHold, 3.5, dt);
+    // The ask pulse belongs to everything above the chapter track (hero +
+    // ask band) — release it as the track takes over so it never damps the
+    // storm's turbulence.
+    const askHold = 1 - THREE.MathUtils.clamp(scrollState.journey * 6, 0, 1);
+    smoothAsk.current = THREE.MathUtils.damp(smoothAsk.current, askState.pulse * askHold, 3.5, dt);
     uniforms.uAsk.value = smoothAsk.current;
 
     const tint = uniforms.uTint.value as THREE.Color;

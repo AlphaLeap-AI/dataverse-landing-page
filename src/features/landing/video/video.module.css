@@ -1,0 +1,403 @@
+/* ── Hero video: docked full-bleed panel ⇄ fullscreen player ───── */
+
+/* Holds the panel's layout box. It stays in flow while the frame goes fixed,
+   which is both what stops the page collapsing behind the player and what the
+   FLIP measures to know where to expand from and collapse back to. */
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The stage's own z-index makes it a stacking context, which would otherwise
+   trap the expanded frame's z-index inside it — the site nav and the scroll
+   cue would paint over a "fullscreen" player. The hero section above it is a
+   stacking context for the same reason and is raised in journey.module.css
+   off the same `html[data-video-open]` flag. */
+.stage[data-expanded="true"] {
+  z-index: 100;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 26px;
+  background: #04060d;
+  cursor: pointer;
+  transform-origin: 0 0;
+  border: 1px solid rgba(140, 165, 210, 0.14);
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(4, 6, 13, 0.6);
+  transition: box-shadow 0.4s ease;
+}
+
+.frame:hover {
+  box-shadow:
+    0 44px 130px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(127, 176, 255, 0.24);
+}
+
+/* Expanded: the panel leaves the document and owns the viewport. The three
+   states share this rule so the closing animation runs from the same box. */
+.frame[data-mode="opening"],
+.frame[data-mode="open"],
+.frame[data-mode="closing"] {
+  position: fixed;
+  inset: clamp(0px, 2vmin, 26px);
+  z-index: 91;
+  border-radius: clamp(0px, 1.4vmin, 18px);
+  cursor: default;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(2, 4, 10, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.backdropOn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Counter-scaled against the frame during the FLIP — keeps the picture from
+   stretching while the window around it grows. The gradient is what shows if
+   the video assets are missing or refuse to decode, so the panel still reads
+   as designed rather than as a black hole. */
+.media {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  background:
+    radial-gradient(70% 55% at 50% 22%, rgba(61, 130, 255, 0.22), transparent 72%),
+    radial-gradient(50% 45% at 78% 82%, rgba(167, 139, 250, 0.16), transparent 72%),
+    radial-gradient(45% 40% at 16% 76%, rgba(103, 232, 249, 0.1), transparent 72%),
+    #04060d;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity 0.45s ease;
+}
+
+/* Decorative background — filling the panel matters more than the edges. */
+.previewVideo {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* The real cut — never crop it, letterbox instead. */
+.fullVideo {
+  object-fit: contain;
+  background: #000;
+}
+
+/* Legibility floor for the overlaid copy: darkest bottom-left where the
+   headline sits, lifting toward the top so the footage still reads. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 13, 0.72) 0%, rgba(4, 6, 13, 0.28) 34%, rgba(4, 6, 13, 0.86) 100%),
+    radial-gradient(80% 60% at 50% 55%, rgba(4, 6, 13, 0.45), transparent 75%);
+  transition: opacity 0.35s ease;
+}
+
+.scrimOff {
+  opacity: 0;
+}
+
+/* ── overlaid hero copy ── */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 26px 34px;
+  transition:
+    opacity 0.3s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.overlayOff {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+}
+
+.copy {
+  width: min(1120px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  will-change: opacity, transform;
+}
+
+/* ── play pill ── */
+
+.pill {
+  position: absolute;
+  right: clamp(16px, 2.4vw, 34px);
+  bottom: clamp(16px, 2.4vw, 34px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px 12px 12px;
+  border-radius: 18px;
+  background: rgba(10, 16, 30, 0.72);
+  border: 1px solid rgba(140, 165, 210, 0.2);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
+}
+
+.pill:hover {
+  transform: translateY(-3px);
+  background: rgba(14, 22, 42, 0.86);
+  border-color: rgba(127, 176, 255, 0.45);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.55);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.pillGlyph {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #4d8dff, #67e8f9);
+  color: #06101f;
+  box-shadow: 0 6px 20px rgba(77, 141, 255, 0.45);
+}
+
+/* A quiet, continuous halo — the one element on the panel that keeps moving,
+   so the eye finds the play control without a second competing CTA. */
+.pillGlyph::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid rgba(103, 232, 249, 0.85);
+  animation: playHalo 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes playHalo {
+  0% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+.pillText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.pillMeta {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ── player chrome (expanded only) ── */
+
+.chrome {
+  position: absolute;
+  top: clamp(12px, 1.8vw, 20px);
+  right: clamp(12px, 1.8vw, 20px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease 0.15s;
+}
+
+.chromeOn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chromeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: rgba(10, 16, 30, 0.78);
+  border: 1px solid rgba(140, 165, 210, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.chromeBtn:hover {
+  background: rgba(18, 28, 52, 0.92);
+  border-color: var(--border-strong);
+}
+
+.chromeBtn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.chromeClose {
+  padding: 0;
+  width: 38px;
+  justify-content: center;
+}
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
+  border-radius: 50%;
+  border: 2px solid rgba(140, 165, 210, 0.25);
+  border-top-color: var(--cyan);
+  animation: spin 0.8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── responsive ── */
+
+@media (max-width: 900px) {
+  .frame {
+    border-radius: 20px;
+  }
+
+  .overlay {
+    padding: 30px 18px 26px;
+  }
+
+  .pill {
+    right: 14px;
+    bottom: 14px;
+    padding: 10px 18px 10px 10px;
+    gap: 11px;
+  }
+
+  .pillGlyph {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .pillText {
+    font-size: 13.5px;
+  }
+}
+
+/* Phones: the pill spans the panel so it's a full-width tap target, and the
+   hero copy sits above it rather than behind it. */
+@media (max-width: 560px) {
+  .frame {
+    border-radius: 18px;
+  }
+
+  .frame[data-mode="opening"],
+  .frame[data-mode="open"],
+  .frame[data-mode="closing"] {
+    inset: 0;
+    border-radius: 0;
+  }
+
+  .overlay {
+    justify-content: flex-start;
+    padding: 24px 16px 100px;
+  }
+
+  .copy {
+    margin: auto 0;
+  }
+
+  .pill {
+    left: 14px;
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    min-height: 62px;
+  }
+
+  .chrome {
+    top: calc(10px + env(safe-area-inset-top));
+    right: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillGlyph::after,
+  .spinner {
+    animation: none;
+  }
+
+  .frame,
+  .pill,
+  .overlay,
+  .scrim,
+  .video,
+  .backdrop {
+    transition-duration: 0.01ms;
+  }
+}

@@ -3,11 +3,12 @@
 import { Check, FileCode, Hourglass, Layers, Network, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { AskExperience } from "./ask/ask-experience";
+import { AskSection } from "./ask-section";
 import { UniverseCanvas } from "./experience/universe-canvas";
 import { CHAPTERS, type ChapterKey, chapterLocal, envelope, scrollState } from "./experience/scroll-driver";
 import styles from "./journey.module.css";
 import landingStyles from "./landing.module.css";
+import { HeroVideo } from "./video/hero-video";
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 
@@ -65,7 +66,6 @@ export function Journey() {
   const chapterRefs = useRef<Partial<Record<ChapterKey, HTMLDivElement | null>>>({});
   const sqlRef = useRef<HTMLSpanElement>(null);
   const bigNumRef = useRef<HTMLSpanElement>(null);
-  const [askActive, setAskActive] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -225,47 +225,44 @@ export function Journey() {
       <UniverseCanvas reducedMotion={reducedMotion} />
 
       {/* ── HERO ── */}
-      <section id="top" ref={heroRef} className={`${styles.hero} ${askActive ? styles.heroAskActive : ""}`}>
-        <div ref={heroInnerRef} className={styles.heroInner}>
-          {/* On mobile this whole block collapses away while the ask demo
-              runs, so the pipeline + bridge CTA fit in one viewport. */}
-          <div className={`${styles.heroLead} ${askActive ? styles.heroLeadCollapsed : ""}`}>
-            <span className={styles.heroBadge}>
-              <i className={styles.heroBadgeDot} />
-              AI-native analytics<span className={styles.heroBadgeOpt}> · inside your walls</span>
+      {/* The panel is the product demo, playing silently behind the copy —
+          clicking it expands this same panel into the full player. */}
+      <section id="top" ref={heroRef} className={styles.hero}>
+        <HeroVideo reducedMotion={reducedMotion} overlayRef={heroInnerRef}>
+          <span className={styles.heroBadge}>
+            <i className={styles.heroBadgeDot} />
+            AI-native analytics<span className={styles.heroBadgeOpt}> · inside your walls</span>
+          </span>
+          <h1 className={styles.heroTitle}>
+            Ask <em>anything</em>.
+            <br />
+            Trust the answer.
+          </h1>
+          <p className={styles.heroSub}>
+            <span className={styles.copyFull}>
+              Dataverse plugs into every database you own, grounds each question in your approved schema, and
+              returns SQL-backed answers in seconds — entirely inside your network.
             </span>
-            <h1 className={`${styles.heroTitle} ${askActive ? styles.heroTitleDim : ""}`}>
-              Ask <em>anything</em>.
-              <br />
-              Trust the answer.
-            </h1>
-            <p className={styles.heroSub}>
-              <span className={styles.copyFull}>
-                Dataverse plugs into every database you own, grounds each question in your approved schema, and
-                returns SQL-backed answers in seconds — entirely inside your network.
-              </span>
-              <span className={styles.copyShort}>
-                Every database you own. One conversation. SQL-backed answers in seconds — inside your network.
-              </span>
-            </p>
-          </div>
-
-          <AskExperience onPhaseChange={setAskActive} />
-
-          <div className={`${styles.heroCtas} ${askActive ? styles.heroCtasHidden : ""}`}>
+            <span className={styles.copyShort}>
+              Every database you own. One conversation. SQL-backed answers in seconds — inside your network.
+            </span>
+          </p>
+          <div className={styles.heroCtas}>
             <a href="#demo" className={`${landingStyles.btn} ${landingStyles.btnPrimary}`}>
               Book a 30-min demo
             </a>
-            <a href="#story" className={`${landingStyles.btn} ${landingStyles.btnGhost}`}>
-              Watch it think ↓
+            <a href="#ask" className={`${landingStyles.btn} ${landingStyles.btnGhost}`}>
+              Try it yourself ↓
             </a>
           </div>
-        </div>
+        </HeroVideo>
         <div className={styles.scrollCue} aria-hidden="true">
           <span>Scroll</span>
           <span className={styles.scrollCueLine} />
         </div>
       </section>
+
+      <AskSection />
 
       {/* ── CHAPTER TRACK ── */}
       <section id="story" ref={trackRef} className={styles.track}>

@@ -1,0 +1,61 @@
+/* ── Ask demo band (hero → story bridge) ──────────────────────── */
+
+.root {
+  position: relative;
+  z-index: 1;
+  padding: clamp(72px, 11vh, 128px) 20px clamp(80px, 12vh, 140px);
+  display: flex;
+  justify-content: center;
+}
+
+.inner {
+  width: min(1120px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.title {
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+.title em {
+  font-style: italic;
+  background: linear-gradient(120deg, #7fb0ff 0%, #67e8f9 55%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.lead {
+  max-width: 560px;
+  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  line-height: 1.65;
+  color: var(--ink-dim);
+  margin-bottom: 10px;
+}
+
+@media (max-width: 560px) {
+  .root {
+    padding: 64px 18px 72px;
+  }
+
+  .lead {
+    font-size: 15px;
+  }
+}
