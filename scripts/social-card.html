@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,500;0,600;1,500&display=swap");
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #04060d;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .frame {
+      position: relative;
+      width: 1200px;
+      height: 630px;
+      background:
+        radial-gradient(ellipse 70% 80% at 12% 20%, rgba(37, 99, 235, 0.22), transparent 55%),
+        radial-gradient(ellipse 50% 60% at 88% 75%, rgba(245, 158, 11, 0.12), transparent 50%),
+        linear-gradient(145deg, #07111d 0%, #0a1628 48%, #050a12 100%);
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 28px;
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      pointer-events: none;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #0f1d33;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand strong {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand span {
+      font-size: 15px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .body {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      flex: 1;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      min-height: 0;
+    }
+
+    .copy h1 {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 58px;
+      font-weight: 600;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      max-width: 560px;
+    }
+
+    .copy h1 em {
+      font-style: italic;
+      color: #e2e8f0;
+    }
+
+    .copy p {
+      font-size: 20px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      max-width: 520px;
+      margin-bottom: 28px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      padding: 0 26px;
+      border-radius: 999px;
+      background: #f59e0b;
+      color: #0f172a;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .panel {
+      background: rgba(11, 23, 48, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 24px;
+      padding: 28px 30px 26px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel .label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #94a3b8;
+      margin-bottom: 18px;
+    }
+
+    .sql {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 16px;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .sql .kw { color: #93c5fd; }
+    .sql .plain { color: #e2e8f0; }
+
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      height: 52px;
+      margin-bottom: 14px;
+    }
+
+    .bars i {
+      display: block;
+      border-radius: 8px;
+      width: 72px;
+    }
+
+    .bars i:nth-child(1) { height: 18px; background: #1d4ed8; }
+    .bars i:nth-child(2) { height: 36px; background: #2563eb; }
+    .bars i:nth-child(3) { height: 52px; background: #60a5fa; width: 42px; }
+
+    .meta {
+      display: flex;
+      gap: 18px;
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 22px;
+    }
+
+    .meta span::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .connectors .label {
+      margin-bottom: 10px;
+    }
+
+    .connectors p {
+      font-size: 14px;
+      color: #e2e8f0;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="top">
+      <div class="mark">DV</div>
+      <div class="brand">
+        <strong>Dataverse</strong>
+        <span>Enterprise data agent</span>
+      </div>
+    </div>
+    <div class="body">
+      <div class="copy">
+        <h1>Ask anything.<br /><em>Trust the answer.</em></h1>
+        <p>Schema-aware analytics, SQL-backed results, and visible traces — entirely inside your network.</p>
+        <div class="cta">Book a demo</div>
+      </div>
+      <div class="panel">
+        <div class="label">SQL TRACE</div>
+        <div class="sql">
+          <div><span class="kw">SELECT</span> <span class="plain">region, SUM(arr)</span></div>
+          <div><span class="kw">FROM</span> <span class="plain">subscriptions</span></div>
+          <div><span class="kw">WHERE</span> <span class="plain">renewal_risk = 'high'</span></div>
+          <div><span class="kw">GROUP BY</span> <span class="plain">region</span></div>
+        </div>
+        <div class="bars" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="meta">
+          <span>Approved metadata</span>
+          <span>Visible SQL</span>
+        </div>
+        <div class="connectors">
+          <div class="label">CONNECTORS</div>
+          <p>PostgreSQL · MySQL · Snowflake · BigQuery</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

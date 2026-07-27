@@ -61,12 +61,14 @@ export const metadata: Metadata = {
     siteName,
     locale: "en_US",
     type: "website",
+    // Raster only — WhatsApp/iMessage/Slack ignore SVG og:image.
     images: [
       {
-        url: "/dataverse-social-card.svg",
+        url: "/dataverse-social-card.jpg",
         width: 1200,
         height: 630,
-        alt: "Dataverse enterprise data agent social preview",
+        type: "image/jpeg",
+        alt: "Dataverse — Ask anything. Trust the answer.",
       },
     ],
   },
@@ -74,7 +76,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: pageTitle,
     description: pageDescription,
-    images: ["/dataverse-social-card.svg"],
+    images: ["/dataverse-social-card.jpg"],
   },
 };
 
