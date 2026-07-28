@@ -302,13 +302,18 @@
   margin-bottom: 14px;
 }
 
-.painStat {
+/* The recognisable line, in the same serif italic the chapter headings use for
+   emphasis. Sized to wrap to two lines inside a card rather than shout like a
+   figure — the persuasion here is recognition, not scale. */
+.painQuote {
   font-family: var(--serif);
-  font-size: 34px;
-  font-weight: 600;
+  font-style: italic;
+  font-size: 25px;
+  font-weight: 500;
   color: #ff9a8a;
-  line-height: 1;
-  margin-bottom: 6px;
+  line-height: 1.28;
+  text-wrap: balance;
+  margin-bottom: 10px;
 }
 
 .painTitle {
@@ -324,6 +329,28 @@
   font-size: 13.5px;
   line-height: 1.6;
   color: #8b96ad;
+}
+
+/* Attribution for the three figures above — deliberately quiet, but present.
+   An unsourced statistic is the one thing this chapter cannot afford. */
+.painSource {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #6f7a91;
+  width: min(920px, 100%);
+  text-align: left;
+}
+
+.painSource a {
+  color: #8b96ad;
+  text-decoration: underline;
+  text-decoration-color: rgba(139, 150, 173, 0.4);
+  text-underline-offset: 2px;
+}
+
+.painSource a:hover {
+  color: #c9d3e6;
+  text-decoration-color: rgba(201, 211, 230, 0.7);
 }
 
 /* ── 02 chips ── */
@@ -828,9 +855,17 @@
     padding: var(--card-pad-y) 15px;
   }
 
-  .painStat {
-    font-size: 22px;
-    margin-bottom: 3px;
+  .painQuote {
+    font-size: 19px;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  /* Chapter 01 must still fit one screen without internal scroll, so the
+     citation shrinks rather than pushing the third card off. */
+  .painSource {
+    font-size: 10.5px;
+    line-height: 1.45;
   }
 
   .painTitle {

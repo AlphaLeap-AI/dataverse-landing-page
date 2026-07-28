@@ -14,24 +14,40 @@ const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 /* ── chapter copy ─────────────────────────────────────────────── */
 
+/* Each card leads with a sentence the reader has actually said or heard, not a
+   figure. A survey percentage is a fact about other companies — it reads as
+   trivia and creates distance. The quote creates recognition first; the sourced
+   number then closes the card as evidence that the moment generalizes. Sources:
+   Sisense 2025 State of Analytics (n=500) for the first two, dbt Labs 2026
+   State of Analytics Engineering (n=363) for the third — cited under the grid.
+   Bodies ship long/short because chapter 01 must fit one phone screen. */
 const PAIN_CARDS = [
   {
     Icon: Hourglass,
-    stat: "3 weeks",
+    quote: "“Can you pull this for me?”",
     title: "The wait",
-    body: "From question to deck. By the board meeting, the number is already stale.",
+    bodyFull:
+      "The question becomes a ticket. The ticket joins a queue. The decision gets made before the answer lands — 56% of organizations shipped late last year waiting on analytics.",
+    bodyShort:
+      "It becomes a ticket, then a queue. 56% of organizations shipped late last year waiting on analytics.",
   },
   {
     Icon: FileCode,
-    stat: "0.4%",
+    quote: "“I’ll add it to the queue.”",
     title: "The gatekeeper",
-    body: "Of your company can write SQL. Everyone else files a ticket and waits in line.",
+    bodyFull:
+      "If you can't write SQL, you can't ask — you ask a person. So 76% admit they've made the call without the data, because getting to it was too hard.",
+    bodyShort:
+      "If you can't write SQL, you ask a person. 76% have made the call without the data — getting to it was too hard.",
   },
   {
     Icon: Layers,
-    stat: "12 tools",
+    quote: "“That’s not what my dashboard says.”",
     title: "The sprawl",
-    body: "Dashboards stacked on dashboards, each telling a different version of the truth.",
+    bodyFull:
+      "Two dashboards, two numbers, and now the meeting is about whose is right. 41% of data teams say no one clearly owns the answer.",
+    bodyShort:
+      "Two dashboards, two numbers, one argument. 41% of data teams say no one clearly owns the answer.",
   },
 ];
 
@@ -280,12 +296,33 @@ export function Journey() {
                 {PAIN_CARDS.map((p) => (
                   <div key={p.title} className={`${styles.painCard} ${styles.anim}`}>
                     <p.Icon size={20} strokeWidth={2} className={styles.painIcon} aria-hidden="true" />
-                    <div className={styles.painStat}>{p.stat}</div>
+                    <div className={styles.painQuote}>{p.quote}</div>
                     <div className={styles.painTitle}>{p.title}</div>
-                    <p className={styles.painBody}>{p.body}</p>
+                    <p className={styles.painBody}>
+                      <span className={styles.copyFull}>{p.bodyFull}</span>
+                      <span className={styles.copyShort}>{p.bodyShort}</span>
+                    </p>
                   </div>
                 ))}
               </div>
+              <p className={`${styles.painSource} ${styles.anim}`}>
+                <a
+                  href="https://www.businesswire.com/news/home/20250430586413/en/Three-Out-of-Four-Enterprises-Admit-Theyre-Making-Crucial-Business-Decisions-in-the-Dark-New-Sisense-Research-Shows"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Sisense, 2025 State of Analytics
+                </a>{" "}
+                (n=500, with UserEvidence) ·{" "}
+                <a
+                  href="https://www.getdbt.com/resources/state-of-analytics-engineering-2026"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  dbt Labs, 2026 State of Analytics Engineering
+                </a>{" "}
+                (n=363)
+              </p>
             </div>
           </div>
 
