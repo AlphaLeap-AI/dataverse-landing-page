@@ -1,16 +1,16 @@
 "use client";
 
-import { ArrowRight, RotateCcw, Sparkles, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Building2, RotateCcw, Sparkles, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 
 import { askState } from "../experience/scroll-driver";
-import { DEMO_SCENARIOS, splitValue, type Scenario } from "./ask-data";
+import { DEMO_SCENARIOS, formatValue, splitValue, type Scenario } from "./ask-data";
 import styles from "./ask.module.css";
 
 type Phase = "idle" | "sourcing" | "sql" | "chart" | "answer";
 
 const SQL_KEYWORDS =
-  /\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|LIMIT|JOIN|LEFT JOIN|ON|AND|OVER|PARTITION BY|AS|DESC|ASC|IN|NOT IN|BETWEEN|current_date|date_trunc)\b/g;
+  /\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|LIMIT|WITH|JOIN|LEFT JOIN|ON|USING|AND|OVER|PARTITION BY|AS|DESC|ASC|IN|NOT IN|BETWEEN|INTERVAL|current_date|date_trunc)\b/g;
 
 /** SQL strings are our own static constants — safe to colorize as HTML. */
 function colorizeSql(sql: string): string {
@@ -25,9 +25,12 @@ const DEMO_META: Record<
   string,
   { Icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string; "aria-hidden"?: boolean }>; hint: string }
 > = {
-  churn: { Icon: Users, hint: "Retention · support risk" },
-  growth: { Icon: TrendingUp, hint: "Revenue · regions" },
+  leasing: { Icon: Building2, hint: "Query · leasing portfolio" },
+  forecast: { Icon: TrendingUp, hint: "Prediction · new store" },
 };
+
+/** Percentage of the plot area the tallest bar fills — the rest is label headroom. */
+const PLOT_CEILING = 86;
 
 interface AskExperienceProps {
   onPhaseChange?: (active: boolean) => void;
@@ -231,16 +234,35 @@ export function AskExperience({ onPhaseChange }: AskExperienceProps) {
         {chartVisible ? (
           <div className={`${styles.chartPanel} ${styles.panel} ${phase === "answer" ? styles.docked : ""}`}>
             <span className={styles.panelLabel}>The shape of it</span>
+            <span className={styles.chartTitle}>
+              {scenario.chartTitle}
+              {scenario.chartTag ? <span className={styles.chartTag}>{scenario.chartTag}</span> : null}
+            </span>
             <div className={styles.bars}>
-              {scenario.bars.map((b, i) => (
-                <div key={b.label} className={styles.barCol}>
-                  <span
-                    className={`${styles.barFill} ${b.hot ? styles.barHot : ""}`}
-                    style={{ height: `${b.h * 100}%`, transitionDelay: `${i * 110}ms` }}
-                  />
-                  <span className={styles.barLabel}>{b.label}</span>
-                </div>
-              ))}
+              {scenario.bars.map((b, i) => {
+                // Bars top out at PLOT_CEILING so the figure printed above the
+                // tallest one still has room inside the track.
+                const height = `${b.h * PLOT_CEILING}%`;
+                return (
+                  <div key={b.label} className={styles.barCol}>
+                    <span className={styles.barTrack}>
+                      <span
+                        className={`${styles.barValue} ${b.hot ? styles.barValueHot : ""}`}
+                        style={{ bottom: `calc(${height} + 5px)`, animationDelay: `${250 + i * 110}ms` }}
+                      >
+                        {b.value}
+                      </span>
+                      <span
+                        className={`${styles.barFill} ${b.hot ? styles.barHot : ""} ${
+                          b.projected ? styles.barProjected : ""
+                        }`}
+                        style={{ height, animationDelay: `${i * 110}ms` }}
+                      />
+                    </span>
+                    <span className={`${styles.barLabel} ${b.hot ? styles.barLabelHot : ""}`}>{b.label}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : null}
@@ -248,13 +270,26 @@ export function AskExperience({ onPhaseChange }: AskExperienceProps) {
         {answerVisible && parts ? (
           <div className={`${styles.answerPanel} ${styles.panel}`}>
             <span className={styles.panelLabel}>The answer</span>
+            <p className={styles.verdict}>{scenario.verdict}</p>
             <div className={styles.answerBig}>
               {parts.prefix}
-              {num.toFixed(parts.decimals)}
+              {formatValue(num, parts.decimals, parts.grouped)}
               {parts.suffix}
               <span className={styles.answerCaption}>{scenario.caption}</span>
             </div>
+            <div className={styles.statRow}>
+              {scenario.stats.map((s) => (
+                <span key={s.label} className={styles.stat}>
+                  <b>{s.value}</b>
+                  {s.label}
+                </span>
+              ))}
+            </div>
             <p className={styles.insight}>{scenario.insight}</p>
+            <p className={styles.action}>
+              <ArrowRight size={13} strokeWidth={2.6} aria-hidden="true" />
+              {scenario.action}
+            </p>
             <span className={styles.footnote}>{scenario.footnote} · every number shows its SQL</span>
           </div>
         ) : null}

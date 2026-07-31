@@ -182,7 +182,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  width: min(640px, 100%);
+  /* Wide enough that a real-world question fits without ellipsis. */
+  width: min(780px, 100%);
   padding: 12px 14px 12px 18px;
   border-radius: 999px;
   background: rgba(10, 16, 32, 0.78);
@@ -294,6 +295,14 @@
   overflow: hidden;
   mask-image: linear-gradient(180deg, #000 40%, transparent);
   -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent);
+}
+
+/* Docked, the chart is a thumbnail — the figures and axis labels would be
+   unreadable at that width, and nowrap labels overflow the panel. */
+.docked .barValue,
+.docked .barLabel,
+.docked .chartTitle {
+  display: none;
 }
 
 .panelLabel {
@@ -425,31 +434,87 @@
 /* chart */
 
 .chartPanel {
-  flex: 0 1 300px;
+  flex: 0 1 320px;
   display: flex;
   flex-direction: column;
+}
+
+/* What the bars actually plot — a chart nobody has to guess at. */
+.chartTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #c3d2ee;
+}
+
+.chartTag {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 165, 210, 0.28);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: #8b96ad;
 }
 
 .bars {
   flex: 1;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  min-height: 120px;
-  padding-top: 6px;
+  align-items: stretch;
+  gap: 9px;
+  min-height: 148px;
 }
 
 .barCol {
   flex: 1;
-  height: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
+}
+
+/* Every bar prints its own figure, sitting right on top of it — no
+   hovering, no guessing, no reading across to an axis. */
+.barValue {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  color: #a8b4d0;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: valueIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes valueIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 7px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.barTrack {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
 }
 
 .barFill {
+  position: relative;
   width: 100%;
   border-radius: 6px 6px 3px 3px;
   background: linear-gradient(180deg, #4d8dff, #2b5cc4);
@@ -461,6 +526,21 @@
 .barHot {
   background: linear-gradient(180deg, #ffd24d, #e09a2b);
   box-shadow: 0 0 22px rgba(255, 210, 77, 0.4);
+}
+
+/* Forecast bars are hatched and open-topped so a projection never
+   reads as a measured fact. */
+.barProjected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border-top: 2px dashed rgba(255, 255, 255, 0.6);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0 3px,
+    transparent 3px 8px
+  );
 }
 
 @keyframes barIn {
@@ -475,21 +555,37 @@
 .barLabel {
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: #8b96ad;
   white-space: nowrap;
+}
+
+.barLabelHot,
+.barValueHot {
+  color: #ffd24d;
+  font-weight: 600;
 }
 
 /* answer */
 
 .answerPanel {
-  flex: 1 1 380px;
+  flex: 1 1 400px;
   border-color: rgba(255, 210, 77, 0.28);
+}
+
+/* The answer in words — the spec, the SKU — before the number. */
+.verdict {
+  font-family: var(--serif);
+  font-size: clamp(19px, 2.1vw, 23px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: #eef2fb;
+  margin: 0 0 6px;
 }
 
 .answerBig {
   font-family: var(--serif);
-  font-size: clamp(30px, 3.4vw, 38px);
+  font-size: clamp(28px, 3.2vw, 36px);
   font-weight: 600;
   line-height: 1.05;
   color: #ffd24d;
@@ -497,7 +593,36 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.statRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 11px;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(19, 30, 56, 0.7);
+  border: 1px solid rgba(140, 165, 210, 0.18);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #8b96ad;
+}
+
+.stat b {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #eef2fb;
 }
 
 .answerCaption {
@@ -511,7 +636,28 @@
   font-size: 13px;
   line-height: 1.55;
   color: #c3d2ee;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+/* The move the answer implies — the part a dashboard never gives you. */
+.action {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba(77, 141, 255, 0.09);
+  border: 1px solid rgba(127, 176, 255, 0.24);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #d7e3fb;
+}
+
+.action svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #7fb0ff;
 }
 
 .footnote {
@@ -629,7 +775,7 @@
   }
 
   .bars {
-    min-height: 110px;
+    min-height: 140px;
   }
 }
 
@@ -652,7 +798,12 @@
   }
 
   .bars {
-    min-height: 96px;
+    min-height: 132px;
+    gap: 7px;
+  }
+
+  .barValue {
+    font-size: 9px;
   }
 
   /* Docked chart reads as an empty box on a phone — drop it entirely
@@ -661,8 +812,21 @@
     display: none;
   }
 
+  .verdict {
+    font-size: 20px;
+  }
+
   .insight {
     font-size: 14px;
+  }
+
+  .action {
+    font-size: 13.5px;
+  }
+
+  .stat {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .answerCaption {
@@ -708,10 +872,14 @@
 
   .questionBody {
     flex: 1;
+    gap: 3px;
   }
 
+  /* Keep the query/prediction framing on phones — on a narrow card it's
+     the only thing saying these are real business questions. */
   .questionHint {
-    display: none;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
   }
 
   .qFull {
@@ -742,7 +910,9 @@
   }
 
   .selectedQuestion {
-    flex: 1 1 auto;
+    /* Zero basis, not auto — otherwise a long question claims a full row
+       of its own and leaves the icon stranded above it. */
+    flex: 1 1 0;
     white-space: normal;
     font-size: 14px;
     line-height: 1.35;
