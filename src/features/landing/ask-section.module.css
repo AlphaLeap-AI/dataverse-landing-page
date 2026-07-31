@@ -17,6 +17,13 @@
   text-align: center;
 }
 
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
 .eyebrow {
   font-family: var(--mono);
   font-size: 12px;
@@ -48,6 +55,32 @@
   line-height: 1.65;
   color: var(--ink-dim);
   margin-bottom: 10px;
+}
+
+/* Once the panels stack vertically there is no room to spare: fold the
+   intro away so the pipeline and its answer own the viewport. */
+@media (max-width: 900px) {
+  .intro {
+    max-height: 460px;
+    overflow: hidden;
+    transition:
+      max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.3s ease,
+      margin-bottom 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .running .intro {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: -16px;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    transition: none;
+  }
 }
 
 @media (max-width: 560px) {

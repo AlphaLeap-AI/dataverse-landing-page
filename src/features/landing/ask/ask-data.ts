@@ -87,7 +87,7 @@ LIMIT 5;`,
     ],
     stats: [
       { label: "Median rent", value: "$2,850/mo" },
-      { label: "Days on market", value: "11 days" },
+      { label: "Days listed", value: "11 days" },
       { label: "Renewal rate", value: "88%" },
     ],
     insight:
@@ -113,7 +113,7 @@ SELECT category, sku,
                 horizon => 12) AS proj_units
 FROM beauty JOIN nielsen_index USING (category)
 ORDER BY proj_units DESC;`,
-    verdict: "Vitamin-C brightening serum · 30 ml",
+    verdict: "Vitamin-C brightening serum",
     value: "$1.24M",
     caption: "projected year-one revenue at the NY store",
     chartTitle: "Projected year-one revenue · New York",
@@ -126,14 +126,14 @@ ORDER BY proj_units DESC;`,
       { label: "Masks", h: 0.29, value: "$360K", projected: true },
     ],
     stats: [
-      { label: "Model confidence", value: "87%" },
-      { label: "vs. store average", value: "2.3×" },
+      { label: "Confidence", value: "87%" },
+      { label: "vs. store avg", value: "2.3×" },
       { label: "Opening stock", value: "4,800 units" },
     ],
     insight:
       "You have no New York sales history — so we matched 11 stores with the same demographic and footfall profile. That market over-indexes 2.3× on vitamin-C serums, and 71% of the demand lands Sept–Feb. Your draft NY planogram gives serums 6% of shelf.",
     action: "Open with 4,800 units and 18% of shelf on serums; hold the lip range back until Q4.",
-    footnote: "14 queries · 4 sources · 2.6s · 24-month seasonal model",
+    footnote: "14 queries · 4 sources · 2.6s",
   },
 ];
 

@@ -290,7 +290,7 @@ export function AskExperience({ onPhaseChange }: AskExperienceProps) {
               <ArrowRight size={13} strokeWidth={2.6} aria-hidden="true" />
               {scenario.action}
             </p>
-            <span className={styles.footnote}>{scenario.footnote} · every number shows its SQL</span>
+            <span className={styles.footnote}>{scenario.footnote}</span>
           </div>
         ) : null}
       </div>
