@@ -16,10 +16,6 @@ export function AskSection() {
         <h2 className={styles.title}>
           Ask a question. <em>Watch it work.</em>
         </h2>
-        <p className={styles.lead}>
-          Pick one of the questions below and follow the whole path — sources queried, SQL written, answer
-          returned. No sign-up, no sales call.
-        </p>
         <AskExperience />
       </div>
     </section>

@@ -1,13 +1,20 @@
 /**
- * Scripted scenarios for the hero's interactive ask experience.
- * Each one is a full simulated Dataverse answer: sources queried, the SQL
- * behind it, a chart, the headline number, and the "why" nobody asked for.
+ * Scripted scenarios for the ask experience.
+ * Each one is a full simulated Dataverse answer, told in four beats:
+ * the systems it reached, the SQL it wrote, the shape of the result,
+ * and the answer with the move it implies.
  *
  * The two scenarios are deliberately different *kinds* of question — one
  * answered from history, one answered by forecast — because that pair is
  * what buyers ask on a first call: "can it tell me what happened?" and
  * "can it tell me what's next?"
  */
+
+export interface ScenarioSource {
+  name: string;
+  /** Shown once the source is reached — what it actually contributed. */
+  meta: string;
+}
 
 export interface ScenarioBar {
   /** Axis label under the bar. */
@@ -22,60 +29,78 @@ export interface ScenarioBar {
   projected?: boolean;
 }
 
-export interface ScenarioStat {
-  label: string;
-  value: string;
+/**
+ * The last beat: the answer leaving Dataverse through a connector the
+ * member has authorized. The confirm gate is real — write actions
+ * (send_email, post_message) return a preview first and only run once
+ * the member approves.
+ */
+export interface ScenarioDelivery {
+  /** Connector name as it appears in Integration > Connectors. */
+  name: string;
+  /** 1-letter monogram — same motif as the ecosystem wall, no logo assets. */
+  mark: string;
+  /** 6-digit hex; the mark appends alpha suffixes for its bg/border. */
+  tint: string;
+  /** The tool the agent calls, as it appears in the run log. */
+  tool: string;
+  /** Header rows above the message body. */
+  headers: { label: string; value: string }[];
+  body: string;
+  /** Small print under the body — attachment or posting identity. */
+  note: string;
+  sendLabel: string;
+  sentLabel: string;
 }
 
 export interface Scenario {
   id: string;
   question: string;
-  /** Compact chip label for narrow screens. */
-  short: string;
-  keywords: string[];
-  sources: string[];
+  /** Label on the button that switches to the other scenario. */
+  switchLabel: string;
+  sources: ScenarioSource[];
   sql: string;
-  /** The answer in words — the spec, the SKU, the thing they asked for. */
-  verdict: string;
-  value: string;
-  caption: string;
   /** What the chart is actually plotting. */
   chartTitle: string;
   /** Small badge next to the chart title, e.g. the forecast confidence. */
   chartTag?: string;
   bars: ScenarioBar[];
-  stats: ScenarioStat[];
-  insight: string;
+  /** The answer in words — the spec, the SKU, the thing they asked for. */
+  verdict: string;
+  value: string;
+  caption: string;
+  /** The "why" nobody asked for — one line each. */
+  bullets: string[];
   /** The move the answer implies — what a good analyst would say next. */
-  action: string;
+  move: string;
+  delivery: ScenarioDelivery;
   footnote: string;
 }
 
 /**
- * Only these two scenarios are wired for the public hero demo.
+ * Only these two scenarios are wired for the public demo.
  * Free-text is disabled on purpose — expand this list when more
  * scripted answers are ready.
  */
 export const DEMO_SCENARIOS: Scenario[] = [
   {
     id: "leasing",
-    question: "Which property spec — bed, bath, car — rented the most in H1 2026?",
-    short: "Top-renting spec in H1 2026?",
-    keywords: ["property", "rent", "lease", "bedroom", "bathroom", "car", "spec", "leasing"],
-    sources: ["Yardi Voyager", "PostgreSQL", "Google Sheets"],
+    question: "Which property spec rented the most in H1 2026? Email the leasing team what we should buy next.",
+    switchLabel: "Ask the forecast question",
+    sources: [
+      { name: "Yardi Voyager", meta: "412k leases" },
+      { name: "PostgreSQL", meta: "38k units" },
+      { name: "Google Sheets", meta: "submarkets" },
+    ],
     sql: `SELECT bedrooms, bathrooms, car_spaces,
-       count(*)                       AS leases,
-       median(rent_month)             AS median_rent,
-       round(avg(days_on_market), 1)  AS avg_days_listed
+       count(*)           AS leases,
+       median(rent_month) AS median_rent
 FROM leases
 WHERE signed_at BETWEEN '2026-01-01' AND '2026-06-30'
   AND status = 'executed'
-GROUP BY 1, 2, 3
+GROUP BY 1,2,3
 ORDER BY leases DESC
 LIMIT 5;`,
-    verdict: "3 bed · 2 bath · 2 car",
-    value: "1,284",
-    caption: "leases signed — 33% of all H1 2026 volume",
     chartTitle: "Leases signed · Jan–Jun 2026",
     chartTag: "bed · bath · car",
     bars: [
@@ -85,39 +110,54 @@ LIMIT 5;`,
       { label: "2·1·1", h: 0.38, value: "494" },
       { label: "1·1·1", h: 0.26, value: "337" },
     ],
-    stats: [
-      { label: "Median rent", value: "$2,850/mo" },
-      { label: "Days on market", value: "11 days" },
-      { label: "Renewal rate", value: "88%" },
+    verdict: "3 bed · 2 bath · 2 car",
+    value: "1,284",
+    caption: "leases signed — 33% of H1 volume",
+    bullets: [
+      "Clears in 11 days — 8 faster than portfolio average",
+      "88% renewal, your highest of any spec",
+      "Only 21% of the stock you actually own",
     ],
-    insight:
-      "3·2·2 clears the market 8 days faster than your portfolio average and renews at 88% — yet it's only 21% of the stock you own. The 4·2·2 homes you keep acquiring sit 26 days and sign 6% under asking.",
-    action: "Shift acquisition toward 3·2·2 in the 5 submarkets where it leases in under 10 days — 41 listings match today.",
+    move: "Shift acquisition to 3·2·2 — 41 listings match today.",
+    delivery: {
+      name: "Gmail",
+      mark: "G",
+      tint: "#ff9a8a",
+      tool: "gmail · send_email",
+      headers: [
+        { label: "To", value: "leasing-team@northgate.com" },
+        { label: "Subject", value: "H1 2026 — 3·2·2 is your best-performing spec" },
+      ],
+      body: "3 bed · 2 bath · 2 car signed 1,284 leases — 33% of H1 volume, 11 days to lease, 88% renewal — yet it's only 21% of what we own. Proposal: shift acquisition to 3·2·2 in the five submarkets under 10 days. 41 listings match today.",
+      note: "Attached · answer.sql, 3 sources",
+      sendLabel: "Approve & send",
+      sentLabel: "Sent from your mailbox · 09:14",
+    },
     footnote: "9 queries · 3 sources · 1.8s",
   },
   {
     id: "forecast",
-    question: "Which beauty product will sell best in our new New York store?",
-    short: "Best seller in a new NYC store?",
-    keywords: ["forecast", "predict", "beauty", "product", "new york", "store", "sell", "category"],
-    sources: ["Shopify POS", "SAP", "BigQuery", "NielsenIQ"],
+    question: "Which beauty product will sell best in our new NY store? Post the plan to #merch-planning.",
+    switchLabel: "Ask the leasing question",
+    sources: [
+      { name: "Shopify POS", meta: "2.1m sales" },
+      { name: "SAP", meta: "inventory" },
+      { name: "BigQuery", meta: "footfall" },
+      { name: "NielsenIQ", meta: "market index" },
+    ],
     sql: `WITH beauty AS (
   SELECT sku, category, sum(units) AS units_12mo
   FROM pos_sales
   WHERE segment = 'Beauty'
     AND sold_at >= current_date - INTERVAL '12 months'
-  GROUP BY 1, 2
+  GROUP BY 1,2
 )
-SELECT category, sku,
-       forecast(units_12mo, market => 'New York DMA',
-                horizon => 12) AS proj_units
+SELECT category, forecast(units_12mo,
+         market => 'New York DMA') AS proj
 FROM beauty JOIN nielsen_index USING (category)
-ORDER BY proj_units DESC;`,
-    verdict: "Vitamin-C brightening serum · 30 ml",
-    value: "$1.24M",
-    caption: "projected year-one revenue at the NY store",
+ORDER BY proj DESC;`,
     chartTitle: "Projected year-one revenue · New York",
-    chartTag: "forecast · 87% confidence",
+    chartTag: "forecast · 87% conf.",
     bars: [
       { label: "Serums", h: 1, value: "$1.24M", hot: true, projected: true },
       { label: "SPF", h: 0.68, value: "$840K", projected: true },
@@ -125,20 +165,95 @@ ORDER BY proj_units DESC;`,
       { label: "Lip", h: 0.38, value: "$470K", projected: true },
       { label: "Masks", h: 0.29, value: "$360K", projected: true },
     ],
-    stats: [
-      { label: "Model confidence", value: "87%" },
-      { label: "vs. store average", value: "2.3×" },
-      { label: "Opening stock", value: "4,800 units" },
+    verdict: "Vitamin-C brightening serum · 30 ml",
+    value: "$1.24M",
+    caption: "projected year-one revenue",
+    bullets: [
+      "2.3× what your average store does in beauty",
+      "87% confidence, from 11 look-alike stores",
+      "Your draft planogram gives it just 6% of shelf",
     ],
-    insight:
-      "You have no New York sales history — so we matched 11 stores with the same demographic and footfall profile. That market over-indexes 2.3× on vitamin-C serums, and 71% of the demand lands Sept–Feb. Your draft NY planogram gives serums 6% of shelf.",
-    action: "Open with 4,800 units and 18% of shelf on serums; hold the lip range back until Q4.",
-    footnote: "14 queries · 4 sources · 2.6s · 24-month seasonal model",
+    move: "Open with 4,800 units and 18% of shelf.",
+    delivery: {
+      name: "Slack",
+      mark: "S",
+      tint: "#a78bfa",
+      tool: "slack · post_message",
+      headers: [
+        { label: "Channel", value: "#merch-planning" },
+        { label: "Thread", value: "New York store · opening plan" },
+      ],
+      body: "NY opening: vitamin-C brightening serum 30 ml projects $1.24M year one — 2.3× our store average, 87% confidence from 11 look-alike stores. The draft planogram gives it 6% of shelf. Recommend 4,800 units and 18%.",
+      note: "Posts as you · never as a shared bot",
+      sendLabel: "Approve & post",
+      sentLabel: "Posted to #merch-planning · 09:14",
+    },
+    footnote: "14 queries · 4 sources · 2.6s",
   },
 ];
 
-/** @deprecated Prefer DEMO_SCENARIOS — kept as an alias for clarity. */
-export const SCENARIOS = DEMO_SCENARIOS;
+/** Line count of the generated SQL — the "Query" step's sub-label. */
+export function sqlLineCount(sql: string): number {
+  return sql.split("\n").length;
+}
+
+/* ── SQL syntax colouring ─────────────────────────────────────── */
+
+const KEYWORDS = [
+  "GROUP BY",
+  "ORDER BY",
+  "LEFT JOIN",
+  "PARTITION BY",
+  "NOT IN",
+  "SELECT",
+  "FROM",
+  "WHERE",
+  "LIMIT",
+  "WITH",
+  "JOIN",
+  "USING",
+  "AND",
+  "OVER",
+  "DESC",
+  "ASC",
+  "BETWEEN",
+  "INTERVAL",
+  "ON",
+  "AS",
+  "IN",
+];
+
+const FUNCTIONS = ["current_date", "date_trunc", "forecast", "median", "count", "round", "avg", "sum"];
+
+const TOKEN_RE = new RegExp(
+  `('[^']*')|(\\b\\d+(?:\\.\\d+)?\\b)|\\b(${KEYWORDS.join("|")})\\b|\\b(${FUNCTIONS.join("|")})\\b`,
+  "gi"
+);
+
+export type SqlTokenKind = "str" | "num" | "kw" | "fn" | "base";
+
+export interface SqlToken {
+  text: string;
+  kind: SqlTokenKind;
+}
+
+/**
+ * Split SQL into coloured runs. Done once per scenario so the typewriter
+ * can slice a character budget across the runs without re-parsing.
+ */
+export function tokenizeSql(sql: string): SqlToken[] {
+  const out: SqlToken[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  TOKEN_RE.lastIndex = 0;
+  while ((m = TOKEN_RE.exec(sql))) {
+    if (m.index > last) out.push({ text: sql.slice(last, m.index), kind: "base" });
+    out.push({ text: m[0], kind: m[1] ? "str" : m[2] ? "num" : m[3] ? "kw" : "fn" });
+    last = m.index + m[0].length;
+  }
+  if (last < sql.length) out.push({ text: sql.slice(last), kind: "base" });
+  return out;
+}
 
 /** Split "$1.24M" / "1,284" into animatable parts. */
 export function splitValue(value: string): {
