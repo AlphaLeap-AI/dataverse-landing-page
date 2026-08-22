@@ -1,0 +1,133 @@
+/* ──────────────────────────────────────────────────────────────
+   Dataverse intro — the logo assembles itself, then lifts to
+   reveal the landing. All motion is driven from intro.tsx on a
+   single deterministic clock; CSS only owns static styling and
+   the starfield twinkle.
+   ────────────────────────────────────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+/* the solid dark the piece plays against — fades on its own so the
+   flying mark can stay lit while the page comes up underneath */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: var(--bg, #04060d);
+  will-change: opacity;
+}
+
+/* ambient depth behind the mark — two soft nebulas + vignette */
+.veil::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 60% 44%, rgba(46, 99, 231, 0.16), transparent 46%),
+    radial-gradient(circle at 34% 62%, rgba(103, 232, 249, 0.05), transparent 40%),
+    radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.5) 130%);
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stars i {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(190, 215, 255, 0.55);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.65; }
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  will-change: transform;
+}
+
+/* the piece the flight is flown with — transformed only during the dock */
+.svgWrap {
+  position: relative;
+  will-change: transform, opacity;
+}
+
+.svg {
+  width: min(68vmin, 470px);
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.word {
+  margin-top: clamp(2px, 1.5vmin, 12px);
+  display: flex;
+  justify-content: center;
+  font-family: var(--serif, Georgia, serif);
+  font-weight: 600;
+  font-size: clamp(30px, 6.2vmin, 44px);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: var(--ink, #eef2fb);
+}
+
+.word span {
+  display: inline-block;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.caption {
+  margin-top: clamp(8px, 1.6vmin, 14px);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: clamp(9px, 1.5vmin, 11.5px);
+  letter-spacing: 0.4em;
+  text-align: center;
+  color: var(--ink-mute, #8b96ad);
+  opacity: 0;
+  will-change: opacity, letter-spacing;
+}
+
+.skip {
+  position: fixed;
+  right: clamp(16px, 3vw, 28px);
+  bottom: clamp(16px, 3vw, 28px);
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(140, 165, 210, 0.16));
+  background: rgba(13, 20, 38, 0.5);
+  color: var(--ink-mute, #8b96ad);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: color 0.2s, border-color 0.2s;
+  will-change: opacity;
+}
+
+.skip:hover {
+  color: var(--ink, #eef2fb);
+  border-color: var(--border-strong, rgba(127, 176, 255, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars i { animation: none; }
+}

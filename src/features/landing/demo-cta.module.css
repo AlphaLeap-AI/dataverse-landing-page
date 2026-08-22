@@ -225,6 +225,20 @@
   font: inherit;
   font-size: 15.5px;
   padding: 12px 0;
+  /* Typed text renders with the native caret/text colors unless told
+     otherwise — without this, entering an email paints the field white. */
+  caret-color: var(--accent-soft);
+  -webkit-text-fill-color: var(--ink);
+}
+
+/* Autofill paints the field with the browser's light system colors;
+   keep it on the dark pill. */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent-soft);
+  transition: background-color 999999s ease-out;
 }
 
 .input::placeholder {

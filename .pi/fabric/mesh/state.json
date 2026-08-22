@@ -1,0 +1,99 @@
+{
+  "format": 1,
+  "entries": {
+    "topology/hosts/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f": {
+      "key": "topology/hosts/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f",
+      "value": {
+        "format": 1,
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "rootId": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "identity": {
+          "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+          "name": "main",
+          "kind": "main",
+          "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3"
+        },
+        "startedAt": 1787385457116,
+        "updatedAt": 1787385632174,
+        "expiresAt": 1787385647174
+      },
+      "version": 59,
+      "updatedAt": 1787385632177,
+      "updatedBy": {
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3"
+      }
+    },
+    "sessions/01a02879-2664-706a-82fa-ff110b50cbe3": {
+      "key": "sessions/01a02879-2664-706a-82fa-ff110b50cbe3",
+      "value": {
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "name": "Peer 01a02879",
+        "kind": "peer",
+        "status": "idle",
+        "runner": "pi",
+        "transport": "host",
+        "cwd": "/Users/doufulai/Documents/alphaleap.nosync/dataverse/landing_page",
+        "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3",
+        "model": "clinepass/cline-pass/kimi-k3",
+        "thinking": "high",
+        "startedAt": 1787385457116,
+        "updatedAt": 1787385632174,
+        "pendingMessages": false,
+        "local": false
+      },
+      "version": 59,
+      "updatedAt": 1787385632180,
+      "updatedBy": {
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3"
+      }
+    },
+    "topology/participants/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f": {
+      "key": "topology/participants/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f",
+      "value": {
+        "format": 1,
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "kind": "root",
+        "rootId": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "ownerHostId": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "ownerIdentityId": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "name": "main",
+        "status": "idle",
+        "runner": "pi",
+        "transport": "host",
+        "capabilities": [
+          "steer",
+          "followUp",
+          "fabric"
+        ],
+        "cwd": "/Users/doufulai/Documents/alphaleap.nosync/dataverse/landing_page",
+        "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3",
+        "model": "clinepass/cline-pass/kimi-k3",
+        "thinking": "high",
+        "startedAt": 1787385457116,
+        "updatedAt": 1787385632174,
+        "pendingMessages": false,
+        "controlProtocol": "v1"
+      },
+      "version": 59,
+      "updatedAt": 1787385632183,
+      "updatedBy": {
+        "id": "session:01a02879-2664-706a-82fa-ff110b50cbe3",
+        "name": "main",
+        "kind": "main",
+        "sessionId": "01a02879-2664-706a-82fa-ff110b50cbe3"
+      }
+    }
+  },
+  "versions": {
+    "topology/hosts/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f": 59,
+    "sessions/01a02879-2664-706a-82fa-ff110b50cbe3": 59,
+    "topology/participants/bfccba37776fe2392f65241ac68525603b56213b2bfef1936c2bcf5c7cc61e9f": 59
+  },
+  "tombstoneOrder": []
+}
