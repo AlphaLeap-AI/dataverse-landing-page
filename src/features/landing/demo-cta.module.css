@@ -231,13 +231,17 @@
   -webkit-text-fill-color: var(--ink);
 }
 
-/* Autofill paints the field with the browser's light system colors;
-   keep it on the dark pill. */
+/* Autofill paints the field with the browser's light system colors
+   (visible as a white box once a cached email is picked from Chrome's
+   suggestion list); paint over it with the pill's own background so
+   the field stays on the dark pill instead of flashing light. */
 .input:-webkit-autofill,
 .input:-webkit-autofill:hover,
 .input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--ink);
   caret-color: var(--accent-soft);
+  -webkit-box-shadow: 0 0 0 1000px rgba(10, 16, 32, 0.92) inset;
+  box-shadow: 0 0 0 1000px rgba(10, 16, 32, 0.92) inset;
   transition: background-color 999999s ease-out;
 }
 
