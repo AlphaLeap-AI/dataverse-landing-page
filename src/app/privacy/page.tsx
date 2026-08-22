@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
 import {
+  addressLines,
   appUrl,
-  contactEmail,
   governingLaw,
   legalEntity,
   privacyEmail,
   registeredAddress,
   shortName,
+  uen,
 } from "@/features/legal/company";
 import { legalFontClassName } from "@/features/legal/fonts";
 import {
@@ -80,7 +81,8 @@ export default function PrivacyPolicy() {
       <Section id="who-we-are" heading="1. Who we are">
         <p>
           Dataverse (“<strong>Dataverse</strong>”, “<strong>we</strong>”, “
-          <strong>us</strong>”) is a product of {legalEntity} ({shortName}), registered in{" "}
+          <strong>us</strong>”) is a product of {legalEntity} ({shortName}), a company
+          incorporated in Singapore under UEN {uen}, with its registered office at{" "}
           {registeredAddress}. For the personal data described in this policy, {shortName} acts
           as the <strong>data controller</strong> in respect of accounts we create and operate
           on our hosted service at <a href={appUrl}>{appUrl.replace("https://", "")}</a>.
@@ -577,13 +579,15 @@ export default function PrivacyPolicy() {
           For any question about this policy, or to exercise a right under section 14:
         </p>
         <ContactBlock>
-          <strong>{legalEntity}</strong>
+          <strong>{legalEntity}</strong> · UEN {uen}
+          {addressLines.map((line) => (
+            <span key={line}>
+              <br />
+              {line}
+            </span>
+          ))}
           <br />
-          {registeredAddress}
-          <br />
-          Privacy: <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a>
-          <br />
-          General: <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+          <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a>
         </ContactBlock>
         <p>
           This policy is governed by the laws of {governingLaw}, without prejudice to any

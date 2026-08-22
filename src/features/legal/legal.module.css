@@ -372,6 +372,9 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--card);
+  /* <address> is italic by default in every browser; these are postal and
+     contact lines, not an aside. */
+  font-style: normal;
   font-size: 14.5px;
   line-height: 1.75;
   color: var(--ink-dim);

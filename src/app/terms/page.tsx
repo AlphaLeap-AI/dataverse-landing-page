@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
 import {
+  addressLines,
   appUrl,
   contactEmail,
   governingLaw,
   jurisdiction,
   legalEntity,
-  registeredAddress,
   shortName,
+  uen,
 } from "@/features/legal/company";
 import { legalFontClassName } from "@/features/legal/fonts";
 import {
@@ -72,9 +73,9 @@ export default function TermsOfService() {
       sections={sections}
       lede={
         <p>
-          These terms are a contract between you and {legalEntity}, the company behind
-          Dataverse. They are written to be read, not to be survived — plain about what you
-          get, what we expect of you, and{" "}
+          These terms are a contract between you and {legalEntity} (UEN {uen}), the company
+          behind Dataverse. They are written to be read, not to be survived — plain about what
+          you get, what we expect of you, and{" "}
           <strong>what a service that generates SQL with a language model can and cannot be
           relied upon to do</strong>. Section 7 is the one to read carefully.
         </p>
@@ -488,9 +489,13 @@ export default function TermsOfService() {
       <Section id="contact" heading="21. Contact">
         <p>Questions about these Terms:</p>
         <ContactBlock>
-          <strong>{legalEntity}</strong>
-          <br />
-          {registeredAddress}
+          <strong>{legalEntity}</strong> · UEN {uen}
+          {addressLines.map((line) => (
+            <span key={line}>
+              <br />
+              {line}
+            </span>
+          ))}
           <br />
           <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
           <br />
