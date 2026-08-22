@@ -15,6 +15,8 @@ export function Footer({ compact = false }: { compact?: boolean }) {
         <Link href="#platform">Platform</Link>
         <Link href="#proof">Proof</Link>
         <Link href="#demo">Book a demo</Link>
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/terms">Terms</Link>
       </div>
     </footer>
   );

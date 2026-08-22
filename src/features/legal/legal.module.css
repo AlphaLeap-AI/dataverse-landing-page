@@ -1,0 +1,448 @@
+/* ──────────────────────────────────────────────────────────────
+   Legal pages — privacy policy, terms of service.
+   Deliberately static: no canvas, no scroll driver, no motion.
+   Tokens mirror landing.module.css so the pages read as the same
+   product, but the layout is a plain document column.
+   ────────────────────────────────────────────────────────────── */
+
+.root {
+  --bg: #04060d;
+  --bg-2: #060a14;
+  --ink: #eef2fb;
+  --ink-dim: #a8b4d0;
+  --ink-mute: #8b96ad;
+  --ink-faint: #5f6b88;
+  --card: rgba(9, 14, 28, 0.9);
+  --border: rgba(140, 165, 210, 0.16);
+  --accent: #4d8dff;
+  --accent-soft: #7fb0ff;
+  --cyan: #67e8f9;
+
+  --serif: var(--font-source-serif), Georgia, serif;
+  --sans: var(--font-ibm-plex-sans), system-ui, sans-serif;
+  --mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+/* A single soft bloom behind the masthead, so the page still feels like
+   part of the universe without running the WebGL canvas. */
+.root::before {
+  content: "";
+  position: absolute;
+  top: -220px;
+  left: 50%;
+  width: min(1100px, 130vw);
+  height: 620px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(77, 141, 255, 0.16),
+    rgba(77, 141, 255, 0) 68%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── masthead ── */
+
+.bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 26px 28px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.wordmark:hover {
+  color: #ffffff;
+}
+
+.wordmarkDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  box-shadow: 0 0 12px rgba(103, 232, 249, 0.6);
+}
+
+.barLinks {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+
+.barLinks a {
+  color: var(--ink-mute);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.barLinks a:hover {
+  color: var(--ink);
+}
+
+.barLinks a[data-current="true"] {
+  color: var(--accent-soft);
+}
+
+/* ── document ── */
+
+.doc {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 40px 28px 96px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: clamp(34px, 5.4vw, 52px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 14px 0 0;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.lede {
+  margin-top: 26px;
+  font-size: 17.5px;
+  line-height: 1.68;
+  color: var(--ink-dim);
+}
+
+.lede strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ── table of contents ── */
+
+.toc {
+  margin: 40px 0 8px;
+  padding: 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.tocTitle {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+}
+
+.tocList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.tocList li {
+  counter-increment: toc;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.tocList a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.tocList a::before {
+  content: counter(toc) ". ";
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.tocList a:hover {
+  color: var(--accent-soft);
+}
+
+/* ── sections ── */
+
+.section {
+  margin-top: 52px;
+  scroll-margin-top: 28px;
+}
+
+.section h2 {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+}
+
+.section h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  margin: 28px 0 0;
+}
+
+.section p {
+  margin: 14px 0 0;
+  color: var(--ink-dim);
+}
+
+.section ul {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  color: var(--ink-dim);
+}
+
+.section li {
+  margin-top: 9px;
+  padding-left: 4px;
+}
+
+.section li::marker {
+  color: var(--ink-faint);
+}
+
+.section strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.section a {
+  color: var(--accent-soft);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(127, 176, 255, 0.32);
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.section a:hover {
+  color: #c0d6ff;
+  border-bottom-color: rgba(192, 214, 255, 0.7);
+}
+
+.section code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: rgba(13, 20, 38, 0.7);
+  color: var(--cyan);
+}
+
+/* A pulled-aside statement — used for the Google Limited Use commitment
+   and the AI-output disclaimer, which readers should not skim past. */
+.callout {
+  margin: 22px 0 0;
+  padding: 20px 24px;
+  border: 1px solid rgba(127, 176, 255, 0.28);
+  border-left: 2px solid var(--accent);
+  border-radius: 12px;
+  background: rgba(20, 34, 66, 0.42);
+}
+
+.callout p {
+  margin: 0;
+  color: var(--ink-dim);
+}
+
+.callout p + p {
+  margin-top: 12px;
+}
+
+/* ── definition table ── */
+
+.tableWrap {
+  margin-top: 18px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 13px 18px;
+  background: rgba(13, 20, 38, 0.6);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 14px 18px;
+  color: var(--ink-dim);
+  border-bottom: 1px solid rgba(140, 165, 210, 0.09);
+  vertical-align: top;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Fixed share for the term column. Not `white-space: nowrap` — the
+   legal-basis table's terms are whole sentences, and nowrap pushed the
+   definition column off the edge of the wrapper. */
+.table td:first-child {
+  width: 36%;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ── contact block ── */
+
+.contact {
+  margin-top: 22px;
+  padding: 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--ink-dim);
+}
+
+.contact a {
+  color: var(--accent-soft);
+  text-decoration: none;
+}
+
+.contact a:hover {
+  color: #c0d6ff;
+}
+
+/* ── footer ── */
+
+.footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 26px 28px 44px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+.footLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footLinks a {
+  color: var(--ink-mute);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footLinks a:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .bar {
+    padding: 20px 20px;
+  }
+
+  .barLinks {
+    gap: 16px;
+    font-size: 12.5px;
+  }
+
+  .doc {
+    padding: 28px 20px 72px;
+  }
+
+  .tocList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .section h2 {
+    font-size: 22px;
+  }
+
+  .footer {
+    padding: 24px 20px 40px;
+  }
+}
