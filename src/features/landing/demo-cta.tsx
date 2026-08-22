@@ -5,8 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./demo-cta.module.css";
 import { Footer } from "./footer";
 
-const DEMO_EMAIL = process.env.NEXT_PUBLIC_DEMO_EMAIL?.trim() ?? "";
-const IS_DEMO_EMAIL_CONFIGURED = DEMO_EMAIL.length > 0;
+// Cal.com booking handle, e.g. "alphaleap/demo". The visitor is handed off to
+// the scheduling page instead of an inbox, so there is no address in the
+// bundle for harvesters to scrape and no endpoint for bots to spam.
+const CAL_LINK = process.env.NEXT_PUBLIC_CAL_LINK?.trim().replace(/^\/+|\/+$/g, "") ?? "";
+const IS_CAL_CONFIGURED = CAL_LINK.length > 0;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TRUST_ITEMS = [
@@ -109,25 +112,25 @@ export function DemoCta() {
       setError("Please use a valid work email.");
       return;
     }
-    if (!IS_DEMO_EMAIL_CONFIGURED) {
+    if (!IS_CAL_CONFIGURED) {
       setError("");
       return;
     }
 
-    const subject = "Dataverse demo request";
-    const body = ["Dataverse demo request", "", `Work email: ${trimmedEmail}`].join("\n");
-    const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.assign(mailtoHref);
+    // Prefill the booking form so the visitor doesn't retype what they just
+    // typed — Cal.com reads `email` off the query string.
+    const bookingUrl = `https://cal.com/${CAL_LINK}?email=${encodeURIComponent(trimmedEmail)}`;
 
     setError("");
     setSent(true);
+    window.location.assign(bookingUrl);
   }
 
-  const configMessage = IS_DEMO_EMAIL_CONFIGURED
+  const configMessage = IS_CAL_CONFIGURED
     ? null
     : process.env.NODE_ENV === "development"
-      ? "Set NEXT_PUBLIC_DEMO_EMAIL to enable demo requests in development."
-      : "NEXT_PUBLIC_DEMO_EMAIL must be configured before launch.";
+      ? "Set NEXT_PUBLIC_CAL_LINK (e.g. alphaleap/demo) to enable demo booking in development."
+      : "NEXT_PUBLIC_CAL_LINK must be configured before launch.";
 
   return (
     <section id="demo" ref={trackRef} className={styles.track} aria-label="Book a demo">
@@ -156,7 +159,7 @@ export function DemoCta() {
                 <div className={styles.success}>
                   <span className={styles.successDot} />
                   <span className={styles.successText}>
-                    You&apos;re in. We&apos;ll reach out within one business day to pick a slot.
+                    Taking you to the calendar — pick any slot that works.
                   </span>
                 </div>
               </div>

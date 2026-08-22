@@ -36,7 +36,7 @@ jobs:
       - name: Build static site
         env:
           NEXT_PUBLIC_SITE_URL: https://dataverse.alphaleap.co
-          NEXT_PUBLIC_DEMO_EMAIL: ${{ vars.NEXT_PUBLIC_DEMO_EMAIL }}
+          NEXT_PUBLIC_CAL_LINK: ${{ vars.NEXT_PUBLIC_CAL_LINK }}
         run: npm run build
 
       - name: Upload Pages artifact
