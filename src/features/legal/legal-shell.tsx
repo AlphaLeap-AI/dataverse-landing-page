@@ -8,10 +8,9 @@ import styles from "./legal.module.css";
  * Chrome shared by the privacy policy and the terms of service: masthead,
  * document column, and footer.
  *
- * Fonts are declared here rather than in the root layout because
- * `src/app/page.tsx` does the same — next/font emits a class per call site,
- * and the landing page owns its own. Keeping that pattern means the legal
- * routes stay independent of the (deliberately bare) root layout.
+ * Fonts come in as a class from `src/lib/fonts.ts`, the same module the
+ * landing page uses, so the legal routes stay independent of the
+ * (deliberately bare) root layout.
  */
 export function LegalShell({
   current,

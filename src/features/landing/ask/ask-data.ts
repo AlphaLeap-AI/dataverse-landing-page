@@ -40,8 +40,6 @@ export interface ScenarioDelivery {
   name: string;
   /** 1-letter monogram — same motif as the ecosystem wall, no logo assets. */
   mark: string;
-  /** 6-digit hex; the mark appends alpha suffixes for its bg/border. */
-  tint: string;
   /** The tool the agent calls, as it appears in the run log. */
   tool: string;
   /** Header rows above the message body. */
@@ -122,7 +120,6 @@ LIMIT 5;`,
     delivery: {
       name: "Gmail",
       mark: "G",
-      tint: "#ff9a8a",
       tool: "gmail · send_email",
       headers: [
         { label: "To", value: "leasing-team@northgate.com" },
@@ -177,7 +174,6 @@ ORDER BY proj DESC;`,
     delivery: {
       name: "Slack",
       mark: "S",
-      tint: "#a78bfa",
       tool: "slack · post_message",
       headers: [
         { label: "Channel", value: "#merch-planning" },

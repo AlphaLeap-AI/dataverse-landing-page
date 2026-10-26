@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 import { scrollState } from "../experience/scroll-driver";
@@ -68,7 +68,7 @@ export function FloatingCta() {
       <a href="#demo" className={styles.pill} tabIndex={visible ? 0 : -1}>
         <span className={styles.pulseDot} />
         Book a demo
-        <ArrowRight size={14} strokeWidth={2.6} aria-hidden="true" />
+        <ArrowRight size={14} weight="bold" aria-hidden="true" />
       </a>
       <button
         type="button"
@@ -77,7 +77,7 @@ export function FloatingCta() {
         aria-label="Dismiss"
         tabIndex={visible ? 0 : -1}
       >
-        <X size={13} strokeWidth={2.4} aria-hidden="true" />
+        <X size={13} weight="bold" aria-hidden="true" />
       </button>
     </div>
   );

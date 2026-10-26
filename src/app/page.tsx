@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 
 import { DemoCta } from "@/features/landing/demo-cta";
 import { EcosystemSection } from "@/features/landing/ecosystem-section";
@@ -9,29 +8,8 @@ import { NavBar } from "@/features/landing/nav-bar";
 import { PlatformSection } from "@/features/landing/platform-section";
 import { ProofSection } from "@/features/landing/proof-section";
 import { FloatingCta } from "@/features/landing/ui/floating-cta";
+import { fontClassName } from "@/lib/fonts";
 import { getMetadataBase, getSiteUrl, siteName } from "@/lib/site";
-
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-source-serif",
-  display: "swap",
-});
-
-const ibmPlexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-ibm-plex-sans",
-  display: "swap",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-ibm-plex-mono",
-  display: "swap",
-});
 
 const pageTitle = "Dataverse | Ask Anything. Trust the Answer.";
 const pageDescription =
@@ -117,15 +95,19 @@ export default function Home() {
   };
 
   return (
-    <div className={`${styles.root} ${sourceSerif.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}>
+    <div className={`${styles.root} ${fontClassName}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
+      <a href="#main" className={styles.skipLink}>
+        Skip to content
+      </a>
+
       <NavBar />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <Journey />
         <div className={styles.solid}>
           <EcosystemSection />

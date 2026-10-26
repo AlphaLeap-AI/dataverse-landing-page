@@ -1,95 +1,68 @@
-/* Proof: count-up stats + testimonial + wordmarks. */
+/* Proof: count-up stats, one wide and one narrow. */
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 16px;
-  margin-bottom: 64px;
+  align-items: start;
 }
 
 .stat {
-  padding: 30px 28px;
-  border-radius: 22px;
+  grid-column: span 5;
+  padding: 32px;
+  padding-bottom: 40px;
+  border-radius: 24px;
   background: var(--card);
-  border: 1px solid var(--border);
+}
+
+.stat:first-child {
+  grid-column: span 7;
+  padding: 48px;
+  padding-bottom: 64px;
+}
+
+/* Offset the narrow tile so the pair reads as a composition, not a row. */
+.stat:nth-child(2) {
+  margin-top: 64px;
 }
 
 .statValue {
-  font-family: var(--serif);
-  font-size: clamp(40px, 4.6vw, 58px);
+  font-family: var(--display);
+  font-size: clamp(36px, 4.6vw, 48px);
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
-  background: linear-gradient(120deg, #7fb0ff, #67e8f9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 12px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 16px;
+}
+
+.stat:first-child .statValue {
+  font-size: clamp(48px, 8vw, 96px);
 }
 
 .statDesc {
-  font-size: 14px;
-  line-height: 1.65;
+  max-width: 40ch;
+  font-size: 16px;
+  line-height: 24px;
   color: var(--ink-dim);
-}
-
-.testimonial {
-  text-align: center;
-  max-width: 780px;
-  margin: 0 auto;
-}
-
-.quote {
-  font-family: var(--serif);
-  font-size: clamp(22px, 2.8vw, 32px);
-  font-style: italic;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  margin-bottom: 18px;
-}
-
-.attribution {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.logos {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 20px 44px;
-  margin-top: 48px;
-  padding-top: 40px;
-  border-top: 1px solid rgba(140, 165, 210, 0.1);
-}
-
-.logo {
-  font-size: 15px;
-  color: var(--ink-faint);
-  opacity: 0.75;
-  transition:
-    opacity 0.3s,
-    color 0.3s;
-}
-
-.logo:hover {
-  opacity: 1;
-  color: var(--ink-dim);
+  text-wrap: pretty;
 }
 
 @media (max-width: 720px) {
   .stats {
     grid-template-columns: 1fr;
     gap: 12px;
-    margin-bottom: 44px;
   }
 
-  .stat {
-    padding: 22px 20px;
+  .stat,
+  .stat:first-child {
+    grid-column: auto;
+    padding: 24px;
+    padding-bottom: 32px;
+  }
+
+  .stat:nth-child(2) {
+    margin-top: 0;
   }
 }

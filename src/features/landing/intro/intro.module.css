@@ -80,7 +80,7 @@
   margin-top: clamp(2px, 1.5vmin, 12px);
   display: flex;
   justify-content: center;
-  font-family: var(--serif, Georgia, serif);
+  font-family: var(--display);
   font-weight: 600;
   font-size: clamp(30px, 6.2vmin, 44px);
   letter-spacing: -0.015em;

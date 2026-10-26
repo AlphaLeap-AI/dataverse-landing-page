@@ -4,33 +4,42 @@
    ────────────────────────────────────────────────────────────── */
 
 .root {
-  --bg: #04060d;
-  --bg-2: #060a14;
-  --ink: #eef2fb;
-  --ink-dim: #a8b4d0;
-  --ink-mute: #8b96ad;
-  --ink-faint: #5f6b88;
-  --card: rgba(9, 14, 28, 0.9);
-  --border: rgba(140, 165, 210, 0.16);
-  --border-strong: rgba(127, 176, 255, 0.45);
+  --bg: #000000;
+  --bg-2: #181818;
+  --ink: #ffffff;
+  --ink-dim: #9b9b9b;
+  --ink-mute: rgba(255, 255, 255, 0.5);
+  --ink-faint: #666666;
+  --card: #181818;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(77, 141, 255, 0.45);
   --accent: #4d8dff;
-  --accent-soft: #7fb0ff;
-  --cyan: #67e8f9;
-  --violet: #a78bfa;
-  --gold: #ffd24d;
-  --mint: #4ade80;
   --red-soft: #ff9a8a;
 
-  --serif: var(--font-source-serif), Georgia, serif;
-  --sans: var(--font-ibm-plex-sans), system-ui, sans-serif;
-  --mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  /* One curve for everything that moves (see Design values). */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Stacking scale — every z-index on the page comes from here. */
+  --z-base: 1;
+  --z-raised: 2;
+  --z-nav: 50;
+  --z-floating: 60;
+  --z-overlay: 90;
+  --z-overlay-top: 91;
+  --z-fullscreen: 100;
+  --z-grain: 105;
+  --z-skip: 110;
+
+  --display: var(--font-geist), system-ui, sans-serif;
+  --sans: var(--font-geist), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, monospace;
 
   position: relative;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 24px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
@@ -45,10 +54,48 @@
 .root h2,
 .root h3,
 .root h4 {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-weight: 600;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.root p {
+  text-wrap: pretty;
+}
+
+/* Fixed film grain over everything, so large flat surfaces never read as
+   a bare digital fill. Purely decorative: no pointer events, no layout. */
+.root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Keyboard users land here first and can jump past the hero and demo. */
+.skipLink {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: var(--z-skip);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #000000 !important;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform 300ms var(--ease);
+}
+
+.skipLink:focus-visible {
+  transform: translateY(0);
 }
 
 .root p {
@@ -56,18 +103,32 @@
 }
 
 .root a {
-  color: var(--accent-soft);
+  color: var(--accent);
   text-decoration: none;
 }
 
+.root a {
+  transition: color 300ms var(--ease);
+}
+
 .root a:hover {
-  color: #c0d6ff;
+  color: #ffffff;
 }
 
 .root button {
   font-family: inherit;
   cursor: pointer;
   border: none;
+}
+
+.root :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.root .btn:focus-visible {
+  border-radius: 9999px;
 }
 
 .root ::selection {
@@ -77,7 +138,7 @@
 /* Solid sections that cover the fixed universe canvas. */
 .solid {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   background: var(--bg);
 }
 
@@ -88,64 +149,75 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 28px;
-  border-radius: 999px;
-  font-size: 15px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
-  letter-spacing: 0.01em;
   transition:
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.25s,
-    border-color 0.25s,
-    background 0.25s;
-  will-change: transform;
+    transform 300ms var(--ease),
+    background-color 300ms var(--ease),
+    border-color 300ms var(--ease),
+    color 300ms var(--ease);
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #4d8dff, #67e8f9);
-  color: #06101f !important;
-  box-shadow: 0 10px 34px rgba(77, 141, 255, 0.32);
+  background: var(--accent);
+  color: #000000 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .btnPrimary:hover {
+  background: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 16px 44px rgba(77, 141, 255, 0.5);
 }
 
 .btnGhost {
-  background: rgba(13, 20, 38, 0.5);
+  background: rgba(24, 24, 24, 0.6);
   border: 1px solid var(--border);
-  color: var(--ink-dim) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .btnGhost:hover {
-  color: var(--ink) !important;
-  border-color: var(--border-strong);
+  background: #272727;
+  border-color: rgba(255, 255, 255, 0.24);
   transform: translateY(-2px);
 }
 
 .btnSm {
-  padding: 9px 18px;
-  font-size: 13.5px;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 /* ── nav ── */
 
+/* Floating island: a detached glass pill rather than a docked bar. */
 .navFixed {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background: rgba(4, 6, 13, 0.55);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(140, 165, 210, 0.1);
-  /* Notched phones: keep the bar below the sensor housing. */
-  padding-top: env(safe-area-inset-top);
-  transition: opacity 0.3s ease;
+  top: calc(env(safe-area-inset-top) + 24px);
+  left: 50%;
+  z-index: var(--z-nav);
+  width: max-content;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  overflow: hidden;
+  background: rgba(24, 24, 24, 0.64);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Inner top highlight reads as the glass edge catching light. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 40px rgba(0, 0, 0, 0.5);
+  transition: opacity 300ms var(--ease);
 }
 
 /* A site nav floating over a fullscreen player is wrong regardless of who
@@ -157,64 +229,80 @@
 
 .navProgress {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   height: 2px;
   width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  background: var(--accent);
 }
 
 .navInner {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 14px 28px;
+  padding: 8px 8px 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 32px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--ink) !important;
 }
 
 .brandMark {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #4d8dff, #67e8f9);
-  color: #06101f;
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: 16px;
-  box-shadow: 0 4px 16px rgba(77, 141, 255, 0.4);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #000000;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .brandWordmark {
-  font-family: var(--serif);
-  font-size: 18px;
+  font-family: var(--display);
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 4px;
   font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .navLinks a:not(.btn) {
+  padding: 8px 12px;
+  border-radius: 9999px;
   color: var(--ink-dim);
-  transition: color 0.25s;
+  transition:
+    color 300ms var(--ease),
+    background-color 300ms var(--ease);
 }
 
 .navLinks a:not(.btn):hover {
   color: var(--ink);
+}
+
+/* Current section, set by the nav's scroll-spy. */
+.navLinks a[aria-current="location"] {
+  color: var(--ink);
+  background: #272727;
+}
+
+.navCta {
+  margin-left: 8px;
 }
 
 /* ── sections ── */
@@ -223,67 +311,82 @@
   position: relative;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 110px 28px;
+  padding: 96px 32px;
 }
 
 .sectHead {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 54px;
+  gap: 16px;
+  margin-bottom: 48px;
   max-width: 720px;
 }
 
 .sectHead h2 {
-  font-size: clamp(30px, 3.8vw, 50px);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
+  font-size: clamp(30px, 3.8vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
 }
 
 .eyebrow {
   font-family: var(--mono);
   font-size: 12px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--accent-soft);
+  letter-spacing: 0.02em;
+  color: var(--accent);
 }
 
 /* ── reveal on scroll ── */
 
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(64px);
+  filter: blur(12px);
   transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 900ms var(--ease),
+    transform 900ms var(--ease),
+    filter 900ms var(--ease);
 }
 
 .reveal.in {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transform: none;
+    filter: none;
+    transition: opacity 300ms var(--ease);
+  }
 }
 
 /* ── footer ── */
 
 .footer {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   max-width: 1240px;
   margin: 0 auto;
-  padding: 44px 28px calc(54px + env(safe-area-inset-bottom));
+  padding: 48px 32px calc(48px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
-  border-top: 1px solid rgba(140, 165, 210, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--ink-faint);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .footLinks {
   display: flex;
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+
+.footLinks a {
+  white-space: nowrap;
 }
 
 /* Slim strip docked inside the pinned finale panel — the panel owns the
@@ -291,13 +394,13 @@
 .footerCompact {
   flex: 0 0 auto;
   width: 100%;
-  padding: 14px 4px calc(16px + env(safe-area-inset-bottom));
-  font-size: 12.5px;
+  padding: 16px 4px calc(16px + env(safe-area-inset-bottom));
+  font-size: 12px;
 }
 
 .footLinks a {
   color: var(--ink-mute);
-  transition: color 0.25s;
+  transition: color 250ms var(--ease);
 }
 
 .footLinks a:hover {
@@ -305,12 +408,10 @@
 }
 
 @media (max-width: 720px) {
-  .navInner {
-    padding: 12px 18px;
-  }
-
-  .navLinks {
-    gap: 16px;
+  .navFixed {
+    top: calc(env(safe-area-inset-top) + 12px);
+    width: calc(100% - 24px);
+    max-width: none;
   }
 
   .navLinks a:not(.btn):not(.navCta) {
@@ -337,8 +438,8 @@
      its footprint so it can't grow past what .panel reserves and overlap
      the trust row above it. */
   .footerCompact {
-    padding: 10px 4px calc(8px + env(safe-area-inset-bottom));
-    gap: 6px 16px;
+    padding: 12px 4px calc(8px + env(safe-area-inset-bottom));
+    gap: 8px 16px;
   }
 
   .footerCompact .footLinks a {
@@ -346,10 +447,15 @@
   }
 
   .section {
-    padding: 72px 20px;
+    padding: 80px 24px;
   }
 
   .sectHead {
     margin-bottom: 40px;
   }
+}
+
+/* The skip link moves focus here; the outline would frame the whole page. */
+.root main:focus {
+  outline: none;
 }

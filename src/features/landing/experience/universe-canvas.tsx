@@ -39,12 +39,12 @@ function supportsWebGL(): boolean {
   }
 }
 
-/* Chapter accent tints: the field blushes red in the chaos storm, turns
-   gold for the answer, mint inside the vault. */
+/* Chapter tints: the field greys out in the chaos storm, then gathers into
+   the accent for the answer and inside the vault. */
 const TINTS: { at: number; color: THREE.Color; amt: number }[] = [
-  { at: 1, color: new THREE.Color("#ff8a76"), amt: 0.4 },
-  { at: 4, color: new THREE.Color("#ffd24d"), amt: 0.32 },
-  { at: 5, color: new THREE.Color("#4ade80"), amt: 0.4 },
+  { at: 1, color: new THREE.Color("#666666"), amt: 0.4 },
+  { at: 4, color: new THREE.Color("#4d8dff"), amt: 0.32 },
+  { at: 5, color: new THREE.Color("#4d8dff"), amt: 0.4 },
 ];
 
 function tintAt(s: number, out: THREE.Color): number {

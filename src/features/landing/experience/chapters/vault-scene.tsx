@@ -25,7 +25,7 @@ export function VaultScene() {
   const shellMat = useMemo(
     () =>
       new THREE.LineBasicMaterial({
-        color: "#4ade80",
+        color: "#4d8dff",
         transparent: true,
         opacity: 0,
         blending: THREE.AdditiveBlending,
@@ -36,7 +36,7 @@ export function VaultScene() {
   );
   const coreGeo = useMemo(() => new THREE.IcosahedronGeometry(0.85, 3), []);
   const coreMat = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: "#b8ffd4", transparent: true, opacity: 0, toneMapped: false }),
+    () => new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0, toneMapped: false }),
     []
   );
 

@@ -6,7 +6,7 @@ import landingStyles from "./landing.module.css";
 import styles from "./platform-section.module.css";
 import { Reveal } from "./reveal";
 
-const DB_DOTS = ["#6aa6dd", "#13c25b", "#8b9aff", "#6fe0b2", "#ffd24d"];
+const DB_DOT_COUNT = 5;
 
 /**
  * Platform highlights with pointer-tracked 3D tilt — the cards physically
@@ -17,7 +17,7 @@ export function PlatformSection() {
     <section id="platform" className={landingStyles.section}>
       <Reveal className={landingStyles.sectHead}>
         <span className={landingStyles.eyebrow}>The platform</span>
-        <h2>Everything you need. Nothing you have to learn.</h2>
+        <h2>Plain questions in. Checked answers out.</h2>
       </Reveal>
 
       <div className={styles.grid}>
@@ -29,8 +29,8 @@ export function PlatformSection() {
 
         <TiltCard index={1}>
           <span className={styles.dots}>
-            {DB_DOTS.map((color) => (
-              <i key={color} style={{ background: color }} />
+            {Array.from({ length: DB_DOT_COUNT }, (_, i) => (
+              <i key={i} />
             ))}
           </span>
           <h3>One brain, every database</h3>
@@ -38,7 +38,7 @@ export function PlatformSection() {
         </TiltCard>
 
         <TiltCard index={2}>
-          <span className={`${styles.cardTag} ${styles.mint}`}>
+          <span className={styles.cardTag}>
             SELECT … <span className={styles.dim}>// optimized, inspectable</span>
           </span>
           <h3>Answers that show their work</h3>
@@ -48,7 +48,7 @@ export function PlatformSection() {
         <TiltCard index={3}>
           <span className={`${styles.cardTag} ${styles.muted}`}>SSO · RBAC · audit log</span>
           <h3>Guardrails, built in</h3>
-          <p>Governed access and a production-ready architecture from day one — not a bolt-on.</p>
+          <p>SSO, access roles and an audit log ship on day one. Nothing to bolt on later.</p>
         </TiltCard>
       </div>
     </section>
@@ -68,8 +68,6 @@ function TiltCard({ children, index }: { children: React.ReactNode; index: numbe
     cancelAnimationFrame(raf.current);
     raf.current = requestAnimationFrame(() => {
       el.style.transform = `perspective(900px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 9).toFixed(2)}deg) translateY(-4px)`;
-      el.style.setProperty("--gx", `${((px + 0.5) * 100).toFixed(1)}%`);
-      el.style.setProperty("--gy", `${((py + 0.5) * 100).toFixed(1)}%`);
     });
   }, []);
 

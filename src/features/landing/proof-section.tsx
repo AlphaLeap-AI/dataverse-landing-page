@@ -7,20 +7,11 @@ import styles from "./proof-section.module.css";
 import { Reveal } from "./reveal";
 
 const STATS = [
-  { value: 30, suffix: " sec", decimals: 0, desc: "median time from question to answer — not three days and a ticket queue." },
-  { value: 80, suffix: "%", decimals: 0, desc: "fewer ad-hoc report requests landing on your analysts." },
+  { value: 30, suffix: " sec", decimals: 0, desc: "median time from question to answer, instead of three days and a ticket queue." },
   { value: 1, suffix: "", decimals: 0, desc: "interface for every employee, every data source, every question." },
 ];
 
-const LOGOS = [
-  { name: "NORTHSTAR", style: { fontFamily: "var(--serif)", fontWeight: 600, letterSpacing: "0.06em" } },
-  { name: "helion", style: { fontFamily: "var(--mono)", letterSpacing: "0.14em" } },
-  { name: "MERIDIAN", style: { fontWeight: 600, letterSpacing: "0.22em" } },
-  { name: "Atlas Freight", style: { fontFamily: "var(--serif)", fontStyle: "italic" } },
-  { name: "ORBIT_LABS", style: { fontFamily: "var(--mono)", letterSpacing: "0.1em" } },
-];
-
-/** Proof: count-up stats, a testimonial, and client wordmarks. */
+/** Proof: count-up stats, set wide and narrow rather than as equal tiles. */
 export function ProofSection() {
   return (
     <section id="proof" className={landingStyles.section}>
@@ -37,20 +28,6 @@ export function ProofSection() {
           </Reveal>
         ))}
       </div>
-
-      <Reveal className={styles.testimonial}>
-        <p className={styles.quote}>
-          &ldquo;The first Monday after rollout, nobody asked me for a report. They asked Dataverse.&rdquo;
-        </p>
-        <span className={styles.attribution}>Head of Data · enterprise pilot</span>
-        <div className={styles.logos}>
-          {LOGOS.map((logo) => (
-            <span key={logo.name} className={styles.logo} style={logo.style}>
-              {logo.name}
-            </span>
-          ))}
-        </div>
-      </Reveal>
     </section>
   );
 }

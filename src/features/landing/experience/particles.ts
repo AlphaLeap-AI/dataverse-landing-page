@@ -281,11 +281,12 @@ export const particleFragmentShader = /* glsl */ `
     float a = smoothstep(0.5, 0.02, d);
     a *= a;
 
-    vec3 cyan = vec3(0.42, 0.91, 1.0);
-    vec3 violet = vec3(0.63, 0.55, 1.0);
-    vec3 amber = vec3(1.0, 0.77, 0.45);
-    vec3 col = mix(cyan, violet, smoothstep(0.12, 0.88, vRand));
-    col = mix(col, amber, step(0.94, vRand));
+    // Neutral field (#9b9b9b → white) with a sparse scattering of the accent.
+    vec3 dim = vec3(0.608);
+    vec3 bright = vec3(1.0);
+    vec3 accent = vec3(0.302, 0.553, 1.0);
+    vec3 col = mix(dim, bright, smoothstep(0.12, 0.88, vRand));
+    col = mix(col, accent, step(0.9, vRand));
     col = mix(col, uTint, uTintAmt);
 
     float farFade = smoothstep(42.0, 15.0, vDepth) * 0.85 + 0.15;

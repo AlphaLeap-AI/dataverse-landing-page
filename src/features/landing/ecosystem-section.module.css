@@ -1,40 +1,20 @@
 /* Ecosystem wall: model providers + everyday tools in one wide panel.
-   Sibling to the platform cards — same tokens, same pointer-tracked glow,
-   but a tile-grid rhythm instead of 2×2 tilt cards. */
+   Sibling to the platform cards — same tokens, but a tile-grid rhythm
+   instead of tilt cards. */
 
 .lead {
   max-width: 640px;
-  font-size: 15.5px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 24px;
   color: var(--ink-dim);
+  text-wrap: pretty;
 }
 
 .panel {
   position: relative;
-  padding: 30px 28px;
-  border-radius: 22px;
+  padding: 32px 32px;
+  border-radius: 24px;
   background: var(--card);
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-
-/* Pointer-tracked glow, same recipe as the platform cards. */
-.panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    520px circle at var(--gx, 50%) var(--gy, 50%),
-    rgba(103, 232, 249, 0.08),
-    transparent 65%
-  );
-  opacity: 0;
-  transition: opacity 0.35s;
-  pointer-events: none;
-}
-
-.panel:hover::before {
-  opacity: 1;
 }
 
 .group {
@@ -47,49 +27,48 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 6px 16px;
+  gap: 8px 16px;
   flex-wrap: wrap;
 }
 
 .groupLabel {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--accent-soft);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--accent);
 }
 
 .groupNote {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--ink-faint);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .tile {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(13, 20, 38, 0.72);
-  border: 1px solid var(--border);
-  font-size: 13px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  background: #272727;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--ink-dim);
   transition:
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.25s,
-    color 0.25s;
+    transform 300ms var(--ease),
+    background-color 300ms var(--ease),
+    color 300ms var(--ease);
 }
 
 .tile:hover {
   transform: translateY(-2px);
-  border-color: var(--border-strong);
+  background: #313131;
   color: var(--ink);
 }
 
@@ -99,10 +78,12 @@
   place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 7px;
-  border: 1px solid;
-  font-family: var(--serif);
-  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -131,15 +112,14 @@
 .soonCaption {
   margin-top: 2px;
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--ink-faint);
 }
 
 .plusLine {
-  font-size: 12.5px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--ink-faint);
 }
 
@@ -149,7 +129,7 @@
 
 .divider {
   height: 1px;
-  margin: 26px 0;
+  margin: 24px 0;
   background: var(--border);
 }
 
@@ -161,11 +141,11 @@
 
 @media (max-width: 720px) {
   .panel {
-    padding: 22px 16px;
+    padding: 24px 16px;
   }
 
   .group {
-    gap: 13px;
+    gap: 12px;
   }
 
   .grid {
@@ -174,19 +154,19 @@
   }
 
   .tile {
-    gap: 7px;
-    padding: 9px 10px;
+    gap: 8px;
+    padding: 8px 12px;
     border-radius: 12px;
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .mark {
     width: 22px;
     height: 22px;
-    font-size: 10.5px;
+    font-size: 12px;
   }
 
   .divider {
-    margin: 20px 0;
+    margin: 24px 0;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FileCode, Hourglass, Layers, Network, Zap } from "lucide-react";
+import { FileCode, Hourglass, Stack } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 
 import { AskSection } from "./ask-section";
@@ -41,7 +41,7 @@ const PAIN_CARDS = [
       "If you can't write SQL, you ask a person. 76% have made the call without the data — getting to it was too hard.",
   },
   {
-    Icon: Layers,
+    Icon: Stack,
     quote: "“That’s not what my dashboard says.”",
     title: "The sprawl",
     bodyFull:
@@ -52,14 +52,14 @@ const PAIN_CARDS = [
 ];
 
 const DB_CHIPS = [
-  { name: "PostgreSQL", color: "#6aa6dd" },
-  { name: "MongoDB", color: "#13c25b" },
-  { name: "Snowflake", color: "#7fd4ff" },
-  { name: "BigQuery", color: "#5f9bff" },
-  { name: "Elasticsearch", color: "#ffd24d" },
-  { name: "Redis", color: "#ff9a8a" },
-  { name: "Kafka", color: "#c9a6ff" },
-  { name: "Databricks", color: "#8b9aff" },
+  "PostgreSQL",
+  "MongoDB",
+  "Snowflake",
+  "BigQuery",
+  "Elasticsearch",
+  "Redis",
+  "Kafka",
+  "Databricks",
 ];
 
 const CHAPTER_SQL = `SELECT region, sum(arr) AS at_risk
@@ -189,8 +189,9 @@ export function Journey() {
     const root = document.documentElement;
 
     const fit = () => {
+      // The nav floats below the top edge, so what it covers ends at its bottom.
       const nav = document.querySelector("header");
-      const navH = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+      const navH = nav ? Math.round(nav.getBoundingClientRect().bottom) : 0;
       if (navH > 0) root.style.setProperty("--nav-h", `${navH}px`);
 
       for (const ch of CHAPTERS) {
@@ -247,7 +248,7 @@ export function Journey() {
         <HeroVideo reducedMotion={reducedMotion} overlayRef={heroInnerRef}>
           <span className={styles.heroBadge}>
             <i className={styles.heroBadgeDot} />
-            AI-native analytics<span className={styles.heroBadgeOpt}> · inside your walls</span>
+            Your data agent<span className={styles.heroBadgeOpt}> · inside your walls</span>
           </span>
           <h1 className={styles.heroTitle}>
             Ask <em>anything</em>.
@@ -257,15 +258,15 @@ export function Journey() {
           <p className={styles.heroSub}>
             <span className={styles.copyFull}>
               Dataverse plugs into every database you own, grounds each question in your approved schema, and
-              returns SQL-backed answers in seconds — entirely inside your network.
+              returns answers backed by real SQL in seconds, entirely inside your network.
             </span>
             <span className={styles.copyShort}>
-              Every database you own. One conversation. SQL-backed answers in seconds — inside your network.
+              Every database you own. One conversation. Answers backed by SQL in seconds, inside your network.
             </span>
           </p>
           <div className={styles.heroCtas}>
             <a href="#demo" className={`${landingStyles.btn} ${landingStyles.btnPrimary}`}>
-              Book a 30-min demo
+              Book a 30 minute demo
             </a>
             <a href="#ask" className={`${landingStyles.btn} ${landingStyles.btnGhost}`}>
               Try it yourself ↓
@@ -295,7 +296,7 @@ export function Journey() {
               <div className={styles.painGrid}>
                 {PAIN_CARDS.map((p) => (
                   <div key={p.title} className={`${styles.painCard} ${styles.anim}`}>
-                    <p.Icon size={20} strokeWidth={2} className={styles.painIcon} aria-hidden="true" />
+                    <p.Icon size={20} weight="bold" className={styles.painIcon} aria-hidden="true" />
                     <div className={styles.painQuote}>{p.quote}</div>
                     <div className={styles.painTitle}>{p.title}</div>
                     <p className={styles.painBody}>
@@ -339,10 +340,10 @@ export function Journey() {
                 Warehouses, lakes, production databases, streams — plugged in live, not exported stale.
               </p>
               <div className={`${styles.chipRow} ${styles.anim}`}>
-                {DB_CHIPS.map((db) => (
-                  <span key={db.name} className={styles.dbChip}>
-                    <i style={{ background: db.color }} />
-                    {db.name}
+                {DB_CHIPS.map((name) => (
+                  <span key={name} className={styles.dbChip}>
+                    <i />
+                    {name}
                   </span>
                 ))}
                 <span className={`${styles.dbChip} ${styles.dbChipMore}`}>+ 30 more</span>
@@ -366,7 +367,7 @@ export function Journey() {
                       <span className={styles.livePulse} />
                       <span>Table · subscriptions</span>
                     </span>
-                    <span className={styles.aiTag}>AI-documented</span>
+                    <span className={styles.aiTag}>Written by Dataverse</span>
                   </div>
                   <p className={styles.tableCardDesc}>
                     &ldquo;One row per customer contract term. Tracks plan, billing value and renewal state across
@@ -437,11 +438,11 @@ export function Journey() {
                   <p className={styles.answerText}>
                     <span className={styles.copyFull}>
                       Risk tracks support response time. Accounts waiting <b className={styles.gold}>&gt;48h</b> on
-                      tickets churn <b>3.1×</b> more. 23 accounts named and ranked by save-ability.
+                      tickets churn <b>3.1×</b> more. 23 accounts named and ranked by how likely they are to stay.
                     </span>
                     <span className={styles.copyShort}>
                       Accounts waiting <b className={styles.gold}>&gt;48h</b> on tickets churn <b>3.1×</b> more. 23
-                      accounts ranked by save-ability.
+                      accounts ranked by how likely they are to stay.
                     </span>
                   </p>
                 </div>
@@ -449,12 +450,12 @@ export function Journey() {
                   <span className={`${styles.cardLabel} ${styles.labelMint}`}>The plan</span>
                   <p className={styles.answerText}>
                     <span className={styles.copyFull}>
-                      <b className={styles.mint}>$3.1M recoverable</b> — fast-lane tickets for flagged accounts, CSM
-                      outreach drafted, and it re-checks the metric weekly so you don&apos;t have to.
+                      <b className={styles.mint}>$3.1M recoverable</b> — priority tickets for flagged accounts, CSM
+                      outreach drafted, and it checks the metric again every week so you don&apos;t have to.
                     </span>
                     <span className={styles.copyShort}>
-                      <b className={styles.mint}>$3.1M recoverable</b> — fast-lane tickets, CSM outreach drafted,
-                      re-checked weekly.
+                      <b className={styles.mint}>$3.1M recoverable</b> — priority tickets, CSM outreach drafted,
+                      checked again weekly.
                     </span>
                   </p>
                 </div>
@@ -476,12 +477,12 @@ export function Journey() {
                 <em>your walls.</em>
               </h2>
               <p className={`${styles.lead} ${styles.anim}`}>
-                Deploy in your VPC, air-gapped, or with your own models. Role-based access, audit logs,
+                Deploy in your VPC, air gapped, or with your own models. Access by role, audit logs,
                 governance first.
               </p>
               <div className={`${styles.chipRow} ${styles.anim}`}>
-                <span className={styles.vaultChip}>VPC &amp; on-prem</span>
-                <span className={styles.vaultChip}>Air-gapped</span>
+                <span className={styles.vaultChip}>VPC &amp; on premises</span>
+                <span className={styles.vaultChip}>Air gapped</span>
                 <span className={styles.vaultChip}>Your own LLM</span>
                 <span className={styles.vaultChip}>SSO · RBAC · audit</span>
               </div>

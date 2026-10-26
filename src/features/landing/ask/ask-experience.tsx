@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, RotateCcw, Send, ShieldCheck } from "lucide-react";
+import { ArrowCounterClockwise, ArrowRight, Check, Fingerprint, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { askState } from "../experience/scroll-driver";
@@ -393,7 +393,7 @@ export function AskExperience() {
               <div className={styles.answerCol}>
                 {scenario.bullets.map((text, i) => (
                   <div key={text} className={styles.bullet} style={rise(0.24 + i * 0.13)}>
-                    <Check size={13} strokeWidth={2.6} aria-hidden="true" />
+                    <Check size={13} weight="bold" aria-hidden="true" />
                     <span>{text}</span>
                   </div>
                 ))}
@@ -415,15 +415,7 @@ export function AskExperience() {
 
             <div className={styles.connectorRow} style={sendRise(0)}>
               <span className={styles.connector}>
-                <span
-                  className={styles.mark}
-                  aria-hidden="true"
-                  style={{
-                    color: delivery.tint,
-                    background: `${delivery.tint}24`,
-                    borderColor: `${delivery.tint}52`,
-                  }}
-                >
+                <span className={styles.mark} aria-hidden="true">
                   {delivery.mark}
                 </span>
                 {delivery.name}
@@ -451,17 +443,17 @@ export function AskExperience() {
             <div className={styles.confirm} style={sendRise(0.34)} aria-live="polite">
               {sent ? (
                 <span className={styles.sentTag}>
-                  <Check size={14} strokeWidth={3} aria-hidden="true" />
+                  <Check size={14} weight="bold" aria-hidden="true" />
                   {delivery.sentLabel}
                 </span>
               ) : (
                 <>
                   <span className={styles.guard}>
-                    <ShieldCheck size={14} strokeWidth={2.2} aria-hidden="true" />
+                    <Fingerprint size={14} weight="bold" aria-hidden="true" />
                     Nothing has been sent. Write actions run only after you approve.
                   </span>
                   <button type="button" className={styles.send} onClick={() => setSent(true)}>
-                    <Send size={13} strokeWidth={2.4} aria-hidden="true" />
+                    <PaperPlaneTilt size={13} weight="bold" aria-hidden="true" />
                     {delivery.sendLabel}
                   </button>
                 </>
@@ -484,13 +476,13 @@ export function AskExperience() {
           onClick={() => restart(idx === 0 ? 1 : 0)}
           disabled={!done}
         >
-          <RotateCcw size={13} strokeWidth={2.4} aria-hidden="true" />
+          <ArrowCounterClockwise size={13} weight="bold" aria-hidden="true" />
           {scenario.switchLabel}
         </button>
         <a href="#demo" className={styles.cta} data-done={done ? "true" : "false"}>
           <span className={styles.ctaDot} />
           Book a 30-min demo
-          <ArrowRight size={14} strokeWidth={2.6} aria-hidden="true" />
+          <ArrowRight size={14} weight="bold" aria-hidden="true" />
         </a>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 
 import styles from "./demo-cta.module.css";
@@ -13,7 +14,7 @@ const IS_CAL_CONFIGURED = CAL_LINK.length > 0;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TRUST_ITEMS = [
-  "30-min live walkthrough",
+  "30 minute live walkthrough",
   "Your data, your sources",
   "An engineer in the room",
   "Setup in days, not quarters",
@@ -198,15 +199,7 @@ export function DemoCta() {
             <ul className={styles.trust}>
               {TRUST_ITEMS.map((label) => (
                 <li key={label} className={styles.trustItem}>
-                  <svg className={styles.trustIcon} viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path
-                      d="M3.5 8.25 6.4 11.1 12.5 4.9"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <Check className={styles.trustIcon} size={16} weight="bold" aria-hidden="true" />
                   <span>{label}</span>
                 </li>
               ))}

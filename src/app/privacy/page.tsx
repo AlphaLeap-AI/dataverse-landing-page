@@ -10,7 +10,7 @@ import {
   shortName,
   uen,
 } from "@/features/legal/company";
-import { legalFontClassName } from "@/features/legal/fonts";
+import { fontClassName } from "@/lib/fonts";
 import {
   Callout,
   ContactBlock,
@@ -66,7 +66,7 @@ export default function PrivacyPolicy() {
       current="privacy"
       eyebrow="Legal"
       title={pageTitle}
-      fontClassName={legalFontClassName}
+      fontClassName={fontClassName}
       sections={sections}
       lede={
         <p>

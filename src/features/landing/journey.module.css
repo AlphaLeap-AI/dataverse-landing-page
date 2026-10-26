@@ -6,44 +6,43 @@
    a thin gutter around the rest. HeroVideo's .stage fills what's left. */
 .hero {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  padding: calc(var(--nav-h, 64px) + clamp(8px, 1.1vw, 14px)) clamp(10px, 1.6vw, 22px)
-    clamp(10px, 1.6vw, 22px);
+  padding: calc(var(--nav-h, 64px) + clamp(8px, 1.1vw, 16px)) clamp(12px, 1.6vw, 24px)
+    clamp(12px, 1.6vw, 24px);
 }
 
 /* z-index: 1 makes the hero a stacking context, so the expanded player's own
    z-index can only compete inside it — against the fixed nav (50) it would
    lose. Lift the whole context while the player owns the screen. */
 :global(html[data-video-open]) .hero {
-  z-index: 100;
+  z-index: var(--z-fullscreen);
 }
 
 .heroBadge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 16px;
-  border-radius: 999px;
-  background: rgba(13, 20, 38, 0.6);
-  border: 1px solid rgba(140, 165, 210, 0.2);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(24, 24, 24, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #a8b4d0;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #9b9b9b;
 }
 
 .heroBadgeDot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #67e8f9;
-  box-shadow: 0 0 10px #67e8f9;
+  background: #4d8dff;
+  box-shadow: 0 0 10px #4d8dff;
   animation: badgePulse 2.2s ease-in-out infinite;
 }
 
@@ -54,32 +53,28 @@
 }
 
 .heroTitle {
-  font-size: clamp(42px, 6.4vw, 80px);
+  font-size: clamp(36px, 6.4vw, 72px);
   line-height: 1.02;
   letter-spacing: -0.025em;
-  color: #eef2fb;
-  /* Over footage the scrim alone can't guarantee contrast — same soft edge
-     the chapter headings use for solid white glyphs. */
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.7),
-    0 3px 18px rgba(0, 0, 0, 0.5);
-}
-
-.heroTitle em {
-  font-style: italic;
-  background: linear-gradient(120deg, #7fb0ff 0%, #67e8f9 55%, #a78bfa 100%);
+  /* The one permitted gradient: hero heading text, left to right. */
+  background: linear-gradient(90deg, #ffffff, #9b9b9b);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Inherited text-shadow paints black silhouettes on transparent fill. */
-  text-shadow: none;
+  /* text-shadow would paint black silhouettes under a transparent fill, so
+     the soft edge over footage comes from a drop-shadow filter instead. */
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.5));
+}
+
+.heroTitle em {
+  font-style: normal;
 }
 
 .heroSub {
   max-width: 580px;
-  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  font-size: clamp(14px, 1.5vw, 16px);
   line-height: 1.6;
-  color: #c3d2ee;
+  color: rgba(255, 255, 255, 0.86);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
 
@@ -93,14 +88,14 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* Docked inside the panel's bottom-left, balancing the play pill on the
    right. Hidden once the pill goes full-width (≤900px). */
 .scrollCue {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-raised);
   bottom: clamp(24px, 3.4vw, 44px);
   left: clamp(28px, 3.6vw, 52px);
   display: flex;
@@ -108,16 +103,15 @@
   align-items: center;
   gap: 8px;
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #5f6b88;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #666666;
 }
 
 .scrollCueLine {
   width: 1px;
   height: 34px;
-  background: linear-gradient(180deg, #7fb0ff, transparent);
+  background: #4d8dff;
   animation: cueDrop 1.8s ease-in-out infinite;
   transform-origin: top;
 }
@@ -139,7 +133,7 @@
 
 .track {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   height: 620vh;
 }
 
@@ -161,7 +155,7 @@
      reader can actually see starts at --nav-h (measured at runtime in
      journey.tsx), not at 0. Padding past it is what puts the content in the
      optical centre of the screen instead of half a nav-height above it. */
-  padding: calc(var(--nav-h, 64px) + var(--chapter-gutter, 40px)) 20px var(--chapter-gutter, 40px);
+  padding: calc(var(--nav-h, 64px) + var(--chapter-gutter, 40px)) 24px var(--chapter-gutter, 40px);
   opacity: 0;
   pointer-events: none;
   will-change: opacity, transform;
@@ -172,7 +166,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 26px;
+  gap: 24px;
   text-align: center;
   /* Pinned panels must never scroll internally, so a chapter that still
      overflows a short viewport is scaled to fit rather than clipped —
@@ -185,16 +179,15 @@
 .eyebrow {
   font-family: var(--mono);
   font-size: 12px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: #7fb0ff;
+  letter-spacing: 0.02em;
+  color: #4d8dff;
 }
 
 .h2 {
-  font-size: clamp(32px, 4.6vw, 62px);
+  font-size: clamp(30px, 4.6vw, 60px);
   line-height: 1.06;
   letter-spacing: -0.02em;
-  color: #f4f7ff;
+  color: #ffffff;
   /* Soft edge for solid white glyphs only (see em reset below). */
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.65),
@@ -202,46 +195,40 @@
 }
 
 .h2 em {
-  font-style: italic;
-  background: linear-gradient(120deg, #a8c9ff 0%, #7aefff 55%, #c4b5fd 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  /* Inherited text-shadow paints black silhouettes on transparent fill — kill it. */
-  text-shadow: none;
-  filter: none;
+  font-style: normal;
+  color: #9b9b9b;
 }
 
 .lead {
   max-width: 560px;
-  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  font-size: clamp(14px, 1.5vw, 16px);
   line-height: 1.65;
-  color: #a8b4d0;
+  color: #9b9b9b;
 }
 
 .foot {
   font-size: 14px;
-  color: #8b96ad;
+  color: rgba(255, 255, 255, 0.5);
   max-width: 620px;
-  line-height: 1.65;
+  line-height: 20px;
 }
 
 .mono {
   font-family: var(--mono);
-  font-size: 12.5px;
-  color: #7fb0ff;
+  font-size: 12px;
+  color: #4d8dff;
 }
 
 .gold {
-  color: #ffd24d;
+  color: #ffffff;
 }
 
 .mint {
-  color: #4ade80;
+  color: #4d8dff;
 }
 
 .mintText {
-  color: #4ade80;
+  color: #4d8dff;
   font-weight: 600;
 }
 
@@ -283,74 +270,71 @@
 .painGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
   width: min(920px, 100%);
 }
 
 .painCard {
-  background: rgba(9, 14, 28, 0.88);
-  border: 1px solid rgba(255, 138, 118, 0.18);
-  border-radius: 18px;
-  padding: 22px 20px;
+  background: rgba(24, 24, 24, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.108);
+  border-radius: 16px;
+  padding: 24px 24px;
   text-align: left;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .painIcon {
-  color: #ff9a8a;
-  margin-bottom: 14px;
+  color: rgba(255, 255, 255, 0.86);
+  margin-bottom: 16px;
 }
 
-/* The recognisable line, in the same serif italic the chapter headings use for
-   emphasis. Sized to wrap to two lines inside a card rather than shout like a
+/* The recognisable line, set in the display face. Sized to wrap to two lines inside a card rather than shout like a
    figure — the persuasion here is recognition, not scale. */
 .painQuote {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 25px;
+  font-family: var(--display);
+  font-size: 24px;
   font-weight: 500;
-  color: #ff9a8a;
-  line-height: 1.28;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 32px;
   text-wrap: balance;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .painTitle {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #eef2fb;
+  letter-spacing: 0.02em;
+  color: #ffffff;
   margin-bottom: 8px;
 }
 
 .painBody {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: #8b96ad;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Attribution for the three figures above — deliberately quiet, but present.
    An unsourced statistic is the one thing this chapter cannot afford. */
 .painSource {
   font-size: 12px;
-  line-height: 1.6;
-  color: #6f7a91;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.5);
   width: min(920px, 100%);
   text-align: left;
 }
 
 .painSource a {
-  color: #8b96ad;
+  color: rgba(255, 255, 255, 0.5);
   text-decoration: underline;
-  text-decoration-color: rgba(139, 150, 173, 0.4);
+  text-decoration-color: rgba(255, 255, 255, 0.24);
   text-underline-offset: 2px;
 }
 
 .painSource a:hover {
-  color: #c9d3e6;
-  text-decoration-color: rgba(201, 211, 230, 0.7);
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration-color: rgba(255, 255, 255, 0.56);
 }
 
 /* ── 02 chips ── */
@@ -359,7 +343,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
   max-width: 720px;
 }
 
@@ -367,12 +351,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: rgba(13, 20, 38, 0.72);
-  border: 1px solid rgba(140, 165, 210, 0.2);
-  font-size: 13.5px;
-  color: #d9e2f5;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(24, 24, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -381,20 +365,21 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  background: var(--accent);
 }
 
 .dbChipMore {
   border-style: dashed;
-  color: #8b96ad;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .vaultChip {
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: rgba(10, 26, 18, 0.6);
-  border: 1px solid rgba(74, 222, 128, 0.3);
-  color: #c9f5da;
-  font-size: 13.5px;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  background: rgba(24, 24, 24, 0.6);
+  border: 1px solid rgba(77, 141, 255, 0.3);
+  color: #ffffff;
+  font-size: 12px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -404,16 +389,16 @@
 .learnGrid {
   display: grid;
   grid-template-columns: 1.7fr 1fr;
-  gap: 14px;
+  gap: 16px;
   width: min(880px, 100%);
   text-align: left;
 }
 
 .tableCard {
-  background: rgba(9, 14, 28, 0.9);
-  border: 1px solid rgba(140, 165, 210, 0.16);
-  border-radius: 18px;
-  padding: 20px 22px;
+  background: rgba(24, 24, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.096);
+  border-radius: 16px;
+  padding: 24px 24px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -422,7 +407,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -432,56 +417,56 @@
   gap: 8px;
   font-family: var(--mono);
   font-size: 12px;
-  color: #c3d2ee;
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .livePulse {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 8px #4ade80;
+  background: #4d8dff;
+  box-shadow: 0 0 8px #4d8dff;
   animation: badgePulse 1.6s ease-in-out infinite;
 }
 
 .aiTag {
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  padding: 4px 10px;
-  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 4px 8px;
+  border-radius: 6px;
   background: rgba(77, 141, 255, 0.14);
   border: 1px solid rgba(77, 141, 255, 0.35);
-  color: #7fb0ff;
+  color: #4d8dff;
 }
 
 .tableCardDesc {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: #a8b4d0;
-  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #9b9b9b;
+  margin-bottom: 16px;
 }
 
 .columnGrid {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 7px 16px;
-  font-size: 12.5px;
+  gap: 8px 16px;
+  font-size: 12px;
 }
 
 .colName {
   font-family: var(--mono);
-  color: #67e8f9;
+  color: #4d8dff;
 }
 
 .colDesc {
-  color: #8b96ad;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .statsCard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .statCell {
@@ -490,26 +475,26 @@
   flex-direction: column;
   justify-content: center;
   gap: 2px;
-  background: rgba(9, 14, 28, 0.9);
-  border: 1px solid rgba(140, 165, 210, 0.16);
+  background: rgba(24, 24, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.096);
   border-radius: 16px;
-  padding: 14px 18px;
+  padding: 16px 16px;
   font-size: 12px;
-  color: #8b96ad;
+  color: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .statCell b {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 30px;
   font-weight: 600;
-  line-height: 1;
-  color: #eef2fb;
+  line-height: 36px;
+  color: #ffffff;
 }
 
 .statCell b.mint {
-  color: #4ade80;
+  color: #4d8dff;
 }
 
 /* ── 04 answer ── */
@@ -524,42 +509,41 @@
 
 .sqlCard,
 .answerCard {
-  background: rgba(9, 14, 28, 0.9);
-  border: 1px solid rgba(140, 165, 210, 0.16);
-  border-radius: 18px;
-  padding: 18px 20px;
+  background: rgba(24, 24, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.096);
+  border-radius: 16px;
+  padding: 16px 24px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .answerCardMint {
-  border-color: rgba(74, 222, 128, 0.28);
+  border-color: rgba(77, 141, 255, 0.28);
 }
 
 .cardLabel {
   display: block;
   font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #7fb0ff;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #4d8dff;
   margin-bottom: 12px;
 }
 
 .labelGold {
-  color: #ffd24d;
+  color: #ffffff;
 }
 
 .labelMint {
-  color: #4ade80;
+  color: #4d8dff;
 }
 
 .sqlPre {
   margin: 0;
   font-family: var(--mono);
   font-size: 12px;
-  line-height: 1.7;
-  color: #c3d2ee;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.86);
   white-space: pre-wrap;
   min-height: 108px;
 }
@@ -569,7 +553,7 @@
   width: 7px;
   height: 13px;
   vertical-align: -2px;
-  background: #7fb0ff;
+  background: #4d8dff;
   animation: sqlBlink 0.9s steps(1) infinite;
 }
 
@@ -580,23 +564,23 @@
 }
 
 .answerBig {
-  font-family: var(--serif);
-  font-size: clamp(30px, 3.4vw, 42px);
+  font-family: var(--display);
+  font-size: clamp(30px, 3.4vw, 36px);
   font-weight: 600;
   line-height: 1.05;
-  color: #ffd24d;
+  color: #ffffff;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .answerBigCaption {
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 500;
-  color: #a8b4d0;
+  color: #9b9b9b;
 }
 
 .regionBars {
@@ -605,25 +589,25 @@
   gap: 8px 12px;
   align-items: center;
   font-family: var(--mono);
-  font-size: 10.5px;
-  color: #8b96ad;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .regionBar {
   height: 7px;
-  border-radius: 99px;
-  background: linear-gradient(90deg, #4d8dff, #67e8f9);
+  border-radius: 9999px;
+  background: #4d8dff;
   box-shadow: 0 0 12px rgba(77, 141, 255, 0.4);
 }
 
 .answerText {
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: #c3d2ee;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .answerText b {
-  color: #eef2fb;
+  color: #ffffff;
 }
 
 /* ── responsive ── */
@@ -636,9 +620,9 @@
     /* Vertical rhythm follows the visible band (svh) instead of fixed px, so
        the tall chapters keep fitting as the phone gets shorter. */
     --chapter-gutter: clamp(12px, 2svh, 22px);
-    --chapter-gap: clamp(9px, 1.5svh, 16px);
+    --chapter-gap: clamp(8px, 1.5svh, 16px);
     --card-pad-y: clamp(10px, 1.55svh, 14px);
-    --label-gap: clamp(7px, 1.1svh, 12px);
+    --label-gap: clamp(8px, 1.1svh, 12px);
   }
 
   .painGrid,
@@ -655,7 +639,7 @@
   .answerGrid {
     grid-template-columns: 1fr 1fr;
     width: min(560px, 100%);
-    gap: 10px;
+    gap: 12px;
   }
 
   .answerGrid > :nth-child(1),
@@ -668,22 +652,22 @@
   }
 
   .statCell {
-    padding: 12px 14px;
-    font-size: 12.5px;
+    padding: 12px 16px;
+    font-size: 12px;
   }
 
   .statCell b {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   /* Readable body copy on small screens — 12px text is for labels only. */
   .lead {
-    font-size: 15.5px;
+    font-size: 14px;
   }
 
   .painBody {
     font-size: 14px;
-    color: #a8b4d0;
+    color: #9b9b9b;
   }
 
   .dbChip,
@@ -696,15 +680,15 @@
   }
 
   .columnGrid {
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .colDesc {
-    color: #a8b4d0;
+    color: #9b9b9b;
   }
 
   .foot {
-    color: #a8b4d0;
+    color: #9b9b9b;
   }
 
   /* Chapters are pinned cross-fade panels — each must fit one screen, NOT
@@ -733,11 +717,11 @@
   }
 
   .painIcon {
-    margin-bottom: clamp(5px, 0.9svh, 14px);
+    margin-bottom: clamp(4px, 0.9svh, 16px);
   }
 
   .tableCard {
-    padding: var(--card-pad-y) 18px;
+    padding: var(--card-pad-y) 16px;
   }
 
   .tableCardHead,
@@ -746,7 +730,7 @@
   }
 
   .columnGrid {
-    gap: clamp(4px, 0.7svh, 7px) 12px;
+    gap: clamp(4px, 0.7svh, 8px) 12px;
     font-size: 12px;
   }
 
@@ -760,24 +744,24 @@
   }
 
   .sqlPre {
-    font-size: 11px;
-    line-height: 1.55;
+    font-size: 12px;
+    line-height: 16px;
     /* The query types itself in as you scroll — reserve its finished height
        (5 lines) so the cards below it don't shuffle while it does. */
     min-height: 86px;
   }
 
   .answerBig {
-    font-size: clamp(26px, 7vw, 34px);
+    font-size: clamp(24px, 7vw, 30px);
     margin-bottom: var(--label-gap);
   }
 
   .answerText {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .regionBars {
-    gap: clamp(5px, 0.9svh, 8px) 10px;
+    gap: clamp(4px, 0.9svh, 8px) 12px;
   }
 
   .regionBar {
@@ -785,7 +769,7 @@
   }
 
   .foot {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -803,7 +787,7 @@
   .statCell,
   .sqlCard,
   .answerCard {
-    background: rgba(9, 14, 28, 0.94);
+    background: rgba(24, 24, 24, 0.94);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
@@ -811,7 +795,7 @@
 
 @media (max-width: 560px) {
   .hero {
-    padding: calc(var(--nav-h, 60px) + 8px) 10px 10px;
+    padding: calc(var(--nav-h, 64px) + 8px) 12px 12px;
   }
 
   .heroBadgeOpt {
@@ -819,18 +803,18 @@
   }
 
   .heroTitle {
-    font-size: clamp(40px, 12vw, 52px);
+    font-size: clamp(36px, 12vw, 48px);
   }
 
   .heroBadge {
-    font-size: 11.5px;
+    font-size: 12px;
   }
 
   /* Short mobile copy + readable size: the sub supports, never competes. */
   .heroSub {
-    font-size: 15.5px;
-    line-height: 1.55;
-    color: #c3d2ee;
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(255, 255, 255, 0.86);
   }
 
   .copyFull {
@@ -842,7 +826,7 @@
   }
 
   .h2 {
-    font-size: clamp(29px, 8.6vw, 40px);
+    font-size: clamp(24px, 8.6vw, 36px);
   }
 
   /* Compress the stacked pain cards (chapter 01) so all three fit one
@@ -852,24 +836,24 @@
   }
 
   .painCard {
-    padding: var(--card-pad-y) 15px;
+    padding: var(--card-pad-y) 16px;
   }
 
   .painQuote {
-    font-size: 19px;
-    line-height: 1.25;
+    font-size: 18px;
+    line-height: 28px;
     margin-bottom: 4px;
   }
 
   /* Chapter 01 must still fit one screen without internal scroll, so the
      citation shrinks rather than pushing the third card off. */
   .painSource {
-    font-size: 10.5px;
-    line-height: 1.45;
+    font-size: 12px;
+    line-height: 16px;
   }
 
   .painTitle {
-    margin-bottom: 5px;
+    margin-bottom: 4px;
   }
 
   .painBody {
@@ -879,25 +863,25 @@
   /* Chapter 04 is the tallest — compact the secondary cards so the whole
      analysis fits short viewports. Short mobile copy keeps 13.5px text. */
   .answerGrid {
-    gap: clamp(7px, 1.1svh, 10px);
+    gap: clamp(8px, 1.1svh, 12px);
   }
 
   .sqlCard,
   .answerCard {
-    padding: var(--card-pad-y) 14px;
+    padding: var(--card-pad-y) 16px;
   }
 
   .cardLabel {
-    font-size: 9.5px;
+    font-size: 12px;
   }
 
   .answerText {
-    font-size: 13.5px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 16px;
   }
 
   .regionBars {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   /* CTAs stack full-width — big targets, both above the fold. */

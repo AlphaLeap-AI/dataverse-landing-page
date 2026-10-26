@@ -8,14 +8,14 @@ import { CLUSTER_COUNT, clusterCenter } from "../particles";
 import { CHAPTERS, envelope, scrollState } from "../scroll-driver";
 
 const ORB_COLORS = [
-  "#6aa6dd",
-  "#13c25b",
-  "#8b9aff",
-  "#7fd4ff",
-  "#5f9bff",
-  "#ffd24d",
-  "#ff9a8a",
-  "#c9a6ff",
+  "#ffffff",
+  "#9b9b9b",
+  "#4d8dff",
+  "#ffffff",
+  "#9b9b9b",
+  "#ffffff",
+  "#4d8dff",
+  "#9b9b9b",
 ];
 
 function makeGlowTexture(): THREE.Texture {
@@ -81,14 +81,14 @@ export function ConnectScene() {
     [glowTex]
   );
   const coreMat = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: "#bcd8ff", transparent: true, opacity: 0, toneMapped: false }),
+    () => new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0, toneMapped: false }),
     []
   );
   const coreHaloMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
         map: glowTex,
-        color: "#7fb0ff",
+        color: "#4d8dff",
         transparent: true,
         opacity: 0,
         blending: THREE.AdditiveBlending,
@@ -139,7 +139,7 @@ export function ConnectScene() {
     <group ref={group} visible={false}>
       {centers.map((c, i) => (
         <group
-          key={ORB_COLORS[i]}
+          key={i}
           position={[c.x, c.y, c.z]}
           ref={(el) => {
             orbRefs.current[i] = el;

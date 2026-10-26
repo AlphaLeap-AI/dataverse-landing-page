@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/features/landing/journey.module.css"
+        ],
+        "createdAt": "2026-10-26T14:20:19.804Z",
+        "reason": "user confirmed: chose full skill palette incl. hero heading white→#9B9B9B text gradient (redesign-existing-projects Design values)"
+      }
+    ]
+  }
+}

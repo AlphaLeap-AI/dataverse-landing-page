@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, VolumeX, X } from "lucide-react";
+import { Play, SpeakerSlash, X } from "@phosphor-icons/react";
 import {
   useCallback,
   useEffect,
@@ -422,7 +422,7 @@ export function HeroVideo({ children, reducedMotion = false, overlayRef }: HeroV
               tabIndex={expanded ? -1 : 0}
             >
               <span className={styles.pillGlyph} aria-hidden="true">
-                <Play size={16} strokeWidth={0} fill="currentColor" />
+                <Play size={16} weight="fill" />
               </span>
               <span className={styles.pillText}>
                 See Dataverse in action
@@ -441,7 +441,7 @@ export function HeroVideo({ children, reducedMotion = false, overlayRef }: HeroV
               controls already carry a mute toggle for the normal case. */}
           {muted ? (
             <button type="button" className={styles.chromeBtn} onClick={unmute} tabIndex={expanded ? 0 : -1}>
-              <VolumeX size={15} strokeWidth={2.2} aria-hidden="true" />
+              <SpeakerSlash size={15} weight="bold" aria-hidden="true" />
               Tap for sound
             </button>
           ) : null}
@@ -453,7 +453,7 @@ export function HeroVideo({ children, reducedMotion = false, overlayRef }: HeroV
             aria-label="Close video"
             tabIndex={expanded ? 0 : -1}
           >
-            <X size={16} strokeWidth={2.4} aria-hidden="true" />
+            <X size={16} weight="bold" aria-hidden="true" />
           </button>
         </div>
       </div>

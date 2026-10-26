@@ -18,7 +18,7 @@ export function AnswerScene() {
   const opacity = useRef(0);
 
   const grid = useMemo(() => {
-    const g = new THREE.GridHelper(16, 24, new THREE.Color("#ffd24d"), new THREE.Color("#3d82ff"));
+    const g = new THREE.GridHelper(16, 24, new THREE.Color("#4d8dff"), new THREE.Color("#313131"));
     const mat = g.material as THREE.LineBasicMaterial;
     mat.transparent = true;
     mat.opacity = 0;
@@ -30,7 +30,7 @@ export function AnswerScene() {
   const beamMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: "#ffd24d",
+        color: "#ffffff",
         transparent: true,
         opacity: 0,
         blending: THREE.AdditiveBlending,

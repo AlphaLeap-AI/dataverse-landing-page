@@ -2,8 +2,8 @@
 
 .root {
   position: relative;
-  z-index: 1;
-  padding: clamp(72px, 11vh, 128px) 20px clamp(80px, 12vh, 140px);
+  z-index: var(--z-base);
+  padding: clamp(80px, 11vh, 128px) 24px clamp(80px, 12vh, 140px);
   display: flex;
   justify-content: center;
 }
@@ -20,13 +20,12 @@
 .eyebrow {
   font-family: var(--mono);
   font-size: 12px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--accent-soft);
+  letter-spacing: 0.02em;
+  color: var(--accent);
 }
 
 .title {
-  font-size: clamp(32px, 4.4vw, 56px);
+  font-size: clamp(30px, 4.4vw, 48px);
   line-height: 1.06;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -34,28 +33,24 @@
 }
 
 .title em {
-  font-style: italic;
-  background: linear-gradient(120deg, #7fb0ff 0%, #67e8f9 55%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
+  font-style: normal;
+  color: #9b9b9b;
 }
 
 .lead {
   max-width: 560px;
-  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  font-size: clamp(14px, 1.5vw, 16px);
   line-height: 1.65;
   color: var(--ink-dim);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 @media (max-width: 560px) {
   .root {
-    padding: 64px 18px 72px;
+    padding: 64px 16px 80px;
   }
 
   .lead {
-    font-size: 15px;
+    font-size: 14px;
   }
 }
